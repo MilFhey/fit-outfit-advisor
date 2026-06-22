@@ -140,9 +140,18 @@ def train(args: argparse.Namespace) -> None:
 
     print(f"Test loss: {loss:.4f}")
     print(f"Test accuracy: {accuracy:.4f}")
-    print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
+    class_labels = list(range(len(label_encoder.classes_)))
+    print(
+        classification_report(
+            y_test,
+            y_pred,
+            labels=class_labels,
+            target_names=label_encoder.classes_,
+            zero_division=0,
+        )
+    )
     print("Confusion matrix:")
-    print(confusion_matrix(y_test, y_pred))
+    print(confusion_matrix(y_test, y_pred, labels=class_labels))
 
     FIT_MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     ENCODERS_DIR.mkdir(parents=True, exist_ok=True)

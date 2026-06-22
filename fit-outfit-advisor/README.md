@@ -149,6 +149,64 @@ python -m src.training.train_fit_model --sample --epochs 1
 
 Ce mode `--sample` ne produit pas de resultats exploitables pour le rapport.
 
+### Notebook Google Colab ModCloth
+
+Le notebook a executer dans Colab est :
+
+```text
+notebooks/01_train_fit_model_colab.ipynb
+```
+
+Il couvre uniquement le pipeline ModCloth V0 : montage Drive, mise a jour du repo GitHub, installation des dependances, telechargement Kaggle, inspection du dataset, appel de `src.training.train_fit_model`, verification des artefacts et copie vers Google Drive.
+
+Avant execution dans Colab :
+
+1. Cree un secret Colab `KAGGLE_API_TOKEN`.
+2. Mets comme valeur soit le JSON Kaggle complet :
+
+```json
+{"username":"ton_user_kaggle","key":"ta_cle_kaggle"}
+```
+
+ou le format :
+
+```text
+ton_user_kaggle:ta_cle_kaggle
+```
+
+3. Renseigne l'URL GitHub du repo dans la cellule `REPO_URL`, ou cree un secret Colab `FIT_OUTFIT_REPO_URL` contenant l'URL du repo, par exemple :
+
+```text
+https://github.com/<ton-compte-github>/fit-outfit-advisor.git
+```
+
+Si la branche par defaut du repo n'est pas `main`, modifie aussi la variable `BRANCH` dans la meme cellule.
+
+4. Lance les cellules dans l'ordre.
+
+Le notebook telecharge par defaut le dataset Kaggle :
+
+```text
+rmisra/clothing-fit-dataset-for-size-recommendation
+```
+
+Si Kaggle fournit ModCloth en JSON/JSONL, le notebook le convertit en CSV temporaire dans `/content/fit-outfit-runtime/data/modcloth_final_data.csv` avant d'appeler le script d'entrainement.
+
+Artefacts generes dans le repo Colab :
+
+```text
+models/fit_model.keras
+models/encoders/fit_preprocessor.joblib
+models/encoders/fit_label_encoder.joblib
+models/encoders/fit_metadata.json
+```
+
+Copie finale vers Google Drive :
+
+```text
+/content/drive/MyDrive/fit-outfit-advisor/artifacts/modcloth_fit/
+```
+
 ## Tests
 
 ```bash

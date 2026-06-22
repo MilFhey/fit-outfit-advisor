@@ -61,6 +61,22 @@ def convert_size_to_order(size: Any) -> int:
     return order.get(str(size).upper(), -1)
 
 
+def convert_modcloth_size_to_order(size: Any) -> float | None:
+    """Encode une taille textuelle ou numerique ModCloth en valeur ordonnee."""
+    text_order = convert_size_to_order(size)
+    if text_order >= 0:
+        return float(text_order)
+
+    try:
+        numeric_size = pd.to_numeric(size)
+    except (TypeError, ValueError):
+        return None
+
+    if pd.isna(numeric_size):
+        return None
+    return float(numeric_size)
+
+
 def parse_height_to_cm(value: Any) -> float | None:
     """Convertit une taille ModCloth courante (`5ft 5in`, `165 cm`) en cm."""
     if value is None or pd.isna(value):
@@ -121,13 +137,28 @@ def normalize_modcloth_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     if "height_cm" in normalized.columns:
         normalized["height_cm"] = normalized["height_cm"].map(parse_height_to_cm)
+    else:
+        normalized["height_cm"] = None
 
     if "weight_kg" in normalized.columns:
         normalized["weight_kg"] = normalized["weight_kg"].map(parse_weight_to_kg)
+    else:
+        normalized["weight_kg"] = 0.0
 
     if "item_size" in normalized.columns:
         normalized["item_size"] = normalized["item_size"].astype(str).str.upper().str.strip()
-        normalized["item_size_order"] = normalized["item_size"].map(convert_size_to_order)
+        normalized["item_size_order"] = normalized["item_size"].map(convert_modcloth_size_to_order)
+    else:
+        normalized["item_size"] = "unknown"
+        normalized["item_size_order"] = None
+
+    for column in DEFAULT_NUMERIC_FEATURES:
+        normalized[column] = pd.to_numeric(normalized[column], errors="coerce")
+
+    if normalized["weight_kg"].isna().all():
+        normalized["weight_kg"] = 0.0
+    else:
+        normalized["weight_kg"] = normalized["weight_kg"].fillna(normalized["weight_kg"].median())
 
     for column in DEFAULT_CATEGORICAL_FEATURES:
         if column not in normalized.columns:
