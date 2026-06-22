@@ -113,13 +113,44 @@ notebooks/           Bases Colab/Kaggle
 - Outfit : recommandations simples par regles et mappings.
 - Advice : conseil final interpretable avec avertissements si confiance faible.
 
-Artefacts fit attendus apres entrainement :
+### Statut ModCloth
+
+Le premier entrainement ModCloth a produit un modele baseline techniquement valide mais non exploitable :
+
+- test accuracy observee : `0.6857` ;
+- recall `fit` : `1.00` ;
+- recall `large` : `0.00` ;
+- recall `small` : `0.00`.
+
+Ce modele est equivalent au baseline majoritaire qui predit presque toujours `fit`. Il ne doit pas etre promu vers Streamlit.
+
+Analyse detaillee :
+
+```text
+docs/working/MODCLOTH_BASELINE_ANALYSIS.md
+```
+
+Les artefacts baseline existants doivent etre conserves comme `baseline_v1` et ne pas etre ecrases :
 
 ```text
 models/fit_model.keras
 models/encoders/fit_preprocessor.joblib
 models/encoders/fit_label_encoder.joblib
 models/encoders/fit_metadata.json
+```
+
+Le second entrainement ecrit dans une version separee :
+
+```text
+models/fit_v2/
+├── fit_model.keras
+├── fit_preprocessor.joblib
+├── fit_label_encoder.joblib
+├── metadata.json
+├── metrics.json
+├── confusion_matrix_raw.png
+├── confusion_matrix_normalized.png
+└── training_history.png
 ```
 
 ## Datasets
@@ -141,7 +172,32 @@ Le pipeline de base est disponible dans :
 python -m src.training.train_fit_model --dataset data/raw/modcloth_final_data.json
 ```
 
-Si le dataset est absent, le script affiche les colonnes attendues. Pour verifier uniquement le pipeline avec un mini-jeu artificiel :
+Le script V2 affiche avant entrainement :
+
+- chemin et shape du dataset ;
+- colonnes disponibles ;
+- vraie colonne correspondant a `DtypeWarning: Columns (8)` si le dataset est CSV ;
+- valeurs manquantes ;
+- distribution des classes avant/apres nettoyage ;
+- colonnes retenues ;
+- mapping `label -> index`.
+
+Il compare ensuite :
+
+- baseline majoritaire ;
+- MLP sans ponderation ;
+- MLP avec `class_weight` calcule sur le train.
+
+La selection entre le MLP sans ponderation et le MLP avec `class_weight` se fait exclusivement sur le jeu de validation. Le jeu de test n'est transforme et predit qu'apres selection finale, pour produire les metriques finales et les matrices de confusion finales.
+
+Les metriques prioritaires sont :
+
+- macro F1 ;
+- balanced accuracy ;
+- recall `small` ;
+- recall `large`.
+
+Si le dataset est absent, le script affiche une erreur claire. Pour verifier uniquement le pipeline avec un mini-jeu artificiel :
 
 ```bash
 python -m src.training.train_fit_model --sample --epochs 1
@@ -157,7 +213,7 @@ Le notebook a executer dans Colab est :
 notebooks/01_train_fit_model_colab.ipynb
 ```
 
-Il couvre uniquement le pipeline ModCloth V0 : montage Drive, mise a jour du repo GitHub, installation des dependances, telechargement Kaggle, inspection du dataset, appel de `src.training.train_fit_model`, verification des artefacts et copie vers Google Drive.
+Il couvre uniquement le pipeline ModCloth V2 : montage Drive, mise a jour du repo GitHub, installation des dependances, telechargement Kaggle, inspection du dataset, comparaison baseline/MLP, appel de `src.training.train_fit_model`, verification des artefacts versionnes et copie vers Google Drive.
 
 Avant execution dans Colab :
 
@@ -195,16 +251,32 @@ Si Kaggle fournit ModCloth en JSON/JSONL, le notebook le convertit en CSV tempor
 Artefacts generes dans le repo Colab :
 
 ```text
-models/fit_model.keras
-models/encoders/fit_preprocessor.joblib
-models/encoders/fit_label_encoder.joblib
-models/encoders/fit_metadata.json
+models/fit_v2/fit_model.keras
+models/fit_v2/fit_preprocessor.joblib
+models/fit_v2/fit_label_encoder.joblib
+models/fit_v2/metadata.json
+models/fit_v2/metrics.json
+models/fit_v2/confusion_matrix_raw.png
+models/fit_v2/confusion_matrix_normalized.png
+models/fit_v2/training_history.png
 ```
+
+`models/fit_v2/metrics.json` separe :
+
+- `validation_metrics` ;
+- `test_metrics` ;
+- `selected_experiment` ;
+- `reason_for_selection` ;
+- `feature_columns` ;
+- `dataset_row_counts` ;
+- `class_distribution_train` ;
+- `class_distribution_validation` ;
+- `class_distribution_test`.
 
 Copie finale vers Google Drive :
 
 ```text
-/content/drive/MyDrive/fit-outfit-advisor/artifacts/modcloth_fit/
+/content/drive/MyDrive/fit-outfit-advisor/artifacts/modcloth_fit_v2/
 ```
 
 ## Tests

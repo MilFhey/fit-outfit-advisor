@@ -23,6 +23,8 @@ env/
 /models/*.h5
 /models/encoders/*
 !/models/encoders/.gitkeep
+/models/fit_v2/*
+!/models/fit_v2/.gitkeep
 
 # OS / IDE
 .DS_Store

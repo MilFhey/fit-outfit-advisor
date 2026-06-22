@@ -3,6 +3,10 @@ from src.mappings.color_mapping import get_compatible_colors
 from src.config.paths import PROJECT_ROOT, FIT_MODEL_PATH, IMAGE_MODEL_PATH
 from src.models.load_fit_model import load_fit_artifacts, load_fit_model
 from src.models.load_image_model import load_image_model
+from src.preprocessing.tabular_preprocessing import (
+    DEFAULT_FEATURE_COLUMNS,
+    prepare_fit_training_frame,
+)
 from src.services.image_service import predict_image
 from src.services.fit_service import predict_fit
 from src.services.outfit_service import recommend_outfit
@@ -43,6 +47,32 @@ def test_model_paths_and_missing_loaders_do_not_crash():
     assert load_fit_model() is None
     assert load_fit_artifacts() is None
     assert load_image_model() is None
+
+
+def test_modcloth_v2_feature_contract_excludes_incoherent_placeholders():
+    assert "weight_kg" not in DEFAULT_FEATURE_COLUMNS
+    assert "usual_size" not in DEFAULT_FEATURE_COLUMNS
+    assert "brand" not in DEFAULT_FEATURE_COLUMNS
+    assert "color" not in DEFAULT_FEATURE_COLUMNS
+
+
+def test_modcloth_preprocessing_keeps_missing_values_for_imputer():
+    import pandas as pd
+
+    frame = pd.DataFrame(
+        [
+            {"fit": "fit", "height": None, "body type": "hourglass", "size": 8, "category": "new"},
+            {"fit": "small", "height": "5ft 7in", "body type": None, "size": 4, "category": "dresses"},
+            {"fit": "large", "height": "5ft 2in", "body type": "petite", "size": 16, "category": "tops"},
+        ]
+    )
+
+    features, target, diagnostics = prepare_fit_training_frame(frame)
+
+    assert list(target) == ["fit", "small", "large"]
+    assert "weight_kg" not in features.columns
+    assert features["height_cm"].isna().sum() == 1
+    assert diagnostics["feature_columns"] == list(features.columns)
 
 
 def test_fit_service_fallback_output_keys_without_real_artifacts():
