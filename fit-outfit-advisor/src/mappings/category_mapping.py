@@ -1,0 +1,40 @@
+CATEGORY_MAPPING = {
+    # Tops
+    "Shirts": "top",
+    "Tshirts": "top",
+    "Tops": "top",
+    "Kurtas": "top",
+    "Sweatshirts": "top",
+
+    # Bottoms
+    "Jeans": "bottom",
+    "Trousers": "bottom",
+    "Shorts": "bottom",
+    "Track Pants": "bottom",
+    "Skirts": "bottom",
+
+    # Dresses / one-piece
+    "Dresses": "dress",
+    "Jumpsuit": "dress",
+
+    # Shoes
+    "Casual Shoes": "shoes",
+    "Sports Shoes": "shoes",
+    "Formal Shoes": "shoes",
+    "Flats": "shoes",
+    "Heels": "shoes",
+    "Sandals": "shoes",
+
+    # Accessories
+    "Bags": "accessory",
+    "Watches": "accessory",
+    "Belts": "accessory",
+    "Sunglasses": "accessory",
+}
+
+
+def map_to_common_category(raw_category: str) -> str:
+    """Convertit une classe brute du dataset image vers une catégorie commune."""
+    if not raw_category:
+        return "unknown"
+    return CATEGORY_MAPPING.get(raw_category, "unknown")
