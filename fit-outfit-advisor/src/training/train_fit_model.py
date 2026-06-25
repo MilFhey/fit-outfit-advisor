@@ -27,9 +27,12 @@ from sklearn.utils.class_weight import compute_class_weight
 
 from src.config.paths import DEFAULT_MODCLOTH_DATASET_PATH, MODELS_DIR
 from src.preprocessing.tabular_preprocessing import (
+    AMBIGUOUS_COMMERCIAL_CATEGORIES,
     DEFAULT_CATEGORICAL_FEATURES,
     DEFAULT_NUMERIC_FEATURES,
+    EXPLICIT_CLOTHING_CATEGORIES,
     FIT_LABELS,
+    build_fit_inference_contract,
     prepare_fit_training_frame,
 )
 
@@ -349,6 +352,11 @@ def _diagnose_raw_dataset(df: pd.DataFrame, dataset_path: Path, warning_column: 
             else {}
         ),
         "category_top_values": category_values,
+        "category_groups": {
+            "explicit_clothing_categories": list(EXPLICIT_CLOTHING_CATEGORIES),
+            "ambiguous_commercial_categories": list(AMBIGUOUS_COMMERCIAL_CATEGORIES),
+            "note": "`new` and `sale` are commercial labels, not garment categories.",
+        },
         "dtype_warning_column": asdict(warning_column),
         "missing_value_strategy": {
             "numeric": "Median imputation fitted on train only, then StandardScaler fitted on train only.",
@@ -485,12 +493,13 @@ def train(args: argparse.Namespace) -> None:
     print("Final test confusion matrix:")
     print(np.array(test_metrics["confusion_matrix_raw"]))
 
-    promotable = (
+    academically_improved_over_baseline = (
         test_metrics["macro_f1"] > validation_metrics["majority_baseline"]["macro_f1"]
         and test_metrics["balanced_accuracy"] > validation_metrics["majority_baseline"]["balanced_accuracy"]
         and test_metrics["per_class"].get("small", {}).get("recall", 0.0) > 0
         and test_metrics["per_class"].get("large", {}).get("recall", 0.0) > 0
     )
+    promotable = False
 
     FIT_V2_DIR.mkdir(parents=True, exist_ok=True)
     best_model.save(FIT_V2_MODEL_PATH)
@@ -510,15 +519,27 @@ def train(args: argparse.Namespace) -> None:
         "reason_for_selection": reason_for_selection,
         "class_weight": class_weight_dict,
         "promotable_to_streamlit": promotable,
+        "model_status": "experimental_only",
+        "streamlit_promotion_decision": (
+            "Not promotable as a firm size recommendation. V2 is kept as an academic "
+            "result and improved baseline only."
+        ),
+        "academically_improved_over_majority_baseline": academically_improved_over_baseline,
+        "abstention_strategy": {
+            "enabled": True,
+            "minimum_confidence": 0.60,
+            "low_confidence_prediction": "uncertain",
+            "service_policy": "Do not provide firm small/large advice when confidence is low or artifact is experimental.",
+        },
         "dataset_row_counts": dataset_row_counts,
         "class_distribution_train": class_distribution_train,
         "class_distribution_validation": class_distribution_validation,
         "class_distribution_test": class_distribution_test,
-        "inference_contract": {
-            "user_profile": ["height_cm", "body_type"],
-            "item_features": ["item_size", "category"],
-            "excluded_previous_fields": ["weight_kg", "usual_size", "brand", "color"],
+        "category_groups": {
+            "explicit_clothing_categories": list(EXPLICIT_CLOTHING_CATEGORIES),
+            "ambiguous_commercial_categories": list(AMBIGUOUS_COMMERCIAL_CATEGORIES),
         },
+        "inference_contract": build_fit_inference_contract(preprocessing_diagnostic["feature_columns"]),
         "diagnostics": {
             "raw_dataset": raw_diagnostic,
             "preprocessing": preprocessing_diagnostic,
@@ -536,6 +557,8 @@ def train(args: argparse.Namespace) -> None:
         "class_distribution_validation": class_distribution_validation,
         "class_distribution_test": class_distribution_test,
         "promotable_to_streamlit": promotable,
+        "model_status": "experimental_only",
+        "academically_improved_over_majority_baseline": academically_improved_over_baseline,
         "validation_metrics": validation_metrics,
         "test_metrics": test_metrics,
     }

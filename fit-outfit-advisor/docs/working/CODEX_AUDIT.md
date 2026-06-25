@@ -78,3 +78,22 @@
   - Les artefacts reels ModCloth et image ne sont pas encore presents.
   - Le fallback image ne remplace pas encore un vrai pipeline CNN ; il preserve seulement le parcours MVP.
   - Les notebooks restent des bases de travail, le script `src/training/train_fit_model.py` est le pipeline le plus concret pour ModCloth.
+
+## Analyse V2 ModCloth et plan V3
+- Decision V2 :
+  - V2 ameliore le baseline majoritaire mais reste non fiable pour une recommandation ferme de taille.
+  - V2 est conserve comme resultat academique et baseline ameliore.
+  - V2 ne doit pas etre promu vers Streamlit comme conseil utilisateur.
+- Corrections de garde-fou :
+  - `metadata.json` genere par `src/training/train_fit_model.py` force `promotable_to_streamlit: false`.
+  - `metadata.json` ajoute `model_status: "experimental_only"`.
+  - `fit_service.py` retourne `uncertain` si un artefact charge est experimental ou si la confiance est sous le seuil d'abstention.
+  - Les chemins fit centralises pointent maintenant vers `models/fit_v2/`.
+  - Le contrat d'inference est construit depuis les `feature_columns`; `body_type` n'apparait que si la colonne fait reellement partie des features apprises.
+  - Les categories vestimentaires explicites et categories commerciales ambigues sont separees dans le preprocessing.
+  - `height_cm_missing` est ajoute comme indicateur de mensuration manquante pour la taille.
+- Nouveau document :
+  - `docs/working/MODCLOTH_V3_EXPERIMENT_PLAN.md`.
+- Limites restantes :
+  - Le dataset reel et les artefacts V2 ne sont pas presents localement ; les distributions et performances V3 reelles doivent etre calculees dans Colab ou dans un environnement disposant du dataset.
+  - Les mensurations `bust`, `hips`, `waist`, `bra size`, `cup size` restent candidates V3 et ne sont pas encore integrees au pipeline.

@@ -7,11 +7,30 @@ from src.preprocessing.tabular_preprocessing import (
 
 
 def _risk_level(fit_prediction: str, confidence: float) -> str:
+    if fit_prediction == "uncertain":
+        return "medium"
     if confidence < 0.60:
         return "medium"
     if fit_prediction == "fit":
         return "low"
     return "high"
+
+
+def _is_experimental_only(metadata: dict) -> bool:
+    return (
+        metadata.get("model_status") == "experimental_only"
+        or metadata.get("promotable_to_streamlit") is False
+    )
+
+
+def _uncertain_result(confidence: float, reason: str, mode: str = "tensorflow") -> dict:
+    return {
+        "fit_prediction": "uncertain",
+        "confidence": confidence,
+        "risk_level": "medium",
+        "reason": reason,
+        "mode": mode,
+    }
 
 
 def _simulate_fit(user_profile: dict, item_features: dict) -> dict:
@@ -75,6 +94,25 @@ def _predict_with_artifacts(user_profile: dict, item_features: dict, artifacts) 
         labels = artifacts.metadata.get("class_labels", FIT_LABELS)
         fit_prediction = str(labels[class_index])
 
+    if _is_experimental_only(artifacts.metadata):
+        result = _uncertain_result(
+            confidence,
+            "Artefact ModCloth experimental : V2 n'est pas promouvable comme conseil de taille fiable.",
+        )
+        result["raw_fit_prediction"] = fit_prediction
+        return result
+
+    threshold = float(
+        artifacts.metadata.get("abstention_strategy", {}).get("minimum_confidence", 0.60)
+    )
+    if confidence < threshold:
+        result = _uncertain_result(
+            confidence,
+            "Confiance trop faible : aucune recommandation ferme small/large.",
+        )
+        result["raw_fit_prediction"] = fit_prediction
+        return result
+
     return {
         "fit_prediction": fit_prediction,
         "confidence": confidence,
@@ -99,8 +137,8 @@ def predict_fit(user_profile: dict, item_features: dict, use_real_model: bool = 
         fallback = _simulate_fit(user_profile, item_features)
         fallback["fallback_reason"] = (
             "Artefacts ModCloth absents ou incomplets. Attendus: "
-            "models/fit_model.keras, models/encoders/fit_preprocessor.joblib, "
-            "models/encoders/fit_metadata.json."
+            "models/fit_v2/fit_model.keras, models/fit_v2/fit_preprocessor.joblib, "
+            "models/fit_v2/metadata.json."
         )
         return fallback
 

@@ -52,8 +52,7 @@ fit-outfit-advisor/
 │
 ├── models/
 │   ├── fashion_model.keras       # à générer après entraînement
-│   ├── fit_model.keras           # à générer après entraînement
-│   └── encoders/                 # encodeurs/scalers sauvegardés
+│   └── fit_v2/                   # artefacts ModCloth V2 expérimentaux
 │
 ├── notebooks/
 │   ├── 01_train_fit_model_colab.ipynb
@@ -153,6 +152,14 @@ models/fit_v2/
 └── training_history.png
 ```
 
+Decision actuelle V2 :
+
+- V2 ameliore le baseline majoritaire (`macro F1 test 0.357` vs `0.271`, `balanced accuracy test 0.434` vs `0.333`).
+- V2 reste insuffisant pour un conseil utilisateur fiable (`accuracy 0.385`, precision faible sur `small` et `large`, recall `fit 0.341`).
+- Les artefacts V2 doivent etre marques `promotable_to_streamlit: false` et `model_status: "experimental_only"`.
+- Si un artefact experimental est charge, le service doit retourner `uncertain` plutot qu'une recommandation ferme `small` ou `large`.
+- L'analyse V3 est planifiee dans `docs/working/MODCLOTH_V3_EXPERIMENT_PLAN.md` avant toute promotion vers Streamlit.
+
 ## Datasets
 
 Place les datasets localement, sans les committer :
@@ -217,28 +224,12 @@ Il couvre uniquement le pipeline ModCloth V2 : montage Drive, mise a jour du rep
 
 Avant execution dans Colab :
 
-1. Cree un secret Colab `KAGGLE_API_TOKEN`.
-2. Mets comme valeur soit le JSON Kaggle complet :
-
-```json
-{"username":"ton_user_kaggle","key":"ta_cle_kaggle"}
-```
-
-ou le format :
-
-```text
-ton_user_kaggle:ta_cle_kaggle
-```
-
-3. Renseigne l'URL GitHub du repo dans la cellule `REPO_URL`, ou cree un secret Colab `FIT_OUTFIT_REPO_URL` contenant l'URL du repo, par exemple :
-
-```text
-https://github.com/<ton-compte-github>/fit-outfit-advisor.git
-```
-
-Si la branche par defaut du repo n'est pas `main`, modifie aussi la variable `BRANCH` dans la meme cellule.
-
-4. Lance les cellules dans l'ordre.
+1. Cree un secret Colab `KAGGLE_API`.
+2. Mets comme valeur le token Kaggle API commencant par `KGAT_`.
+3. Si le repo GitHub est prive, cree aussi un secret optionnel `GITHUB_TOKEN`.
+4. Verifie la variable `REPO_URL` dans le notebook.
+5. Si la branche par defaut du repo n'est pas `main`, modifie aussi la variable `BRANCH`.
+6. Lance les cellules dans l'ordre.
 
 Le notebook telecharge par defaut le dataset Kaggle :
 
@@ -292,10 +283,11 @@ pytest
 2. Entraîner le modèle ModCloth pour la prédiction `small / fit / large`.
 3. Sauvegarder le modèle, le scaler et les encodeurs.
 4. Brancher le modèle ModCloth dans `fit_service.py`.
-5. Entraîner le CNN Fashion Product Images Small sur 5 à 8 classes.
-6. Brancher le CNN dans `image_service.py`.
-7. Améliorer le module outfit avec des règles Polyvore simplifiées.
-8. Enrichir le conseil final.
+5. Realiser l'analyse V3 ModCloth avant toute promotion Streamlit.
+6. Entraîner le CNN Fashion Product Images Small sur 5 à 8 classes.
+7. Brancher le CNN dans `image_service.py`.
+8. Améliorer le module outfit avec des règles Polyvore simplifiées.
+9. Enrichir le conseil final.
 
 ## Critère de réussite de la première semaine
 

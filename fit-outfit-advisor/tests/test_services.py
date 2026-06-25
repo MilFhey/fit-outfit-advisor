@@ -1,10 +1,14 @@
 from src.mappings.category_mapping import map_to_common_category
 from src.mappings.color_mapping import get_compatible_colors
-from src.config.paths import PROJECT_ROOT, FIT_MODEL_PATH, IMAGE_MODEL_PATH
+from src.config.paths import PROJECT_ROOT, FIT_MODEL_PATH, FIT_METADATA_PATH, IMAGE_MODEL_PATH
 from src.models.load_fit_model import load_fit_artifacts, load_fit_model
 from src.models.load_image_model import load_image_model
 from src.preprocessing.tabular_preprocessing import (
+    AMBIGUOUS_COMMERCIAL_CATEGORIES,
     DEFAULT_FEATURE_COLUMNS,
+    EXPLICIT_CLOTHING_CATEGORIES,
+    build_fit_inference_contract,
+    build_runtime_fit_features,
     prepare_fit_training_frame,
 )
 from src.services.image_service import predict_image
@@ -43,6 +47,8 @@ def test_image_service_real_mode_falls_back_without_model():
 def test_model_paths_and_missing_loaders_do_not_crash():
     assert PROJECT_ROOT.name == "fit-outfit-advisor"
     assert FIT_MODEL_PATH.is_absolute()
+    assert FIT_MODEL_PATH.parent.name == "fit_v2"
+    assert FIT_METADATA_PATH.name == "metadata.json"
     assert IMAGE_MODEL_PATH.is_absolute()
     assert load_fit_model() is None
     assert load_fit_artifacts() is None
@@ -54,6 +60,27 @@ def test_modcloth_v2_feature_contract_excludes_incoherent_placeholders():
     assert "usual_size" not in DEFAULT_FEATURE_COLUMNS
     assert "brand" not in DEFAULT_FEATURE_COLUMNS
     assert "color" not in DEFAULT_FEATURE_COLUMNS
+    assert "height_cm_missing" in DEFAULT_FEATURE_COLUMNS
+
+
+def test_modcloth_category_groups_are_separated():
+    assert set(EXPLICIT_CLOTHING_CATEGORIES) == {"tops", "dresses", "bottoms", "outerwear", "wedding"}
+    assert set(AMBIGUOUS_COMMERCIAL_CATEGORIES) == {"new", "sale"}
+    assert set(EXPLICIT_CLOTHING_CATEGORIES).isdisjoint(AMBIGUOUS_COMMERCIAL_CATEGORIES)
+
+
+def test_runtime_fit_features_include_missing_measurement_indicator():
+    features = build_runtime_fit_features({}, {"item_size": "M", "category": "tops"})
+    assert features.loc[0, "height_cm_missing"] == 1
+    assert "body_type" in features.columns
+
+
+def test_inference_contract_reflects_actual_feature_columns():
+    contract_without_body_type = build_fit_inference_contract(["height_cm", "height_cm_missing", "item_size_order"])
+    assert "body_type" not in contract_without_body_type["user_profile"]
+
+    contract_with_body_type = build_fit_inference_contract(["height_cm", "item_size_order", "body_type"])
+    assert "body_type" in contract_with_body_type["user_profile"]
 
 
 def test_modcloth_preprocessing_keeps_missing_values_for_imputer():
@@ -72,7 +99,9 @@ def test_modcloth_preprocessing_keeps_missing_values_for_imputer():
     assert list(target) == ["fit", "small", "large"]
     assert "weight_kg" not in features.columns
     assert features["height_cm"].isna().sum() == 1
+    assert features["height_cm_missing"].sum() == 1
     assert diagnostics["feature_columns"] == list(features.columns)
+    assert diagnostics["ambiguous_category_row_count"] == 1
 
 
 def test_fit_service_fallback_output_keys_without_real_artifacts():

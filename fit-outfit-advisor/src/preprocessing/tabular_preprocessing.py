@@ -16,10 +16,13 @@ FIT_TARGET_MAPPING = {
 INVERSE_FIT_TARGET_MAPPING = {v: k for k, v in FIT_TARGET_MAPPING.items()}
 FIT_LABELS = tuple(FIT_TARGET_MAPPING.keys())
 
+EXPLICIT_CLOTHING_CATEGORIES = ("tops", "dresses", "bottoms", "outerwear", "wedding")
+AMBIGUOUS_COMMERCIAL_CATEGORIES = ("new", "sale")
+
 # V2 uses only fields that can be traced to ModCloth columns and can plausibly be
 # provided later at inference. It deliberately excludes previous placeholders
 # such as weight_kg, usual_size, brand and color.
-DEFAULT_NUMERIC_FEATURES = ["height_cm", "item_size_order"]
+DEFAULT_NUMERIC_FEATURES = ["height_cm", "height_cm_missing", "item_size_order"]
 DEFAULT_CATEGORICAL_FEATURES = ["body_type", "category"]
 DEFAULT_FEATURE_COLUMNS = DEFAULT_NUMERIC_FEATURES + DEFAULT_CATEGORICAL_FEATURES
 
@@ -132,6 +135,7 @@ def normalize_modcloth_columns(df: pd.DataFrame) -> pd.DataFrame:
         normalized["height_cm"] = normalized["height_cm"].map(parse_height_to_cm)
     else:
         normalized["height_cm"] = np.nan
+    normalized["height_cm_missing"] = normalized["height_cm"].isna().astype(int)
 
     if "item_size" in normalized.columns:
         normalized["item_size_order"] = normalized["item_size"].map(convert_modcloth_size_to_order)
@@ -165,13 +169,49 @@ def build_runtime_fit_features(user_profile: dict, item_features: dict) -> pd.Da
     poids, marque, couleur et taille habituelle.
     """
     item_size = item_features.get("item_size", np.nan)
+    height_cm = user_profile.get("height_cm", np.nan)
     record = {
-        "height_cm": user_profile.get("height_cm", np.nan),
+        "height_cm": height_cm,
+        "height_cm_missing": int(pd.isna(height_cm)),
         "item_size_order": convert_modcloth_size_to_order(item_size),
         "body_type": user_profile.get("body_type", np.nan),
         "category": item_features.get("category", np.nan),
     }
     return pd.DataFrame([record], columns=DEFAULT_FEATURE_COLUMNS)
+
+
+def build_fit_inference_contract(feature_columns: list[str]) -> dict[str, Any]:
+    """Construit le contrat d'inference a partir des colonnes reellement apprises."""
+    user_profile = []
+    item_features = []
+    retained_measurements = []
+    excluded_fields = ["weight_kg", "usual_size", "brand", "color"]
+
+    if "height_cm" in feature_columns:
+        user_profile.append("height_cm")
+        retained_measurements.append("height_cm")
+    if "height_cm_missing" in feature_columns:
+        user_profile.append("height_cm_missing")
+    if "body_type" in feature_columns:
+        user_profile.append("body_type")
+    if "item_size_order" in feature_columns:
+        item_features.append("item_size")
+    if "category" in feature_columns:
+        item_features.append("category")
+
+    return {
+        "user_profile": user_profile,
+        "item_features": item_features,
+        "retained_measurements": retained_measurements,
+        "missing_value_indicators": [
+            column for column in feature_columns if column.endswith("_missing")
+        ],
+        "excluded_previous_fields": excluded_fields,
+        "body_type_policy": (
+            "Included only when present in feature_columns. Exclude from V3 by default "
+            "unless analysis proves it is really trained, useful, and reasonably askable."
+        ),
+    }
 
 
 def prepare_fit_training_frame(
@@ -210,6 +250,25 @@ def prepare_fit_training_frame(
         "numeric_features": numeric_features,
         "categorical_features": categorical_features,
         "feature_columns": feature_columns,
+        "explicit_clothing_categories": list(EXPLICIT_CLOTHING_CATEGORIES),
+        "ambiguous_commercial_categories": list(AMBIGUOUS_COMMERCIAL_CATEGORIES),
+        "category_distribution": (
+            _count_dict(cleaned["category"].astype(str).str.lower().str.strip())
+            if "category" in cleaned.columns
+            else {}
+        ),
+        "ambiguous_category_row_count": (
+            int(
+                cleaned["category"]
+                .astype(str)
+                .str.lower()
+                .str.strip()
+                .isin(AMBIGUOUS_COMMERCIAL_CATEGORIES)
+                .sum()
+            )
+            if "category" in cleaned.columns
+            else 0
+        ),
         "invalid_item_size_count": invalid_size_count,
         "missing_values_after_normalization": cleaned[feature_columns + ["fit"]]
         .isna()
