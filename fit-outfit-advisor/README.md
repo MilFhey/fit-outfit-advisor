@@ -52,7 +52,8 @@ fit-outfit-advisor/
 │
 ├── models/
 │   ├── fashion_model.keras       # à générer après entraînement
-│   └── fit_v2/                   # artefacts ModCloth V2 expérimentaux
+│   ├── fit_v2/                   # artefacts ModCloth V2 expérimentaux
+│   └── fit_active/               # artefacts fit explicitement promus uniquement
 │
 ├── notebooks/
 │   ├── 01_train_fit_model_colab.ipynb
@@ -108,7 +109,7 @@ notebooks/           Bases Colab/Kaggle
 ## Etat actuel des modeles
 
 - Image : `predict_image()` fonctionne en simulation si `models/fashion_model.keras` est absent.
-- Fit : `predict_fit()` tente les artefacts ModCloth reels puis revient au fallback simule si un fichier manque.
+- Fit : `predict_fit()` tente uniquement les artefacts ModCloth explicitement promus dans `models/fit_active/`, puis revient au fallback simule si un fichier manque ou si les metadata ne sont pas promues.
 - Outfit : recommandations simples par regles et mappings.
 - Advice : conseil final interpretable avec avertissements si confiance faible.
 
@@ -157,7 +158,10 @@ Decision actuelle V2 :
 - V2 ameliore le baseline majoritaire (`macro F1 test 0.357` vs `0.271`, `balanced accuracy test 0.434` vs `0.333`).
 - V2 reste insuffisant pour un conseil utilisateur fiable (`accuracy 0.385`, precision faible sur `small` et `large`, recall `fit 0.341`).
 - Les artefacts V2 doivent etre marques `promotable_to_streamlit: false` et `model_status: "experimental_only"`.
-- Si un artefact experimental est charge, le service doit retourner `uncertain` plutot qu'une recommandation ferme `small` ou `large`.
+- `models/fit_v2/` n'est pas un emplacement actif par defaut.
+- Aucun modele ne devient actif uniquement parce qu'il existe dans `models/`.
+- Un modele fit est utilisable par le service seulement s'il est place dans `models/fit_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`.
+- Tout autre etat (`experimental_only`, metadata absente, champ absent, metadata illisible) est refuse en fail-closed et mene a `uncertain` ou au fallback simule.
 - L'analyse V3 est planifiee dans `docs/working/MODCLOTH_V3_EXPERIMENT_PLAN.md` avant toute promotion vers Streamlit.
 
 ## Datasets

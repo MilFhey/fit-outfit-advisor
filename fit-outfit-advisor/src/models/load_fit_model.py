@@ -20,6 +20,26 @@ class FitModelArtifacts:
     metadata: dict
 
 
+def is_fit_metadata_promoted(metadata: dict | None) -> bool:
+    """Autorise un artefact fit uniquement s'il est explicitement promu."""
+    if not isinstance(metadata, dict):
+        return False
+    return (
+        metadata.get("model_status") == "promoted"
+        and metadata.get("promotable_to_streamlit") is True
+    )
+
+
+def read_fit_metadata(metadata_path=FIT_METADATA_PATH) -> Optional[dict]:
+    """Lit les metadonnees en fail-closed: toute absence ou erreur refuse le modele."""
+    if not metadata_path.exists():
+        return None
+    try:
+        return json.loads(metadata_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def load_fit_model(model_path=FIT_MODEL_PATH) -> Optional[object]:
     """
     Charge le futur modèle MLP ModCloth.
@@ -52,6 +72,10 @@ def load_fit_artifacts(
     if any(not path.exists() for path in required_paths):
         return None
 
+    metadata = read_fit_metadata(metadata_path)
+    if not is_fit_metadata_promoted(metadata):
+        return None
+
     model = load_fit_model(model_path)
     if model is None:
         return None
@@ -59,7 +83,6 @@ def load_fit_artifacts(
     try:
         preprocessor = joblib.load(preprocessor_path)
         label_encoder = joblib.load(label_encoder_path) if label_encoder_path.exists() else None
-        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     except Exception as exc:
         raise RuntimeError(f"Impossible de charger les artefacts fit : {exc}") from exc
 

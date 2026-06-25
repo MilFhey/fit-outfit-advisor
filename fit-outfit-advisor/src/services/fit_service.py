@@ -1,4 +1,4 @@
-from src.models.load_fit_model import load_fit_artifacts
+from src.models.load_fit_model import is_fit_metadata_promoted, load_fit_artifacts
 from src.preprocessing.tabular_preprocessing import (
     FIT_LABELS,
     build_runtime_fit_features,
@@ -14,13 +14,6 @@ def _risk_level(fit_prediction: str, confidence: float) -> str:
     if fit_prediction == "fit":
         return "low"
     return "high"
-
-
-def _is_experimental_only(metadata: dict) -> bool:
-    return (
-        metadata.get("model_status") == "experimental_only"
-        or metadata.get("promotable_to_streamlit") is False
-    )
 
 
 def _uncertain_result(confidence: float, reason: str, mode: str = "tensorflow") -> dict:
@@ -79,6 +72,12 @@ def _simulate_fit(user_profile: dict, item_features: dict) -> dict:
 
 
 def _predict_with_artifacts(user_profile: dict, item_features: dict, artifacts) -> dict:
+    if not is_fit_metadata_promoted(artifacts.metadata):
+        return _uncertain_result(
+            0.0,
+            "Artefact ModCloth non promu : aucune recommandation ferme de taille.",
+        )
+
     features = build_runtime_fit_features(user_profile, item_features)
     feature_columns = artifacts.metadata.get("feature_columns") or list(features.columns)
     features = features.reindex(columns=feature_columns, fill_value="unknown")
@@ -93,14 +92,6 @@ def _predict_with_artifacts(user_profile: dict, item_features: dict, artifacts) 
     else:
         labels = artifacts.metadata.get("class_labels", FIT_LABELS)
         fit_prediction = str(labels[class_index])
-
-    if _is_experimental_only(artifacts.metadata):
-        result = _uncertain_result(
-            confidence,
-            "Artefact ModCloth experimental : V2 n'est pas promouvable comme conseil de taille fiable.",
-        )
-        result["raw_fit_prediction"] = fit_prediction
-        return result
 
     threshold = float(
         artifacts.metadata.get("abstention_strategy", {}).get("minimum_confidence", 0.60)
@@ -137,8 +128,9 @@ def predict_fit(user_profile: dict, item_features: dict, use_real_model: bool = 
         fallback = _simulate_fit(user_profile, item_features)
         fallback["fallback_reason"] = (
             "Artefacts ModCloth absents ou incomplets. Attendus: "
-            "models/fit_v2/fit_model.keras, models/fit_v2/fit_preprocessor.joblib, "
-            "models/fit_v2/metadata.json."
+            "models/fit_active/fit_model.keras, models/fit_active/fit_preprocessor.joblib, "
+            "models/fit_active/metadata.json avec model_status='promoted' et "
+            "promotable_to_streamlit=true."
         )
         return fallback
 

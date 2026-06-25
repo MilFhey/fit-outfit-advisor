@@ -99,3 +99,25 @@ La selection entre experiences doit rester faite exclusivement sur le jeu de val
   - `promotable_to_streamlit: false` tant que les seuils metier ne sont pas atteints ;
   - `model_status: "experimental_only"` ;
   - `inference_contract` limite aux champs reels et demandables.
+
+## Preparation Colab sans nouvel entrainement
+- Ouvrir `notebooks/01_train_fit_model_colab.ipynb` uniquement pour preparer l'environnement et telecharger le dataset.
+- Executer les cellules jusqu'a l'inspection du dataset incluse :
+  - montage Google Drive ;
+  - clone ou mise a jour du repo ;
+  - installation des dependances ;
+  - creation des dossiers temporaires ;
+  - chargement du secret Kaggle ;
+  - telechargement ModCloth ;
+  - detection du fichier dataset ;
+  - `df.head()`, `df.columns`, `df.shape`, valeurs manquantes.
+- S'arreter avant la cellule `Lancer l'entrainement ModCloth V2`.
+- Ne pas copier d'artefacts experimentaux vers `models/fit_active/`.
+- Garder les artefacts V2 dans `models/fit_v2/` ou dans Drive sous `artifacts/modcloth_fit_v2/`.
+- Pour une future analyse V3, utiliser le dataset detecte dans Colab comme entree de scripts/sections d'analyse descriptives, sans appeler `src.training.train_fit_model`.
+- Les analyses descriptives autorisees avant entrainement V3 sont :
+  - distributions de classes ;
+  - distributions par categorie ;
+  - taux de valeurs manquantes des mensurations candidates ;
+  - diagnostics de `size` et `item_size_order` ;
+  - comptages avant/apres exclusion de `new` et `sale`.

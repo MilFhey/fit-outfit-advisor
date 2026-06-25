@@ -87,8 +87,9 @@
 - Corrections de garde-fou :
   - `metadata.json` genere par `src/training/train_fit_model.py` force `promotable_to_streamlit: false`.
   - `metadata.json` ajoute `model_status: "experimental_only"`.
-  - `fit_service.py` retourne `uncertain` si un artefact charge est experimental ou si la confiance est sous le seuil d'abstention.
-  - Les chemins fit centralises pointent maintenant vers `models/fit_v2/`.
+  - `fit_service.py` retourne `uncertain` si un artefact charge n'est pas explicitement promu ou si la confiance est sous le seuil d'abstention.
+  - Les chemins fit actifs centralises pointent vers `models/fit_active/`, pas vers `models/fit_v2/`.
+  - `models/fit_v2/` reste un emplacement experimental et non actif par defaut.
   - Le contrat d'inference est construit depuis les `feature_columns`; `body_type` n'apparait que si la colonne fait reellement partie des features apprises.
   - Les categories vestimentaires explicites et categories commerciales ambigues sont separees dans le preprocessing.
   - `height_cm_missing` est ajoute comme indicateur de mensuration manquante pour la taille.

@@ -1,7 +1,13 @@
 from src.mappings.category_mapping import map_to_common_category
 from src.mappings.color_mapping import get_compatible_colors
 from src.config.paths import PROJECT_ROOT, FIT_MODEL_PATH, FIT_METADATA_PATH, IMAGE_MODEL_PATH
-from src.models.load_fit_model import load_fit_artifacts, load_fit_model
+from src.models.load_fit_model import (
+    FitModelArtifacts,
+    is_fit_metadata_promoted,
+    load_fit_artifacts,
+    load_fit_model,
+    read_fit_metadata,
+)
 from src.models.load_image_model import load_image_model
 from src.preprocessing.tabular_preprocessing import (
     AMBIGUOUS_COMMERCIAL_CATEGORIES,
@@ -12,7 +18,7 @@ from src.preprocessing.tabular_preprocessing import (
     prepare_fit_training_frame,
 )
 from src.services.image_service import predict_image
-from src.services.fit_service import predict_fit
+from src.services.fit_service import _predict_with_artifacts, predict_fit
 from src.services.outfit_service import recommend_outfit
 from src.services.advice_service import generate_advice
 
@@ -47,7 +53,7 @@ def test_image_service_real_mode_falls_back_without_model():
 def test_model_paths_and_missing_loaders_do_not_crash():
     assert PROJECT_ROOT.name == "fit-outfit-advisor"
     assert FIT_MODEL_PATH.is_absolute()
-    assert FIT_MODEL_PATH.parent.name == "fit_v2"
+    assert FIT_MODEL_PATH.parent.name == "fit_active"
     assert FIT_METADATA_PATH.name == "metadata.json"
     assert IMAGE_MODEL_PATH.is_absolute()
     assert load_fit_model() is None
@@ -104,6 +110,86 @@ def test_modcloth_preprocessing_keeps_missing_values_for_imputer():
     assert diagnostics["ambiguous_category_row_count"] == 1
 
 
+def test_fit_metadata_v2_true_but_experimental_is_refused():
+    metadata = {
+        "model_status": "experimental_only",
+        "promotable_to_streamlit": True,
+        "class_labels": ["large", "fit", "small"],
+    }
+    assert is_fit_metadata_promoted(metadata) is False
+
+    artifacts = FitModelArtifacts(
+        model=FakeFitModel([[0.1, 0.8, 0.1]]),
+        preprocessor=FakePreprocessor(),
+        label_encoder=FakeLabelEncoder(),
+        metadata=metadata,
+    )
+    result = _predict_with_artifacts({"height_cm": 175}, {"item_size": "M"}, artifacts)
+    assert result["fit_prediction"] == "uncertain"
+    assert result["mode"] == "tensorflow"
+
+
+def test_fit_metadata_missing_or_unreadable_is_refused(tmp_path):
+    missing_metadata = tmp_path / "metadata.json"
+    assert read_fit_metadata(missing_metadata) is None
+    assert is_fit_metadata_promoted(read_fit_metadata(missing_metadata)) is False
+
+    model_path = tmp_path / "fit_model.keras"
+    preprocessor_path = tmp_path / "fit_preprocessor.joblib"
+    metadata_path = tmp_path / "metadata.json"
+    model_path.write_text("not a real keras model", encoding="utf-8")
+    preprocessor_path.write_text("not a real preprocessor", encoding="utf-8")
+    metadata_path.write_text("{bad json", encoding="utf-8")
+
+    assert load_fit_artifacts(
+        model_path=model_path,
+        preprocessor_path=preprocessor_path,
+        metadata_path=metadata_path,
+    ) is None
+
+
+def test_fit_metadata_promoted_true_is_authorized():
+    metadata = {
+        "model_status": "promoted",
+        "promotable_to_streamlit": True,
+        "feature_columns": ["height_cm", "height_cm_missing", "item_size_order"],
+        "class_labels": ["large", "fit", "small"],
+        "abstention_strategy": {"minimum_confidence": 0.60},
+    }
+    assert is_fit_metadata_promoted(metadata) is True
+
+    artifacts = FitModelArtifacts(
+        model=FakeFitModel([[0.05, 0.9, 0.05]]),
+        preprocessor=FakePreprocessor(),
+        label_encoder=FakeLabelEncoder(),
+        metadata=metadata,
+    )
+    result = _predict_with_artifacts({"height_cm": 175}, {"item_size": "M"}, artifacts)
+    assert result["fit_prediction"] == "fit"
+    assert result["confidence"] == 0.9
+    assert result["mode"] == "tensorflow"
+
+
+def test_fit_promoted_low_confidence_returns_uncertain():
+    metadata = {
+        "model_status": "promoted",
+        "promotable_to_streamlit": True,
+        "feature_columns": ["height_cm", "height_cm_missing", "item_size_order"],
+        "class_labels": ["large", "fit", "small"],
+        "abstention_strategy": {"minimum_confidence": 0.60},
+    }
+    artifacts = FitModelArtifacts(
+        model=FakeFitModel([[0.20, 0.55, 0.25]]),
+        preprocessor=FakePreprocessor(),
+        label_encoder=FakeLabelEncoder(),
+        metadata=metadata,
+    )
+    result = _predict_with_artifacts({"height_cm": 175}, {"item_size": "M"}, artifacts)
+    assert result["fit_prediction"] == "uncertain"
+    assert result["raw_fit_prediction"] == "fit"
+    assert result["confidence"] == 0.55
+
+
 def test_fit_service_fallback_output_keys_without_real_artifacts():
     user_profile = {
         "height_cm": 175,
@@ -157,3 +243,25 @@ def test_mvp_services_pipeline():
     assert fit_result["fit_prediction"] == "fit"
     assert outfit_result["compatibility_score"] > 0
     assert "Conseil final" in advice["advice"]
+
+
+class FakePreprocessor:
+    def transform(self, features):
+        return features
+
+
+class FakeFitModel:
+    def __init__(self, probabilities):
+        self.probabilities = probabilities
+
+    def predict(self, transformed, verbose=0):
+        import numpy as np
+
+        return np.array(self.probabilities)
+
+
+class FakeLabelEncoder:
+    labels = ["large", "fit", "small"]
+
+    def inverse_transform(self, indexes):
+        return [self.labels[index] for index in indexes]
