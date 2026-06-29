@@ -424,6 +424,111 @@ La selection entre experiences doit rester faite exclusivement sur le jeu de val
   - `model_status: "experimental_only"` ;
   - `inference_contract` limite aux champs reels et demandables.
 
+## Resultat entrainement V3 - scope explicite
+- Dernier run Colab execute avec `--category-scope explicit`.
+- Artefacts produits dans `models/fit_v3/`.
+- `fit_model.keras` present : le modele selectionne est un MLP Keras.
+- `fit_estimator.joblib` absent : normal, la regression logistique n'a pas ete selectionnee.
+- Metadata :
+  - `version`: `fit_v3`
+  - `category_scope`: `explicit`
+  - `selected_experiment`: `mlp_class_weight`
+  - `selected_model_type`: `keras_mlp`
+  - `model_status`: `experimental_only`
+  - `promotable_to_streamlit`: `false`
+- Raison de selection validation-only :
+  - `mlp_class_weight` selectionne sur validation ;
+  - macro F1 validation `0.3745` vs baseline `0.2730` ;
+  - balanced accuracy validation `0.4267` vs baseline `0.3333` ;
+  - recall validation `small`: `0.3938` ;
+  - recall validation `large`: `0.4517`.
+
+### Metrics validation V3 explicit
+| Experience | Accuracy | Balanced accuracy | Macro F1 | Weighted F1 |
+| --- | ---: | ---: | ---: | ---: |
+| `majority_baseline` | 0.6933 | 0.3333 | 0.2730 | 0.5678 |
+| `logistic_regression` | 0.6933 | 0.3333 | 0.2730 | 0.5678 |
+| `mlp_unweighted` | 0.6932 | 0.3335 | 0.2734 | 0.5679 |
+| `mlp_class_weight` | 0.4316 | 0.4267 | 0.3745 | 0.4698 |
+
+### Metrics test V3 explicit - modele selectionne
+| Metric | Value |
+| --- | ---: |
+| Accuracy | 0.4256 |
+| Balanced accuracy | 0.4214 |
+| Macro F1 | 0.3694 |
+| Weighted F1 | 0.4650 |
+
+### Metrics test par classe V3 explicit
+| Classe | Precision | Recall | F1 | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `fit` | 0.7508 | 0.4283 | 0.5455 | 6084 |
+| `large` | 0.2318 | 0.4413 | 0.3039 | 1439 |
+| `small` | 0.1927 | 0.3946 | 0.2589 | 1252 |
+
+### Decision V3 explicit
+- V3 explicit bat le baseline majoritaire en macro F1 et balanced accuracy.
+- La regression logistique et le MLP non pondere retombent presque exactement sur le baseline majoritaire.
+- Le MLP pondere force davantage de predictions minoritaires, ce qui ameliore macro F1 mais abaisse fortement l'accuracy.
+- Les precisions `small` et `large` restent trop faibles pour un conseil utilisateur fiable.
+- Le recall `fit` reste faible (`0.4283`), ce qui signifie beaucoup d'abstentions/alertes potentielles sur des articles qui iraient pourtant bien.
+- Decision : V3 explicit est un resultat experimental interessant, mais non promouvable vers Streamlit.
+- Les artefacts ne doivent pas etre copies vers `models/fit_active/`.
+
+## Resultat entrainement V3 - scope all
+- Run Colab execute sans `--category-scope`, donc `category_scope: all`.
+- Artefacts produits dans `models/fit_v3/`, ecrasant le run precedent `explicit`.
+- `fit_model.keras` present : le modele selectionne est un MLP Keras.
+- `fit_estimator.joblib` absent : normal, la regression logistique n'a pas ete selectionnee.
+- Metadata :
+  - `version`: `fit_v3`
+  - `category_scope`: `all`
+  - `selected_experiment`: `mlp_class_weight`
+  - `selected_model_type`: `keras_mlp`
+  - `model_status`: `experimental_only`
+  - `promotable_to_streamlit`: `false`
+- Raison de selection validation-only :
+  - `mlp_class_weight` selectionne sur validation ;
+  - macro F1 validation `0.3679` vs baseline `0.2712` ;
+  - balanced accuracy validation `0.4287` vs baseline `0.3333` ;
+  - recall validation `small`: `0.3494` ;
+  - recall validation `large`: `0.5372`.
+
+### Metrics validation V3 all
+| Experience | Accuracy | Balanced accuracy | Macro F1 | Weighted F1 |
+| --- | ---: | ---: | ---: | ---: |
+| `majority_baseline` | 0.6858 | 0.3333 | 0.2712 | 0.5580 |
+| `logistic_regression` | 0.6858 | 0.3333 | 0.2712 | 0.5580 |
+| `mlp_unweighted` | 0.6862 | 0.3358 | 0.2770 | 0.5608 |
+| `mlp_class_weight` | 0.4134 | 0.4287 | 0.3679 | 0.4474 |
+
+### Metrics test V3 all - modele selectionne
+| Metric | Value |
+| --- | ---: |
+| Accuracy | 0.4175 |
+| Balanced accuracy | 0.4296 |
+| Macro F1 | 0.3696 |
+| Weighted F1 | 0.4532 |
+
+### Metrics test par classe V3 all
+| Classe | Precision | Recall | F1 | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `fit` | 0.7521 | 0.4065 | 0.5278 | 8477 |
+| `large` | 0.2238 | 0.5374 | 0.3160 | 1950 |
+| `small` | 0.2154 | 0.3447 | 0.2651 | 1935 |
+
+### Comparaison V3 all vs explicit
+| Scope | Accuracy test | Balanced accuracy test | Macro F1 test | Precision `large` | Recall `large` | Precision `small` | Recall `small` | Recall `fit` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `all` | 0.4175 | 0.4296 | 0.3696 | 0.2238 | 0.5374 | 0.2154 | 0.3447 | 0.4065 |
+| `explicit` | 0.4256 | 0.4214 | 0.3694 | 0.2318 | 0.4413 | 0.1927 | 0.3946 | 0.4283 |
+
+- Les deux scopes ont une macro F1 test presque identique (`0.3696` vs `0.3694`).
+- Le scope `all` donne une meilleure balanced accuracy et un meilleur recall `large`.
+- Le scope `explicit` donne une meilleure accuracy, un meilleur recall `fit` et un meilleur recall `small`.
+- Aucun scope ne resout le probleme de precision faible sur `small` et `large`.
+- Decision : conserver les deux resultats comme comparatif academique, mais ne promouvoir aucun artefact.
+
 ## Preparation Colab sans nouvel entrainement
 - Ouvrir `notebooks/01_train_fit_model_colab.ipynb` uniquement pour preparer l'environnement et telecharger le dataset.
 - Executer les cellules jusqu'a l'inspection du dataset incluse :
