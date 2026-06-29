@@ -6,6 +6,7 @@ Ce dossier accueillera les modèles générés après entraînement :
 - `fit_active/fit_preprocessor.joblib` : preprocessor du modèle fit promu ;
 - `fit_active/fit_label_encoder.joblib` : encodeur du modèle fit promu ;
 - `fit_active/metadata.json` : doit contenir `model_status: "promoted"` et `promotable_to_streamlit: true` ;
+- `fit_v3/` : artefacts experimentaux du pipeline ModCloth V3, non actifs par défaut ;
 - `fit_v2/fit_model.keras` : modèle MLP ModCloth V2 expérimental ;
 - `fit_v2/fit_preprocessor.joblib` : preprocessor tabulaire ModCloth V2 ;
 - `fit_v2/fit_label_encoder.joblib` : encodeur des classes `small`, `fit`, `large` ;
@@ -17,7 +18,7 @@ Ce dossier accueillera les modèles générés après entraînement :
 Règle de promotion fail-closed :
 
 - aucun modèle ne devient actif uniquement parce qu'il existe dans `models/` ;
-- `fit_v2/` n'est jamais l'emplacement actif par défaut ;
+- `fit_v2/` et `fit_v3/` ne sont jamais l'emplacement actif par défaut ;
 - un modèle fit actif doit être copié volontairement dans `fit_active/` avec des metadata explicitement promues ;
 - tout metadata absent, illisible ou incomplet doit refuser l'usage du modèle.
 

@@ -15,6 +15,7 @@ FIGURES_DIR = REPORTS_DIR / "figures"
 
 IMAGE_MODEL_PATH = MODELS_DIR / "fashion_model.keras"
 FIT_V2_DIR = MODELS_DIR / "fit_v2"
+FIT_V3_DIR = MODELS_DIR / "fit_v3"
 FIT_ACTIVE_DIR = MODELS_DIR / "fit_active"
 FIT_MODEL_PATH = FIT_ACTIVE_DIR / "fit_model.keras"
 FIT_PREPROCESSOR_PATH = FIT_ACTIVE_DIR / "fit_preprocessor.joblib"

@@ -53,6 +53,7 @@ fit-outfit-advisor/
 ├── models/
 │   ├── fashion_model.keras       # à générer après entraînement
 │   ├── fit_v2/                   # artefacts ModCloth V2 expérimentaux
+│   ├── fit_v3/                   # artefacts ModCloth V3 expérimentaux
 │   └── fit_active/               # artefacts fit explicitement promus uniquement
 │
 ├── notebooks/
@@ -163,6 +164,35 @@ Decision actuelle V2 :
 - Un modele fit est utilisable par le service seulement s'il est place dans `models/fit_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`.
 - Tout autre etat (`experimental_only`, metadata absente, champ absent, metadata illisible) est refuse en fail-closed et mene a `uncertain` ou au fallback simule.
 - L'analyse V3 est planifiee dans `docs/working/MODCLOTH_V3_EXPERIMENT_PLAN.md` avant toute promotion vers Streamlit.
+
+Le pipeline V3 est separe et experimental. Il ajoute les mensurations pre-achat retenues (`height`, `hips`, `bra size`, `cup size`) avec indicateurs de valeurs manquantes, compare baseline majoritaire, regression logistique, MLP et MLP pondere, puis ecrit uniquement dans :
+
+```text
+models/fit_v3/
+├── fit_model.keras               # seulement si un MLP est selectionne
+├── fit_estimator.joblib          # seulement si la regression logistique est selectionnee
+├── fit_preprocessor.joblib
+├── fit_label_encoder.joblib
+├── metadata.json
+├── metrics.json
+├── confusion_matrix_raw.png
+├── confusion_matrix_normalized.png
+└── training_history.png
+```
+
+Commande V3 :
+
+```bash
+python -m src.training.train_fit_model_v3 --dataset data/raw/modcloth_final_data.json --epochs 30 --batch-size 64
+```
+
+Pour entrainer uniquement sur les categories vestimentaires explicites :
+
+```bash
+python -m src.training.train_fit_model_v3 --dataset data/raw/modcloth_final_data.json --category-scope explicit
+```
+
+V3 reste toujours `model_status: "experimental_only"` et `promotable_to_streamlit: false`. Ne copie pas ces artefacts vers `models/fit_active/`.
 
 ## Datasets
 

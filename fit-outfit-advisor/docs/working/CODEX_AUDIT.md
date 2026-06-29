@@ -98,3 +98,28 @@
 - Limites restantes :
   - Le dataset reel et les artefacts V2 ne sont pas presents localement ; les distributions et performances V3 reelles doivent etre calculees dans Colab ou dans un environnement disposant du dataset.
   - Les mensurations `bust`, `hips`, `waist`, `bra size`, `cup size` restent candidates V3 et ne sont pas encore integrees au pipeline.
+
+## Implementation pipeline V3 experimental
+- Ajout de `src/training/train_fit_model_v3.py`.
+- Ajout du preprocessing V3 dans `src/preprocessing/tabular_preprocessing.py` :
+  - `height` parse en `height_cm` ;
+  - outliers `height_cm` hors `[130, 210]` convertis en valeurs manquantes ;
+  - `hips`, `bra_size`, `cup_size` retenues ;
+  - indicateurs `height_cm_missing`, `hips_missing`, `bra_size_missing`, `cup_size_missing` ;
+  - exclusion des colonnes post-achat, identifiants et mensurations trop manquantes.
+- Comparaisons V3 implementees :
+  - baseline majoritaire ;
+  - regression logistique ;
+  - MLP TensorFlow ;
+  - MLP TensorFlow avec `class_weight`.
+- Selection du modele V3 exclusivement sur validation.
+- Test utilise apres selection finale uniquement.
+- Artefacts V3 ecrits dans `models/fit_v3/`.
+- Garde-fous V3 :
+  - `model_status: "experimental_only"` ;
+  - `promotable_to_streamlit: false` ;
+  - aucune ecriture vers `models/fit_active/`.
+- Controle local :
+  - `python -m compileall app src tests` OK ;
+  - `pytest` OK, 20 tests passes ;
+  - invocation locale du script V3 non executee jusqu'au bout car l'environnement Python actif ne contient pas `scikit-learn`; le lancement cible reste Colab apres installation de `requirements.txt`.

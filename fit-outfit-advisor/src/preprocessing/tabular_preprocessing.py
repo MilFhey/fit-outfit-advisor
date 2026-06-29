@@ -26,12 +26,35 @@ DEFAULT_NUMERIC_FEATURES = ["height_cm", "height_cm_missing", "item_size_order"]
 DEFAULT_CATEGORICAL_FEATURES = ["body_type", "category"]
 DEFAULT_FEATURE_COLUMNS = DEFAULT_NUMERIC_FEATURES + DEFAULT_CATEGORICAL_FEATURES
 
+V3_NUMERIC_FEATURES = [
+    "item_size_order",
+    "height_cm",
+    "height_cm_missing",
+    "hips",
+    "hips_missing",
+    "bra_size",
+    "bra_size_missing",
+    "cup_size_missing",
+]
+V3_CATEGORICAL_FEATURES = ["category", "cup_size"]
+V3_FEATURE_COLUMNS = V3_NUMERIC_FEATURES + V3_CATEGORICAL_FEATURES
+
 RENAME_MAP = {
     "body type": "body_type",
     "height": "height_cm",
     "size": "item_size",
     "category": "category",
     "fit": "fit",
+}
+
+V3_RENAME_MAP = {
+    "height": "height_cm",
+    "size": "item_size",
+    "category": "category",
+    "fit": "fit",
+    "hips": "hips",
+    "bra size": "bra_size",
+    "cup size": "cup_size",
 }
 
 
@@ -154,6 +177,96 @@ def normalize_modcloth_columns(df: pd.DataFrame) -> pd.DataFrame:
     return normalized
 
 
+def _normalize_text_category(value: Any) -> Any:
+    if value is None or pd.isna(value):
+        return np.nan
+    text = str(value).strip().lower()
+    return text if text else np.nan
+
+
+def _missing_indicator(series: pd.Series) -> pd.Series:
+    return series.isna().astype(int)
+
+
+def normalize_modcloth_columns_v3(
+    df: pd.DataFrame,
+    min_height_cm: float = 130.0,
+    max_height_cm: float = 210.0,
+) -> tuple[pd.DataFrame, dict]:
+    """Normalise les colonnes ModCloth retenues pour l'experience fit V3."""
+    normalized = df.rename(columns={src: dst for src, dst in V3_RENAME_MAP.items() if src in df.columns}).copy()
+
+    if "fit" in normalized.columns:
+        normalized["fit"] = normalized["fit"].astype(str).str.lower().str.strip()
+
+    if "height_cm" in normalized.columns:
+        normalized["height_cm"] = normalized["height_cm"].map(parse_height_to_cm)
+    else:
+        normalized["height_cm"] = np.nan
+
+    height_outlier_mask = normalized["height_cm"].notna() & (
+        (normalized["height_cm"] < min_height_cm) | (normalized["height_cm"] > max_height_cm)
+    )
+    height_outlier_count = int(height_outlier_mask.sum())
+    normalized.loc[height_outlier_mask, "height_cm"] = np.nan
+    normalized["height_cm_missing"] = _missing_indicator(normalized["height_cm"])
+
+    if "item_size" in normalized.columns:
+        normalized["item_size_order"] = normalized["item_size"].map(convert_modcloth_size_to_order)
+    else:
+        normalized["item_size_order"] = np.nan
+
+    if "hips" in normalized.columns:
+        normalized["hips"] = pd.to_numeric(normalized["hips"], errors="coerce")
+    else:
+        normalized["hips"] = np.nan
+    normalized["hips_missing"] = _missing_indicator(normalized["hips"])
+
+    if "bra_size" in normalized.columns:
+        normalized["bra_size"] = pd.to_numeric(normalized["bra_size"], errors="coerce")
+    else:
+        normalized["bra_size"] = np.nan
+    normalized["bra_size_missing"] = _missing_indicator(normalized["bra_size"])
+
+    if "cup_size" in normalized.columns:
+        normalized["cup_size"] = normalized["cup_size"].map(_normalize_text_category)
+    else:
+        normalized["cup_size"] = np.nan
+    normalized["cup_size_missing"] = _missing_indicator(normalized["cup_size"])
+
+    if "category" in normalized.columns:
+        normalized["category"] = normalized["category"].map(_normalize_text_category)
+    else:
+        normalized["category"] = np.nan
+
+    for column in V3_NUMERIC_FEATURES:
+        normalized[column] = pd.to_numeric(normalized[column], errors="coerce")
+
+    diagnostics = {
+        "height_outlier_count": height_outlier_count,
+        "height_plausible_range_cm": [min_height_cm, max_height_cm],
+        "feature_policy": {
+            "retained": V3_FEATURE_COLUMNS,
+            "excluded": [
+                "waist",
+                "bust",
+                "shoe size",
+                "shoe width",
+                "quality",
+                "length",
+                "review_summary",
+                "review_text",
+                "user_id",
+                "user_name",
+                "item_id",
+            ],
+            "cup_size": "Categorical raw values are retained; no arbitrary numeric parsing.",
+            "size": "Used as item_size_order, representing the selected item size.",
+        },
+    }
+    return normalized, diagnostics
+
+
 def available_fit_feature_columns(df: pd.DataFrame) -> tuple[list[str], list[str]]:
     """Retourne les colonnes numeriques/categorielles reellement disponibles."""
     numeric = [column for column in DEFAULT_NUMERIC_FEATURES if column in df.columns]
@@ -211,6 +324,63 @@ def build_fit_inference_contract(feature_columns: list[str]) -> dict[str, Any]:
             "Included only when present in feature_columns. Exclude from V3 by default "
             "unless analysis proves it is really trained, useful, and reasonably askable."
         ),
+    }
+
+
+def build_fit_v3_inference_contract(feature_columns: list[str]) -> dict[str, Any]:
+    """Contrat d'inference V3 experimental, limite aux variables pre-achat."""
+    user_profile = []
+    item_features = []
+    retained_measurements = []
+
+    measurement_fields = {
+        "height_cm": "height_cm",
+        "hips": "hips",
+        "bra_size": "bra_size",
+        "cup_size": "cup_size",
+    }
+    item_fields = {
+        "item_size_order": "item_size",
+        "category": "category",
+    }
+
+    for feature, external_name in measurement_fields.items():
+        if feature in feature_columns:
+            user_profile.append(external_name)
+            retained_measurements.append(external_name)
+        missing_feature = f"{feature}_missing"
+        if missing_feature in feature_columns:
+            user_profile.append(missing_feature)
+
+    if "cup_size_missing" in feature_columns and "cup_size_missing" not in user_profile:
+        user_profile.append("cup_size_missing")
+
+    for feature, external_name in item_fields.items():
+        if feature in feature_columns:
+            item_features.append(external_name)
+
+    return {
+        "user_profile": user_profile,
+        "item_features": item_features,
+        "retained_measurements": retained_measurements,
+        "missing_value_indicators": [
+            column for column in feature_columns if column.endswith("_missing")
+        ],
+        "excluded_fields": [
+            "waist",
+            "bust",
+            "shoe_size",
+            "shoe_width",
+            "quality",
+            "length",
+            "review_summary",
+            "review_text",
+            "user_id",
+            "user_name",
+            "item_id",
+            "body_type",
+        ],
+        "status": "experimental_only",
     }
 
 
@@ -274,6 +444,58 @@ def prepare_fit_training_frame(
         .isna()
         .sum()
         .to_dict(),
+    }
+
+    return cleaned[feature_columns], cleaned["fit"], diagnostics
+
+
+def prepare_fit_training_frame_v3(
+    df: pd.DataFrame,
+    min_height_cm: float = 130.0,
+    max_height_cm: float = 210.0,
+) -> tuple[pd.DataFrame, pd.Series, dict]:
+    """Nettoie ModCloth et retourne X/y pour l'experience fit V3."""
+    target_before = _count_dict(df["fit"].astype(str).str.lower().str.strip()) if "fit" in df.columns else {}
+    normalized, normalization_diagnostics = normalize_modcloth_columns_v3(
+        basic_clean_modcloth_dataframe(df),
+        min_height_cm=min_height_cm,
+        max_height_cm=max_height_cm,
+    )
+
+    if "fit" not in normalized.columns:
+        raise TabularPreprocessingError("Colonne cible `fit` absente du dataset ModCloth.")
+
+    cleaned = normalized[normalized["fit"].isin(FIT_TARGET_MAPPING.keys())].copy()
+    invalid_size_count = int(cleaned["item_size_order"].isna().sum())
+    cleaned = cleaned.dropna(subset=["fit", "item_size_order"]).copy()
+
+    if cleaned.empty:
+        raise TabularPreprocessingError("Aucune ligne exploitable apres nettoyage ModCloth V3.")
+
+    feature_columns = list(V3_FEATURE_COLUMNS)
+    diagnostics = {
+        "target_distribution_before_cleaning": target_before,
+        "target_distribution_after_cleaning": _count_dict(cleaned["fit"]),
+        "numeric_features": list(V3_NUMERIC_FEATURES),
+        "categorical_features": list(V3_CATEGORICAL_FEATURES),
+        "feature_columns": feature_columns,
+        "explicit_clothing_categories": list(EXPLICIT_CLOTHING_CATEGORIES),
+        "ambiguous_commercial_categories": list(AMBIGUOUS_COMMERCIAL_CATEGORIES),
+        "category_distribution": _count_dict(cleaned["category"].astype(str).str.lower().str.strip()),
+        "ambiguous_category_row_count": int(
+            cleaned["category"]
+            .astype(str)
+            .str.lower()
+            .str.strip()
+            .isin(AMBIGUOUS_COMMERCIAL_CATEGORIES)
+            .sum()
+        ),
+        "invalid_item_size_count": invalid_size_count,
+        "missing_values_after_normalization": cleaned[feature_columns + ["fit"]]
+        .isna()
+        .sum()
+        .to_dict(),
+        "normalization": normalization_diagnostics,
     }
 
     return cleaned[feature_columns], cleaned["fit"], diagnostics

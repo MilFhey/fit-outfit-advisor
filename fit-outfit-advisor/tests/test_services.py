@@ -13,9 +13,12 @@ from src.preprocessing.tabular_preprocessing import (
     AMBIGUOUS_COMMERCIAL_CATEGORIES,
     DEFAULT_FEATURE_COLUMNS,
     EXPLICIT_CLOTHING_CATEGORIES,
+    V3_FEATURE_COLUMNS,
     build_fit_inference_contract,
+    build_fit_v3_inference_contract,
     build_runtime_fit_features,
     prepare_fit_training_frame,
+    prepare_fit_training_frame_v3,
 )
 from src.services.image_service import predict_image
 from src.services.fit_service import _predict_with_artifacts, predict_fit
@@ -108,6 +111,86 @@ def test_modcloth_preprocessing_keeps_missing_values_for_imputer():
     assert features["height_cm_missing"].sum() == 1
     assert diagnostics["feature_columns"] == list(features.columns)
     assert diagnostics["ambiguous_category_row_count"] == 1
+
+
+def test_modcloth_v3_preprocessing_keeps_only_pre_purchase_features():
+    import pandas as pd
+
+    frame = pd.DataFrame(
+        [
+            {
+                "fit": "fit",
+                "height": "5ft 5in",
+                "size": 8,
+                "category": "tops",
+                "hips": 38,
+                "bra size": 34,
+                "cup size": "c",
+                "quality": 5,
+                "review_text": "post purchase",
+                "item_id": 123,
+            },
+            {
+                "fit": "small",
+                "height": "7ft 11in",
+                "size": 12,
+                "category": "new",
+                "hips": None,
+                "bra size": 36,
+                "cup size": "dd/e",
+                "quality": 3,
+                "review_text": "post purchase",
+                "item_id": 456,
+            },
+            {
+                "fit": "large",
+                "height": "3ft",
+                "size": 20,
+                "category": "dresses",
+                "hips": 44,
+                "bra size": None,
+                "cup size": None,
+                "quality": 4,
+                "review_text": "post purchase",
+                "item_id": 789,
+            },
+        ]
+    )
+
+    features, target, diagnostics = prepare_fit_training_frame_v3(frame)
+
+    assert list(features.columns) == V3_FEATURE_COLUMNS
+    assert list(target) == ["fit", "small", "large"]
+    assert features["height_cm_missing"].sum() == 2
+    assert features["hips_missing"].sum() == 1
+    assert features["bra_size_missing"].sum() == 1
+    assert features["cup_size_missing"].sum() == 1
+    assert features.loc[1, "cup_size"] == "dd/e"
+    assert "quality" not in features.columns
+    assert "review_text" not in features.columns
+    assert "item_id" not in features.columns
+    assert diagnostics["normalization"]["height_outlier_count"] == 2
+    assert diagnostics["ambiguous_category_row_count"] == 1
+
+
+def test_modcloth_v3_inference_contract_is_experimental_and_excludes_ids():
+    contract = build_fit_v3_inference_contract(V3_FEATURE_COLUMNS)
+
+    assert contract["status"] == "experimental_only"
+    assert "height_cm" in contract["user_profile"]
+    assert "hips" in contract["user_profile"]
+    assert "bra_size" in contract["user_profile"]
+    assert "cup_size" in contract["user_profile"]
+    assert "item_size" in contract["item_features"]
+    assert "category" in contract["item_features"]
+    assert "item_id" in contract["excluded_fields"]
+    assert "user_id" in contract["excluded_fields"]
+    assert set(contract["missing_value_indicators"]) == {
+        "height_cm_missing",
+        "hips_missing",
+        "bra_size_missing",
+        "cup_size_missing",
+    }
 
 
 def test_fit_metadata_v2_true_but_experimental_is_refused():
