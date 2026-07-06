@@ -1,14 +1,40 @@
 {
-  "target": "canonical_category",
+  "target": "product_type_v0",
   "source_column": "articleType",
   "status": "draft_requires_dataset_inspection",
   "minimum_readable_images_per_class": null,
-  "mapping": {
-    "top": [],
-    "bottom": [],
-    "dress": [],
-    "shoes": [],
-    "outerwear": [],
-    "accessory": []
+  "product_type_mapping": {
+    "tshirt": ["Tshirts"],
+    "shirt": ["Shirts"],
+    "top": ["Tops", "Kurtas"],
+    "jeans": ["Jeans"],
+    "trousers": ["Trousers", "Track Pants"],
+    "shorts": ["Shorts"],
+    "dress": ["Dresses"],
+    "outerwear": ["Sweatshirts", "Sweaters", "Jackets"],
+    "casual_shoes": ["Casual Shoes", "Flip Flops", "Sandals", "Flats"],
+    "sports_shoes": ["Sports Shoes"],
+    "dress_shoes": ["Formal Shoes", "Heels"],
+    "bag": ["Handbags", "Backpacks", "Clutches"],
+    "watch": ["Watches"],
+    "sunglasses": ["Sunglasses"],
+    "cap": ["Caps"]
+  },
+  "canonical_mapping": {
+    "tshirt": "top",
+    "shirt": "top",
+    "top": "top",
+    "jeans": "bottom",
+    "trousers": "bottom",
+    "shorts": "bottom",
+    "dress": "dress",
+    "outerwear": "outerwear",
+    "casual_shoes": "shoes",
+    "sports_shoes": "shoes",
+    "dress_shoes": "shoes",
+    "bag": "bag",
+    "watch": "accessory",
+    "sunglasses": "accessory",
+    "cap": "accessory"
   }
 }

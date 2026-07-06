@@ -4,9 +4,12 @@ from typing import List
 
 @dataclass
 class ImagePrediction:
+    product_type: str
+    canonical_category: str
     predicted_class: str
     common_category: str
     confidence: float
+    model_status: str
 
 
 @dataclass

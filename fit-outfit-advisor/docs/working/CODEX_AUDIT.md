@@ -133,9 +133,10 @@
   - `docs/working/FASHION_CNN_V0_PLAN.md`.
 - Configuration ajoutee :
   - `config/fashion_v1_classes.json`.
-  - Le mapping `canonical_category -> articleType acceptes` reste vide tant que le dataset n'a pas ete inspecte.
+  - Le mapping `product_type_v0 -> articleType acceptes` reste en brouillon tant que le dataset n'a pas ete inspecte.
 - Cible image V0 :
-  - `canonical_category`, derivee de `styles.csv.articleType`.
+  - `product_type_v0`, derivee de `styles.csv.articleType`.
+  - `canonical_category` est derivee ensuite pour le moteur outfit.
   - Categories candidates : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `accessory`.
 - Garde-fous image :
   - `models/fashion_v1/` est experimental.

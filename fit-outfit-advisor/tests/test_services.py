@@ -34,8 +34,11 @@ from src.analysis.analyze_fit_v3_abstention import (
 from src.mappings.fashion_v1_mapping import (
     FashionClassConfigError,
     FASHION_CANONICAL_CATEGORIES,
+    FASHION_PRODUCT_TYPES_V0,
     load_fashion_v1_class_config,
     map_article_type_to_canonical_category,
+    map_article_type_to_product_type,
+    map_product_type_to_canonical_category,
     validate_fashion_v1_class_config,
 )
 from src.preprocessing.image_preprocessing import (
@@ -65,6 +68,9 @@ from src.training.train_fashion_model_v1 import prepare_fashion_v1_training_fram
 def test_category_mapping_known_and_unknown():
     assert map_to_common_category("Tshirts") == "top"
     assert map_to_common_category("Jeans") == "bottom"
+    assert map_to_common_category("tshirt") == "top"
+    assert map_to_common_category("casual_shoes") == "shoes"
+    assert map_to_common_category("bag") == "bag"
     assert map_to_common_category("top") == "top"
     assert map_to_common_category("accessory") == "accessory"
     assert map_to_common_category("Unmapped") == "unknown"
@@ -75,37 +81,53 @@ def test_fashion_v1_class_config_is_draft_until_dataset_inspection():
     config = load_fashion_v1_class_config()
 
     assert FASHION_V1_CLASSES_PATH.name == "fashion_v1_classes.json"
-    assert config["target"] == "canonical_category"
+    assert config["target"] == "product_type_v0"
     assert config["source_column"] == "articleType"
     assert config["status"] == "draft_requires_dataset_inspection"
     assert config["minimum_readable_images_per_class"] is None
-    assert set(config["mapping"]) == set(FASHION_CANONICAL_CATEGORIES)
-    assert all(article_types == [] for article_types in config["mapping"].values())
+    assert set(config["product_type_mapping"]) == set(FASHION_PRODUCT_TYPES_V0)
+    assert set(config["canonical_mapping"]).issuperset(config["product_type_mapping"])
+    assert set(config["canonical_mapping"].values()) <= set(FASHION_CANONICAL_CATEGORIES)
 
     validate_fashion_v1_class_config(config)
     with pytest.raises(FashionClassConfigError):
         validate_fashion_v1_class_config(config, require_ready=True)
 
 
-def test_fashion_article_type_to_canonical_mapping_from_config():
+def test_fashion_article_type_to_product_type_then_canonical_mapping():
     config = {
-        "target": "canonical_category",
+        "target": "product_type_v0",
         "source_column": "articleType",
         "status": "validated_for_training",
         "minimum_readable_images_per_class": 100,
-        "mapping": {
-            "top": ["Tshirts", "Shirts"],
-            "bottom": ["Jeans"],
+        "product_type_mapping": {
+            "tshirt": ["Tshirts"],
+            "shirt": ["Shirts"],
+            "jeans": ["Jeans"],
             "dress": ["Dresses"],
-            "shoes": ["Casual Shoes"],
+            "casual_shoes": ["Casual Shoes"],
             "outerwear": ["Jackets"],
-            "accessory": ["Bags"],
+            "bag": ["Handbags"],
+            "watch": ["Watches"],
+        },
+        "canonical_mapping": {
+            "tshirt": "top",
+            "shirt": "top",
+            "jeans": "bottom",
+            "dress": "dress",
+            "casual_shoes": "shoes",
+            "outerwear": "outerwear",
+            "bag": "bag",
+            "watch": "accessory",
         },
     }
 
     validate_fashion_v1_class_config(config, require_ready=True)
+    assert map_article_type_to_product_type("Tshirts", config) == "tshirt"
+    assert map_article_type_to_product_type("Jeans", config) == "jeans"
     assert map_article_type_to_canonical_category("Tshirts", config) == "top"
     assert map_article_type_to_canonical_category("Jeans", config) == "bottom"
+    assert map_product_type_to_canonical_category("watch", config) == "accessory"
     assert map_article_type_to_canonical_category("Unknown", config) is None
 
 
@@ -127,15 +149,26 @@ def test_color_mapping_fallback():
 
 def test_image_service_simulated_output_keys():
     image_result = predict_image(None)
-    assert image_result["predicted_class"] == "Tshirts"
+    assert image_result["product_type"] == "tshirt"
+    assert image_result["canonical_category"] == "top"
+    assert image_result["predicted_class"] == "tshirt"
     assert image_result["common_category"] == "top"
+    assert image_result["model_status"] == "fallback"
     assert image_result["mode"] == "simulation"
-    assert {"predicted_class", "common_category", "confidence", "mode"} <= set(image_result)
+    assert {
+        "product_type",
+        "canonical_category",
+        "predicted_class",
+        "common_category",
+        "confidence",
+        "model_status",
+        "mode",
+    } <= set(image_result)
 
 
 def test_image_service_real_mode_falls_back_without_model():
     image_result = predict_image(None, use_real_model=True)
-    assert image_result["predicted_class"] == "Tshirts"
+    assert image_result["product_type"] == "tshirt"
     assert image_result["mode"] == "simulation"
     assert "fallback_reason" in image_result
 
@@ -519,7 +552,7 @@ def test_mvp_services_pipeline():
     outfit_result = recommend_outfit(image_result["common_category"], "casual", "noir")
     advice = generate_advice(image_result, fit_result, outfit_result, "casual")
 
-    assert image_result["predicted_class"] == "Tshirts"
+    assert image_result["product_type"] == "tshirt"
     assert fit_result["fit_prediction"] == "fit"
     assert outfit_result["compatibility_score"] > 0
     assert "Conseil final" in advice["advice"]

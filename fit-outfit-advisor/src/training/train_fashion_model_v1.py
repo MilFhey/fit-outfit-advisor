@@ -9,8 +9,9 @@ from src.config.paths import (
     RAW_DATA_DIR,
 )
 from src.mappings.fashion_v1_mapping import (
-    build_article_type_to_canonical_mapping,
+    build_article_type_to_product_type_mapping,
     load_fashion_v1_class_config,
+    map_product_type_to_canonical_category,
     validate_fashion_v1_class_config,
 )
 
@@ -65,7 +66,7 @@ def prepare_fashion_v1_training_frame(
     import pandas as pd
 
     validate_fashion_v1_class_config(class_config, require_ready=True)
-    article_type_mapping = build_article_type_to_canonical_mapping(class_config)
+    article_type_mapping = build_article_type_to_product_type_mapping(class_config)
     minimum_count = int(class_config["minimum_readable_images_per_class"])
 
     frame = pd.read_csv(metadata_csv, on_bad_lines="skip")
@@ -76,8 +77,11 @@ def prepare_fashion_v1_training_frame(
 
     prepared = frame.copy()
     prepared["articleType"] = prepared["articleType"].astype(str).str.strip()
-    prepared["canonical_category"] = prepared["articleType"].map(article_type_mapping)
-    prepared = prepared.dropna(subset=["canonical_category"]).copy()
+    prepared["product_type_v0"] = prepared["articleType"].map(article_type_mapping)
+    prepared = prepared.dropna(subset=["product_type_v0"]).copy()
+    prepared["canonical_category"] = prepared["product_type_v0"].map(
+        lambda product_type: map_product_type_to_canonical_category(product_type, class_config)
+    )
     prepared["image_path"] = prepared["id"].astype(str).str.replace(r"\.0$", "", regex=True)
     prepared["image_path"] = prepared["image_path"].map(lambda image_id: image_dir / f"{image_id}.jpg")
     prepared["image_present"] = prepared["image_path"].map(Path.exists)
@@ -85,13 +89,13 @@ def prepare_fashion_v1_training_frame(
     prepared["image_readable"] = prepared["image_path"].map(verify_image_is_readable)
     prepared = prepared[prepared["image_readable"]].copy()
 
-    class_counts = prepared["canonical_category"].value_counts().sort_index().to_dict()
+    class_counts = prepared["product_type_v0"].value_counts().sort_index().to_dict()
     below_threshold = {
         class_name: int(count)
         for class_name, count in class_counts.items()
         if int(count) < minimum_count
     }
-    selected_classes = sorted(class_config["mapping"].keys())
+    selected_classes = sorted(class_config["product_type_mapping"].keys())
     missing_classes = [
         class_name for class_name in selected_classes if class_counts.get(class_name, 0) < minimum_count
     ]

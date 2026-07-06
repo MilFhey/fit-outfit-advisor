@@ -24,37 +24,58 @@
   - `productDisplayName`.
 
 ## Cible V0
-- Cible apprise par le CNN : `canonical_category`.
+- Cible apprise par le CNN : `product_type_v0`.
 - Colonne source : `articleType`.
-- Le modele doit predire directement une categorie canonique applicative :
+- Le modele doit predire un type produit visible et plus informatif qu'une categorie metier :
+  - `tshirt` ;
+  - `shirt` ;
   - `top` ;
-  - `bottom` ;
+  - `jeans` ;
+  - `trousers` ;
+  - `shorts` ;
   - `dress` ;
-  - `shoes` ;
   - `outerwear` ;
-  - `accessory`.
+  - `casual_shoes` ;
+  - `sports_shoes` ;
+  - `dress_shoes` ;
+  - `bag` ;
+  - `watch` ;
+  - `sunglasses` ;
+  - `cap`.
+- `canonical_category` est derive ensuite de facon deterministe pour le moteur outfit.
 - Exemple attendu apres validation du mapping :
-  - `articleType = "Tshirts"` -> `canonical_category = "top"`.
+  - `articleType = "Tshirts"` -> `product_type_v0 = "tshirt"` -> `canonical_category = "top"`.
 - Ne pas entrainer simultanement `articleType`, couleur ou usage en V0.
 
 ## Configuration des classes
 - Fichier de configuration : `config/fashion_v1_classes.json`.
 - Format :
-  - `target`: `canonical_category` ;
+  - `target`: `product_type_v0` ;
   - `source_column`: `articleType` ;
   - `status`: `draft_requires_dataset_inspection` tant que les classes ne sont pas validees ;
   - `minimum_readable_images_per_class`: `null` tant que le seuil n'est pas choisi ;
-  - `mapping`: dictionnaire `canonical_category -> liste des articleType acceptes`.
-- Les listes du mapping restent volontairement vides avant inspection reelle du dataset.
+  - `product_type_mapping`: dictionnaire `product_type_v0 -> liste des articleType acceptes` ;
+  - `canonical_mapping`: dictionnaire `product_type_v0 -> canonical_category`.
+- Le mapping reste en brouillon avant inspection reelle du dataset.
 - Aucune classe V0 ne doit etre consideree comme retenue tant que :
   - le tableau final du notebook n'a pas ete relu ;
   - les `articleType` acceptes n'ont pas ete inscrits dans `config/fashion_v1_classes.json` ;
   - un seuil minimal d'images lisibles par classe n'a pas ete documente.
 
+## Mapping metier candidat
+- `tshirt`, `shirt`, `top` -> `top`.
+- `jeans`, `trousers`, `shorts` -> `bottom`.
+- `dress` -> `dress`.
+- `outerwear` -> `outerwear`.
+- `casual_shoes`, `sports_shoes`, `dress_shoes` -> `shoes`.
+- `bag` -> `bag`.
+- `watch`, `sunglasses`, `cap` -> `accessory`.
+
 ## Pipeline impose
 ```text
 styles.csv
--> mapping articleType vers canonical_category
+-> mapping articleType vers product_type_v0
+-> mapping deterministe product_type_v0 vers canonical_category
 -> exclusion labels non retenus
 -> verification fichier image present et lisible
 -> comptage final par classe
@@ -66,6 +87,7 @@ styles.csv
 Le notebook doit produire un tableau par `articleType` avec :
 
 - `articleType` ;
+- `proposed_product_type_v0` ;
 - `proposed_canonical_category` ;
 - `metadata_row_count` ;
 - `present_image_count` ;
@@ -73,19 +95,19 @@ Le notebook doit produire un tableau par `articleType` avec :
 - `decision` : `garder` ou `exclure` ;
 - `exclusion_reason`.
 
-Tant que la configuration reste en brouillon, la decision peut rester `exclure` meme si une categorie canonique est proposee pour revue.
+Tant que la configuration reste en brouillon, la decision peut rester `exclure` meme si un `product_type_v0` est propose pour revue.
 
 ## Criteres de selection des classes
-- Viser 5 a 8 classes canoniques utiles au produit.
+- Viser environ 10 a 15 classes `product_type_v0` visuellement coherentes.
 - Exclure un `articleType` si :
   - categorie trop rare apres verification images lisibles ;
-  - label ambigu ou incoherent avec les categories canoniques ;
+  - label ambigu ou incoherent avec les types produit V0 ;
   - lien faible avec le futur moteur outfit ;
   - trop grand taux d'images manquantes ou corrompues.
 - Le seuil minimal d'images lisibles par classe doit etre choisi apres inspection et inscrit dans `config/fashion_v1_classes.json`.
 
 ## Split
-- Split stratifie par `canonical_category`.
+- Split stratifie par `product_type_v0`.
 - Seed : `42`.
 - Proposition future par defaut :
   - train : 70 % ;
@@ -136,5 +158,5 @@ models/fashion_v1/
   - `promotable_to_streamlit: true`.
 - Le modele doit etre dans `models/fashion_active/`, pas seulement dans `models/fashion_v1/`.
 - Les metriques doivent etre relues apres test final et documentees.
-- Les classes predites doivent etre les categories canoniques attendues par l'application.
+- Les classes predites doivent etre les `product_type_v0`; le mapping vers `canonical_category` doit etre deterministe et documente.
 - Tant que ces conditions ne sont pas remplies, `image_service` reste en fallback simule.

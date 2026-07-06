@@ -1,11 +1,12 @@
 from typing import Any
 
 from src.mappings.category_mapping import map_to_common_category
+from src.mappings.fashion_v1_mapping import map_product_type_to_canonical_category
 from src.models.load_image_model import load_image_artifacts
 from src.preprocessing.image_preprocessing import preprocess_image_for_cnn
 
 
-DEFAULT_SIMULATED_CLASS = "Tshirts"
+DEFAULT_SIMULATED_PRODUCT_TYPE = "tshirt"
 
 
 def predict_image(image: Any, use_real_model: bool = False) -> dict:
@@ -31,22 +32,36 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
         confidence = float(probabilities[class_index])
 
         if artifacts.label_encoder is not None:
-            predicted_class = str(artifacts.label_encoder.inverse_transform([class_index])[0])
+            product_type = str(artifacts.label_encoder.inverse_transform([class_index])[0])
         else:
             class_labels = artifacts.metadata.get("class_labels", [])
-            predicted_class = str(class_labels[class_index]) if class_index < len(class_labels) else "unknown"
+            product_type = str(class_labels[class_index]) if class_index < len(class_labels) else "unknown"
+
+        canonical_category = map_product_type_to_canonical_category(
+            product_type,
+            artifacts.metadata,
+        )
+        if canonical_category == "unknown":
+            canonical_category = map_to_common_category(product_type)
 
         return {
-            "predicted_class": predicted_class,
-            "common_category": map_to_common_category(predicted_class),
+            "product_type": product_type,
+            "canonical_category": canonical_category,
+            "predicted_class": product_type,
+            "common_category": canonical_category,
             "confidence": confidence,
+            "model_status": artifacts.metadata.get("model_status", "promoted"),
             "mode": "real_model",
         }
 
-    predicted_class = DEFAULT_SIMULATED_CLASS
+    product_type = DEFAULT_SIMULATED_PRODUCT_TYPE
+    canonical_category = map_to_common_category(product_type)
     return {
-        "predicted_class": predicted_class,
-        "common_category": map_to_common_category(predicted_class),
+        "product_type": product_type,
+        "canonical_category": canonical_category,
+        "predicted_class": product_type,
+        "common_category": canonical_category,
         "confidence": 0.82,
+        "model_status": "fallback",
         "mode": "simulation",
     }

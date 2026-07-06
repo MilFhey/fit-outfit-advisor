@@ -228,18 +228,20 @@ Le plan de travail image est documente dans :
 docs/working/FASHION_CNN_V0_PLAN.md
 ```
 
-La cible apprise par le futur CNN sera `canonical_category`, derivee de la colonne source `articleType` de `styles.csv`.
+La cible apprise par le futur CNN sera `product_type_v0`, derivee de la colonne source `articleType` de `styles.csv`.
+`canonical_category` reste un role metier derive apres prediction pour le moteur outfit.
 
 Exemple attendu apres validation du mapping :
 
 ```text
-articleType = "Tshirts" -> canonical_category = "top"
+articleType = "Tshirts" -> product_type_v0 = "tshirt" -> canonical_category = "top"
 ```
 
-Les categories canoniques candidates sont :
+Les classes `product_type_v0` candidates sont :
 
 ```text
-top, bottom, dress, shoes, outerwear, accessory
+tshirt, shirt, top, jeans, trousers, shorts, dress, outerwear,
+casual_shoes, sports_shoes, dress_shoes, bag, watch, sunglasses, cap
 ```
 
 Le mapping explicite est dans :
@@ -252,7 +254,8 @@ Ce fichier reste volontairement en brouillon tant que le dataset image n'a pas e
 
 ```text
 styles.csv
--> mapping articleType vers canonical_category
+-> mapping articleType vers product_type_v0
+-> mapping deterministe product_type_v0 vers canonical_category
 -> exclusion labels non retenus
 -> verification fichier image present et lisible
 -> comptage final par classe
@@ -282,7 +285,7 @@ models/fashion_v1/
 └── sample_predictions.png
 ```
 
-`models/fashion_v1/` est experimental. Le service image ne pourra utiliser un modele reel que depuis `models/fashion_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`.
+`models/fashion_v1/` est experimental. Le service image ne pourra utiliser un modele reel que depuis `models/fashion_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`. Sa sortie minimale est `product_type`, `canonical_category`, `confidence` et `model_status`.
 
 ## Datasets
 

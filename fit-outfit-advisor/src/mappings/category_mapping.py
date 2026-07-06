@@ -5,7 +5,21 @@ CATEGORY_MAPPING = {
     "dress": "dress",
     "shoes": "shoes",
     "outerwear": "outerwear",
+    "bag": "bag",
     "accessory": "accessory",
+
+    # Fashion V1 product_type_v0 outputs
+    "tshirt": "top",
+    "shirt": "top",
+    "jeans": "bottom",
+    "trousers": "bottom",
+    "shorts": "bottom",
+    "casual_shoes": "shoes",
+    "sports_shoes": "shoes",
+    "dress_shoes": "shoes",
+    "watch": "accessory",
+    "sunglasses": "accessory",
+    "cap": "accessory",
 
     # Tops
     "Shirts": "top",
