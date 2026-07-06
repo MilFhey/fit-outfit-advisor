@@ -106,9 +106,16 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
             "jeans": ["Jeans"],
             "dress": ["Dresses"],
             "casual_shoes": ["Casual Shoes"],
+            "sandals": ["Sandals"],
+            "flip_flops": ["Flip Flops"],
+            "heels": ["Heels"],
+            "flats": ["Flats"],
             "outerwear": ["Jackets"],
             "bag": ["Handbags"],
             "watch": ["Watches"],
+            "wallet": ["Wallets"],
+            "belt": ["Belts"],
+            "jewellery": ["Earrings"],
         },
         "canonical_mapping": {
             "tshirt": "top",
@@ -116,17 +123,30 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
             "jeans": "bottom",
             "dress": "dress",
             "casual_shoes": "shoes",
+            "sandals": "shoes",
+            "flip_flops": "shoes",
+            "heels": "shoes",
+            "flats": "shoes",
             "outerwear": "outerwear",
             "bag": "bag",
             "watch": "accessory",
+            "wallet": "accessory",
+            "belt": "accessory",
+            "jewellery": "accessory",
         },
     }
 
     validate_fashion_v1_class_config(config, require_ready=True)
     assert map_article_type_to_product_type("Tshirts", config) == "tshirt"
     assert map_article_type_to_product_type("Jeans", config) == "jeans"
+    assert map_article_type_to_product_type("Sandals", config) == "sandals"
+    assert map_article_type_to_product_type("Flip Flops", config) == "flip_flops"
+    assert map_article_type_to_product_type("Wallets", config) == "wallet"
+    assert map_article_type_to_product_type("Earrings", config) == "jewellery"
     assert map_article_type_to_canonical_category("Tshirts", config) == "top"
     assert map_article_type_to_canonical_category("Jeans", config) == "bottom"
+    assert map_article_type_to_canonical_category("Heels", config) == "shoes"
+    assert map_article_type_to_canonical_category("Belts", config) == "accessory"
     assert map_product_type_to_canonical_category("watch", config) == "accessory"
     assert map_article_type_to_canonical_category("Unknown", config) is None
 
@@ -145,6 +165,15 @@ def test_fashion_training_refuses_draft_or_incomplete_config():
 def test_color_mapping_fallback():
     assert "blanc" in get_compatible_colors("noir")
     assert get_compatible_colors("couleur-inconnue") == ["noir", "blanc", "beige"]
+
+
+def test_category_mapping_preserves_fashion_v1_granular_roles():
+    assert map_to_common_category("Flip Flops") == "shoes"
+    assert map_to_common_category("Sandals") == "shoes"
+    assert map_to_common_category("Wallets") == "accessory"
+    assert map_to_common_category("Earrings") == "accessory"
+    assert map_to_common_category("Handbags") == "bag"
+    assert map_to_common_category("Sweatshirts") == "outerwear"
 
 
 def test_image_service_simulated_output_keys():

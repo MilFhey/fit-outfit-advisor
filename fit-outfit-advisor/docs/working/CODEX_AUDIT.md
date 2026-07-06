@@ -137,7 +137,8 @@
 - Cible image V0 :
   - `product_type_v0`, derivee de `styles.csv.articleType`.
   - `canonical_category` est derivee ensuite pour le moteur outfit.
-  - Categories candidates : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `accessory`.
+  - Classes candidates detaillees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats`, `bag`, `watch`, `sunglasses`, `cap`, `wallet`, `belt`, `jewellery`.
+  - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
 - Garde-fous image :
   - `models/fashion_v1/` est experimental.
   - `models/fashion_active/` sera le seul emplacement actif futur.

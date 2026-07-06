@@ -12,13 +12,20 @@
     "shorts": ["Shorts"],
     "dress": ["Dresses"],
     "outerwear": ["Sweatshirts", "Sweaters", "Jackets"],
-    "casual_shoes": ["Casual Shoes", "Flip Flops", "Sandals", "Flats"],
+    "casual_shoes": ["Casual Shoes"],
     "sports_shoes": ["Sports Shoes"],
-    "dress_shoes": ["Formal Shoes", "Heels"],
+    "dress_shoes": ["Formal Shoes"],
+    "sandals": ["Sandals"],
+    "flip_flops": ["Flip Flops"],
+    "heels": ["Heels"],
+    "flats": ["Flats"],
     "bag": ["Handbags", "Backpacks", "Clutches"],
     "watch": ["Watches"],
     "sunglasses": ["Sunglasses"],
-    "cap": ["Caps"]
+    "cap": ["Caps"],
+    "wallet": ["Wallets"],
+    "belt": ["Belts"],
+    "jewellery": ["Earrings", "Pendant", "Necklace and Chains"]
   },
   "canonical_mapping": {
     "tshirt": "top",
@@ -32,9 +39,16 @@
     "casual_shoes": "shoes",
     "sports_shoes": "shoes",
     "dress_shoes": "shoes",
+    "sandals": "shoes",
+    "flip_flops": "shoes",
+    "heels": "shoes",
+    "flats": "shoes",
     "bag": "bag",
     "watch": "accessory",
     "sunglasses": "accessory",
-    "cap": "accessory"
+    "cap": "accessory",
+    "wallet": "accessory",
+    "belt": "accessory",
+    "jewellery": "accessory"
   }
 }

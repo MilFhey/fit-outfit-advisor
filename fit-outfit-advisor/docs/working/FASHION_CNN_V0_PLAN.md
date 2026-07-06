@@ -38,10 +38,17 @@
   - `casual_shoes` ;
   - `sports_shoes` ;
   - `dress_shoes` ;
+  - `sandals` ;
+  - `flip_flops` ;
+  - `heels` ;
+  - `flats` ;
   - `bag` ;
   - `watch` ;
   - `sunglasses` ;
-  - `cap`.
+  - `cap` ;
+  - `wallet` ;
+  - `belt` ;
+  - `jewellery`.
 - `canonical_category` est derive ensuite de facon deterministe pour le moteur outfit.
 - Exemple attendu apres validation du mapping :
   - `articleType = "Tshirts"` -> `product_type_v0 = "tshirt"` -> `canonical_category = "top"`.
@@ -67,9 +74,9 @@
 - `jeans`, `trousers`, `shorts` -> `bottom`.
 - `dress` -> `dress`.
 - `outerwear` -> `outerwear`.
-- `casual_shoes`, `sports_shoes`, `dress_shoes` -> `shoes`.
+- `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats` -> `shoes`.
 - `bag` -> `bag`.
-- `watch`, `sunglasses`, `cap` -> `accessory`.
+- `watch`, `sunglasses`, `cap`, `wallet`, `belt`, `jewellery` -> `accessory`.
 
 ## Pipeline impose
 ```text
@@ -98,7 +105,9 @@ Le notebook doit produire un tableau par `articleType` avec :
 Tant que la configuration reste en brouillon, la decision peut rester `exclure` meme si un `product_type_v0` est propose pour revue.
 
 ## Criteres de selection des classes
-- Viser environ 10 a 15 classes `product_type_v0` visuellement coherentes.
+- Viser environ 10 a 20 classes `product_type_v0` visuellement coherentes, selon les effectifs lisibles reels.
+- `bag`, `watch`, `sunglasses`, `cap`, `wallet`, `belt` et `jewellery` peuvent rester des classes distinctes si elles respectent le seuil d'images lisibles.
+- `sandals`, `flip_flops`, `heels` et `flats` peuvent rester separes de `casual_shoes`, `sports_shoes` et `dress_shoes` si les effectifs restent suffisants.
 - Exclure un `articleType` si :
   - categorie trop rare apres verification images lisibles ;
   - label ambigu ou incoherent avec les types produit V0 ;

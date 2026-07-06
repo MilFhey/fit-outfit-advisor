@@ -241,7 +241,8 @@ Les classes `product_type_v0` candidates sont :
 
 ```text
 tshirt, shirt, top, jeans, trousers, shorts, dress, outerwear,
-casual_shoes, sports_shoes, dress_shoes, bag, watch, sunglasses, cap
+casual_shoes, sports_shoes, dress_shoes, sandals, flip_flops,
+heels, flats, bag, watch, sunglasses, cap, wallet, belt, jewellery
 ```
 
 Le mapping explicite est dans :
@@ -412,7 +413,7 @@ pytest
 4. Brancher le modèle ModCloth dans `fit_service.py`.
 5. Cloturer ModCloth comme experimentation academique non promue.
 6. Inspecter Fashion Product Images Small dans Colab et valider les classes V0.
-7. Entraîner le CNN Fashion Product Images Small sur categories canoniques.
+7. Entraîner le CNN Fashion Product Images Small sur `product_type_v0`, puis mapper vers `canonical_category`.
 8. Brancher le CNN promu dans `image_service.py`.
 9. Améliorer le module outfit avec des règles Polyvore simplifiées.
 10. Enrichir le conseil final.

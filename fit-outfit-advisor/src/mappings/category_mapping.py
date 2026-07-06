@@ -17,16 +17,22 @@ CATEGORY_MAPPING = {
     "casual_shoes": "shoes",
     "sports_shoes": "shoes",
     "dress_shoes": "shoes",
+    "sandals": "shoes",
+    "flip_flops": "shoes",
+    "heels": "shoes",
+    "flats": "shoes",
     "watch": "accessory",
     "sunglasses": "accessory",
     "cap": "accessory",
+    "wallet": "accessory",
+    "belt": "accessory",
+    "jewellery": "accessory",
 
     # Tops
     "Shirts": "top",
     "Tshirts": "top",
     "Tops": "top",
     "Kurtas": "top",
-    "Sweatshirts": "top",
 
     # Bottoms
     "Jeans": "bottom",
@@ -39,6 +45,11 @@ CATEGORY_MAPPING = {
     "Dresses": "dress",
     "Jumpsuit": "dress",
 
+    # Outerwear
+    "Sweatshirts": "outerwear",
+    "Sweaters": "outerwear",
+    "Jackets": "outerwear",
+
     # Shoes
     "Casual Shoes": "shoes",
     "Sports Shoes": "shoes",
@@ -46,12 +57,21 @@ CATEGORY_MAPPING = {
     "Flats": "shoes",
     "Heels": "shoes",
     "Sandals": "shoes",
+    "Flip Flops": "shoes",
 
     # Accessories
-    "Bags": "accessory",
+    "Bags": "bag",
+    "Handbags": "bag",
+    "Backpacks": "bag",
+    "Clutches": "bag",
     "Watches": "accessory",
     "Belts": "accessory",
     "Sunglasses": "accessory",
+    "Caps": "accessory",
+    "Wallets": "accessory",
+    "Earrings": "accessory",
+    "Pendant": "accessory",
+    "Necklace and Chains": "accessory",
 }
 
 

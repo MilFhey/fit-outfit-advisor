@@ -17,10 +17,17 @@ FASHION_PRODUCT_TYPES_V0 = (
     "casual_shoes",
     "sports_shoes",
     "dress_shoes",
+    "sandals",
+    "flip_flops",
+    "heels",
+    "flats",
     "bag",
     "watch",
     "sunglasses",
     "cap",
+    "wallet",
+    "belt",
+    "jewellery",
 )
 
 FASHION_CANONICAL_CATEGORIES = (
