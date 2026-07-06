@@ -1,4 +1,12 @@
 CATEGORY_MAPPING = {
+    # Canonical Fashion V1 outputs
+    "top": "top",
+    "bottom": "bottom",
+    "dress": "dress",
+    "shoes": "shoes",
+    "outerwear": "outerwear",
+    "accessory": "accessory",
+
     # Tops
     "Shirts": "top",
     "Tshirts": "top",

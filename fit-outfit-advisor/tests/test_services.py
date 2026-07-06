@@ -1,6 +1,17 @@
 from src.mappings.category_mapping import map_to_common_category
+import pytest
+
 from src.mappings.color_mapping import get_compatible_colors
-from src.config.paths import PROJECT_ROOT, FIT_MODEL_PATH, FIT_METADATA_PATH, IMAGE_MODEL_PATH
+from src.config.paths import (
+    FASHION_ACTIVE_DIR,
+    FASHION_METADATA_PATH,
+    FASHION_MODEL_PATH,
+    FASHION_V1_CLASSES_PATH,
+    PROJECT_ROOT,
+    FIT_MODEL_PATH,
+    FIT_METADATA_PATH,
+    IMAGE_MODEL_PATH,
+)
 from src.models.load_fit_model import (
     FitModelArtifacts,
     is_fit_metadata_promoted,
@@ -8,7 +19,31 @@ from src.models.load_fit_model import (
     load_fit_model,
     read_fit_metadata,
 )
-from src.models.load_image_model import load_image_model
+from src.models.load_image_model import (
+    is_image_metadata_promoted,
+    load_image_model,
+    read_image_metadata,
+)
+from src.analysis.analyze_fit_v3_abstention import (
+    UNCERTAIN_LABEL,
+    apply_abstention,
+    evaluate_abstention,
+    evaluate_thresholds,
+    select_threshold,
+)
+from src.mappings.fashion_v1_mapping import (
+    FashionClassConfigError,
+    FASHION_CANONICAL_CATEGORIES,
+    load_fashion_v1_class_config,
+    map_article_type_to_canonical_category,
+    validate_fashion_v1_class_config,
+)
+from src.preprocessing.image_preprocessing import (
+    MOBILENET_V2_ARCHITECTURE,
+    SIMPLE_CNN_ARCHITECTURE,
+    get_image_preprocessing_mode,
+    preprocess_image_for_cnn,
+)
 from src.preprocessing.tabular_preprocessing import (
     AMBIGUOUS_COMMERCIAL_CATEGORIES,
     DEFAULT_FEATURE_COLUMNS,
@@ -24,13 +59,65 @@ from src.services.image_service import predict_image
 from src.services.fit_service import _predict_with_artifacts, predict_fit
 from src.services.outfit_service import recommend_outfit
 from src.services.advice_service import generate_advice
+from src.training.train_fashion_model_v1 import prepare_fashion_v1_training_frame
 
 
 def test_category_mapping_known_and_unknown():
     assert map_to_common_category("Tshirts") == "top"
     assert map_to_common_category("Jeans") == "bottom"
+    assert map_to_common_category("top") == "top"
+    assert map_to_common_category("accessory") == "accessory"
     assert map_to_common_category("Unmapped") == "unknown"
     assert map_to_common_category("") == "unknown"
+
+
+def test_fashion_v1_class_config_is_draft_until_dataset_inspection():
+    config = load_fashion_v1_class_config()
+
+    assert FASHION_V1_CLASSES_PATH.name == "fashion_v1_classes.json"
+    assert config["target"] == "canonical_category"
+    assert config["source_column"] == "articleType"
+    assert config["status"] == "draft_requires_dataset_inspection"
+    assert config["minimum_readable_images_per_class"] is None
+    assert set(config["mapping"]) == set(FASHION_CANONICAL_CATEGORIES)
+    assert all(article_types == [] for article_types in config["mapping"].values())
+
+    validate_fashion_v1_class_config(config)
+    with pytest.raises(FashionClassConfigError):
+        validate_fashion_v1_class_config(config, require_ready=True)
+
+
+def test_fashion_article_type_to_canonical_mapping_from_config():
+    config = {
+        "target": "canonical_category",
+        "source_column": "articleType",
+        "status": "validated_for_training",
+        "minimum_readable_images_per_class": 100,
+        "mapping": {
+            "top": ["Tshirts", "Shirts"],
+            "bottom": ["Jeans"],
+            "dress": ["Dresses"],
+            "shoes": ["Casual Shoes"],
+            "outerwear": ["Jackets"],
+            "accessory": ["Bags"],
+        },
+    }
+
+    validate_fashion_v1_class_config(config, require_ready=True)
+    assert map_article_type_to_canonical_category("Tshirts", config) == "top"
+    assert map_article_type_to_canonical_category("Jeans", config) == "bottom"
+    assert map_article_type_to_canonical_category("Unknown", config) is None
+
+
+def test_fashion_training_refuses_draft_or_incomplete_config():
+    config = load_fashion_v1_class_config()
+
+    with pytest.raises(FashionClassConfigError):
+        prepare_fashion_v1_training_frame(
+            metadata_csv=PROJECT_ROOT / "missing_styles.csv",
+            image_dir=PROJECT_ROOT / "missing_images",
+            class_config=config,
+        )
 
 
 def test_color_mapping_fallback():
@@ -51,6 +138,36 @@ def test_image_service_real_mode_falls_back_without_model():
     assert image_result["predicted_class"] == "Tshirts"
     assert image_result["mode"] == "simulation"
     assert "fallback_reason" in image_result
+
+
+def test_image_metadata_fail_closed_and_active_path():
+    assert FASHION_ACTIVE_DIR.name == "fashion_active"
+    assert FASHION_MODEL_PATH.parent == FASHION_ACTIVE_DIR
+    assert IMAGE_MODEL_PATH == FASHION_MODEL_PATH
+    assert FASHION_METADATA_PATH.name == "metadata.json"
+    assert read_image_metadata() is None
+    assert is_image_metadata_promoted(None) is False
+    assert is_image_metadata_promoted(
+        {"model_status": "experimental_only", "promotable_to_streamlit": True}
+    ) is False
+    assert is_image_metadata_promoted(
+        {"model_status": "promoted", "promotable_to_streamlit": True}
+    ) is True
+
+
+def test_image_preprocessing_modes_are_not_double_normalized():
+    from PIL import Image
+
+    assert get_image_preprocessing_mode(SIMPLE_CNN_ARCHITECTURE) == "rescale_1_over_255"
+    assert (
+        get_image_preprocessing_mode(MOBILENET_V2_ARCHITECTURE)
+        == "mobilenet_v2_preprocess_input"
+    )
+
+    image = Image.new("RGB", (2, 2), color=(255, 255, 255))
+    batch = preprocess_image_for_cnn(image, architecture=SIMPLE_CNN_ARCHITECTURE)
+    assert batch.shape == (1, 128, 128, 3)
+    assert float(batch.max()) == 1.0
 
 
 def test_model_paths_and_missing_loaders_do_not_crash():
@@ -271,6 +388,86 @@ def test_fit_promoted_low_confidence_returns_uncertain():
     assert result["fit_prediction"] == "uncertain"
     assert result["raw_fit_prediction"] == "fit"
     assert result["confidence"] == 0.55
+
+
+def test_abstention_below_threshold_returns_uncertain():
+    import numpy as np
+
+    result = apply_abstention(
+        np.array([[0.20, 0.55, 0.25]]),
+        ["large", "fit", "small"],
+        threshold=0.60,
+    )
+
+    assert result["raw_predictions"] == ["fit"]
+    assert result["predictions"] == [UNCERTAIN_LABEL]
+    assert result["confidences"] == [0.55]
+
+
+def test_abstention_at_threshold_keeps_prediction():
+    import numpy as np
+
+    result = apply_abstention(
+        np.array([[0.20, 0.60, 0.20]]),
+        ["large", "fit", "small"],
+        threshold=0.60,
+    )
+
+    assert result["raw_predictions"] == ["fit"]
+    assert result["predictions"] == ["fit"]
+    assert result["confidences"] == [0.60]
+
+
+def test_abstention_metrics_compute_coverage_and_confusion():
+    metrics = evaluate_abstention(
+        ["fit", "large", "small", "small"],
+        ["fit", UNCERTAIN_LABEL, "large", UNCERTAIN_LABEL],
+        ["fit", "large", "small"],
+    )
+
+    assert metrics["total_count"] == 4
+    assert metrics["covered_count"] == 2
+    assert metrics["uncertain_count"] == 2
+    assert metrics["coverage"] == 0.5
+    assert metrics["abstention_rate"] == 0.5
+    assert metrics["accuracy_non_abstained"] == 0.5
+    assert metrics["confusion_labels"] == ["fit", "large", "small", UNCERTAIN_LABEL]
+    assert metrics["abstention_by_true_class"]["large"]["abstention_rate"] == 1.0
+    assert metrics["abstention_by_true_class"]["small"]["abstention_rate"] == 0.5
+
+
+def test_threshold_selection_uses_validation_rows_only():
+    import numpy as np
+
+    y_true = ["small", "large", "small", "large", "fit", "fit", "small", "large"]
+    probabilities = np.array(
+        [
+            [0.10, 0.10, 0.80],
+            [0.82, 0.10, 0.08],
+            [0.20, 0.20, 0.60],
+            [0.59, 0.25, 0.16],
+            [0.10, 0.70, 0.20],
+            [0.10, 0.55, 0.35],
+            [0.51, 0.04, 0.45],
+            [0.51, 0.24, 0.25],
+        ]
+    )
+    rows = evaluate_thresholds(
+        y_true,
+        probabilities,
+        ["large", "fit", "small"],
+        thresholds=[0.50, 0.60],
+    )
+    selection = select_threshold(
+        rows,
+        min_coverage=0.25,
+        min_precision_small=0.40,
+        min_precision_large=0.40,
+    )
+
+    assert selection["selected"] is True
+    assert selection["selected_threshold"] == 0.60
+    assert "validation" in selection["reason"]
 
 
 def test_fit_service_fallback_output_keys_without_real_artifacts():

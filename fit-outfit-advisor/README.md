@@ -51,7 +51,8 @@ fit-outfit-advisor/
 │       └── prediction_schemas.py
 │
 ├── models/
-│   ├── fashion_model.keras       # à générer après entraînement
+│   ├── fashion_v1/               # artefacts image expérimentaux
+│   ├── fashion_active/           # artefacts image explicitement promus uniquement
 │   ├── fit_v2/                   # artefacts ModCloth V2 expérimentaux
 │   ├── fit_v3/                   # artefacts ModCloth V3 expérimentaux
 │   └── fit_active/               # artefacts fit explicitement promus uniquement
@@ -109,7 +110,7 @@ notebooks/           Bases Colab/Kaggle
 
 ## Etat actuel des modeles
 
-- Image : `predict_image()` fonctionne en simulation si `models/fashion_model.keras` est absent.
+- Image : `predict_image()` fonctionne en simulation si `models/fashion_active/` est absent ou non promu.
 - Fit : `predict_fit()` tente uniquement les artefacts ModCloth explicitement promus dans `models/fit_active/`, puis revient au fallback simule si un fichier manque ou si les metadata ne sont pas promues.
 - Outfit : recommandations simples par regles et mappings.
 - Advice : conseil final interpretable avec avertissements si confiance faible.
@@ -193,6 +194,95 @@ python -m src.training.train_fit_model_v3 --dataset data/raw/modcloth_final_data
 ```
 
 V3 reste toujours `model_status: "experimental_only"` et `promotable_to_streamlit: false`. Ne copie pas ces artefacts vers `models/fit_active/`.
+
+### Analyse d'abstention V3
+
+Une fois les artefacts V3 archives localement dans `models/fit_v3_all/` et `models/fit_v3_explicit/`, analyse les seuils de confiance sans reentrainer :
+
+```bash
+python -m src.analysis.analyze_fit_v3_abstention --dataset data/raw/modcloth_final_data.json --run both
+```
+
+Le script teste les seuils de `0.35` a `0.90`, selectionne un seuil sur validation uniquement, puis evalue le test une seule fois au seuil retenu ou diagnostique. Rapports attendus :
+
+```text
+reports/modcloth_v3_abstention_all.json
+reports/modcloth_v3_abstention_explicit.json
+```
+
+Si aucun seuil n'atteint `coverage >= 25%` et precision `small`/`large >= 0.40`, la conclusion reste : pas de recommandation ferme, utiliser `uncertain`.
+
+Resultat local actuel :
+
+- `fit_v3_all` : aucun seuil acceptable ; meilleur seuil diagnostique `0.60`, coverage test `0.36%`, abstention test `99.64%`.
+- `fit_v3_explicit` : aucun seuil acceptable ; meilleur seuil diagnostique `0.45`, coverage test `3.35%`, abstention test `96.65%`.
+- Decision : V3 reste academique et `experimental_only`, sans promotion vers `models/fit_active/`.
+
+Le module ModCloth est donc cloture comme experimentation academique pour le MVP actuel. La priorite de developpement passe au modele image Fashion Product Images Small.
+
+## Fashion CNN V0
+
+Le plan de travail image est documente dans :
+
+```text
+docs/working/FASHION_CNN_V0_PLAN.md
+```
+
+La cible apprise par le futur CNN sera `canonical_category`, derivee de la colonne source `articleType` de `styles.csv`.
+
+Exemple attendu apres validation du mapping :
+
+```text
+articleType = "Tshirts" -> canonical_category = "top"
+```
+
+Les categories canoniques candidates sont :
+
+```text
+top, bottom, dress, shoes, outerwear, accessory
+```
+
+Le mapping explicite est dans :
+
+```text
+config/fashion_v1_classes.json
+```
+
+Ce fichier reste volontairement en brouillon tant que le dataset image n'a pas ete inspecte dans Colab. Le pipeline impose est :
+
+```text
+styles.csv
+-> mapping articleType vers canonical_category
+-> exclusion labels non retenus
+-> verification fichier image present et lisible
+-> comptage final par classe
+-> seuil minimal documente par classe
+-> split stratifie
+```
+
+Le notebook d'inspection image est :
+
+```text
+notebooks/02_train_fashion_model_colab.ipynb
+```
+
+Il doit etre execute jusqu'au tableau final d'inspection, puis s'arreter avant entrainement tant que les classes V0 ne sont pas validees.
+
+Artefacts futurs attendus, sans promotion automatique :
+
+```text
+models/fashion_v1/
+├── fashion_model.keras
+├── label_encoder.joblib
+├── metadata.json
+├── metrics.json
+├── confusion_matrix_raw.png
+├── confusion_matrix_normalized.png
+├── training_history.png
+└── sample_predictions.png
+```
+
+`models/fashion_v1/` est experimental. Le service image ne pourra utiliser un modele reel que depuis `models/fashion_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`.
 
 ## Datasets
 
@@ -317,11 +407,12 @@ pytest
 2. Entraîner le modèle ModCloth pour la prédiction `small / fit / large`.
 3. Sauvegarder le modèle, le scaler et les encodeurs.
 4. Brancher le modèle ModCloth dans `fit_service.py`.
-5. Realiser l'analyse V3 ModCloth avant toute promotion Streamlit.
-6. Entraîner le CNN Fashion Product Images Small sur 5 à 8 classes.
-7. Brancher le CNN dans `image_service.py`.
-8. Améliorer le module outfit avec des règles Polyvore simplifiées.
-9. Enrichir le conseil final.
+5. Cloturer ModCloth comme experimentation academique non promue.
+6. Inspecter Fashion Product Images Small dans Colab et valider les classes V0.
+7. Entraîner le CNN Fashion Product Images Small sur categories canoniques.
+8. Brancher le CNN promu dans `image_service.py`.
+9. Améliorer le module outfit avec des règles Polyvore simplifiées.
+10. Enrichir le conseil final.
 
 ## Critère de réussite de la première semaine
 

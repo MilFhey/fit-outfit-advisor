@@ -356,7 +356,7 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 
 ## Hypothèses / points à arbitrer
 - Classes image V0 exactes : choisir 5 à 8 classes fréquentes et visuellement séparables.
-- Cible image principale : `articleType` recommandé ; `baseColour`/`usage` peuvent rester metadata ou bonus.
+- Cible image principale : `canonical_category`, derivee de `articleType` ; `baseColour`/`usage` restent hors cible V0.
 - Architecture image : CNN simple pour cohérence cours vs MobileNetV2 pour robustesse. Arbitrer selon temps/performance.
 - Variables ModCloth réellement disponibles : confirmer colonnes (`height`, `weight`, `body type`, `size`, `category`, `rating`, `fit`).
 - Stratégie classes fit : garder `small/fit/large` ou regrouper selon distribution réelle.
@@ -381,10 +381,8 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 ### ImagePrediction
 ```json
 {
-  "article_type": "shirt",
+  "predicted_class": "top",
   "common_category": "top",
-  "color": "blue",
-  "usage": "formal",
   "confidence": 0.87,
   "mode": "tensorflow"
 }
@@ -430,3 +428,29 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - `compatibility_score` : score interne de cohérence tenue ; en V0, souvent rule-based, pas probabilité statistique.
 - `mode` : origine de la sortie : simulation, tensorflow, rule_based_mvp.
 - `artefact` : fichier nécessaire à l’inférence : modèle, encoder, scaler, labels, metadata.
+
+## Mise a jour priorite - Fashion CNN V0
+- Le module ModCloth est cloture comme experimentation academique non promouvable dans l'etat actuel.
+- La nouvelle priorite est le pipeline image Fashion Product Images Small.
+- La cible apprise par le CNN image V0 est `canonical_category`, derivee de `styles.csv.articleType`.
+- Le modele ne doit pas apprendre simultanement `articleType`, couleur ou usage en V0.
+- Categories canoniques candidates :
+  - `top` ;
+  - `bottom` ;
+  - `dress` ;
+  - `shoes` ;
+  - `outerwear` ;
+  - `accessory`.
+- Le mapping officiel est porte par `config/fashion_v1_classes.json`.
+- Ce mapping reste en statut `draft_requires_dataset_inspection` tant que le dataset n'a pas ete inspecte dans Colab.
+- Le pipeline impose est :
+  - `styles.csv` ;
+  - mapping `articleType` vers `canonical_category` ;
+  - exclusion des labels non retenus ;
+  - verification image presente et lisible ;
+  - comptage final par classe ;
+  - seuil minimal documente par classe ;
+  - split stratifie.
+- `models/fashion_v1/` est experimental.
+- `models/fashion_active/` sera le seul emplacement actif futur et exigera `model_status: "promoted"` avec `promotable_to_streamlit: true`.
+- `image_service` doit rester en fallback simule tant qu'aucun artefact image actif n'est promu.

@@ -1,0 +1,14 @@
+{
+  "target": "canonical_category",
+  "source_column": "articleType",
+  "status": "draft_requires_dataset_inspection",
+  "minimum_readable_images_per_class": null,
+  "mapping": {
+    "top": [],
+    "bottom": [],
+    "dress": [],
+    "shoes": [],
+    "outerwear": [],
+    "accessory": []
+  }
+}

@@ -3,6 +3,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
@@ -13,7 +14,14 @@ ENCODERS_DIR = MODELS_DIR / "encoders"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
-IMAGE_MODEL_PATH = MODELS_DIR / "fashion_model.keras"
+FASHION_V1_CLASSES_PATH = CONFIG_DIR / "fashion_v1_classes.json"
+FASHION_V1_DIR = MODELS_DIR / "fashion_v1"
+FASHION_ACTIVE_DIR = MODELS_DIR / "fashion_active"
+FASHION_MODEL_PATH = FASHION_ACTIVE_DIR / "fashion_model.keras"
+FASHION_LABEL_ENCODER_PATH = FASHION_ACTIVE_DIR / "label_encoder.joblib"
+FASHION_METADATA_PATH = FASHION_ACTIVE_DIR / "metadata.json"
+IMAGE_MODEL_PATH = FASHION_MODEL_PATH
+
 FIT_V2_DIR = MODELS_DIR / "fit_v2"
 FIT_V3_DIR = MODELS_DIR / "fit_v3"
 FIT_ACTIVE_DIR = MODELS_DIR / "fit_active"

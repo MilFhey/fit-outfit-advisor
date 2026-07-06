@@ -70,7 +70,7 @@
 - Resultat `pytest` :
   - OK, 9 tests passes.
 - Corrections effectuees :
-  - `predict_image(..., use_real_model=True)` revient maintenant en simulation si `models/fashion_model.keras` est absent.
+  - `predict_image(..., use_real_model=True)` revient maintenant en simulation si `models/fashion_active/` est absent ou non promu.
   - Ajout d'un test de fallback image en mode reel demande.
   - Ajout d'un test de chemins centralises et loaders absents sans crash.
   - Ajout de `tests/conftest.py` pour rendre les imports `src.*` stables sous `pytest`.
@@ -123,3 +123,23 @@
   - `python -m compileall app src tests` OK ;
   - `pytest` OK, 20 tests passes ;
   - invocation locale du script V3 non executee jusqu'au bout car l'environnement Python actif ne contient pas `scikit-learn`; le lancement cible reste Colab apres installation de `requirements.txt`.
+
+## Cloture ModCloth et priorite Fashion CNN V0
+- Decision :
+  - ModCloth V3 est conserve comme experimentation academique et baseline amelioree.
+  - Aucun artefact ModCloth n'est promu vers `models/fit_active/`.
+  - La priorite active devient Fashion Product Images Small pour la reconnaissance image.
+- Nouveau document :
+  - `docs/working/FASHION_CNN_V0_PLAN.md`.
+- Configuration ajoutee :
+  - `config/fashion_v1_classes.json`.
+  - Le mapping `canonical_category -> articleType acceptes` reste vide tant que le dataset n'a pas ete inspecte.
+- Cible image V0 :
+  - `canonical_category`, derivee de `styles.csv.articleType`.
+  - Categories candidates : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `accessory`.
+- Garde-fous image :
+  - `models/fashion_v1/` est experimental.
+  - `models/fashion_active/` sera le seul emplacement actif futur.
+  - Le service image doit refuser tout artefact non promu et revenir au fallback simule.
+- Notebook cible :
+  - `notebooks/02_train_fashion_model_colab.ipynb` doit inspecter le dataset, produire le tableau final par `articleType`, puis s'arreter avant entrainement si le mapping reste en brouillon.

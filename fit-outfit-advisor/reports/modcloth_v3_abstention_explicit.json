@@ -1,0 +1,973 @@
+{
+  "version": "fit_v3_abstention",
+  "artifact_dir": "C:\\Users\\bossk\\PC\\02-PROJETS\\ETUDES\\M2\\TensorFlow\\fit-outfit-advisor\\models\\fit_v3_explicit",
+  "dataset_path": "data\\raw\\modcloth_final_data.json",
+  "category_scope": "explicit",
+  "selected_experiment": "mlp_class_weight",
+  "model_status": "experimental_only",
+  "promotable_to_streamlit": false,
+  "threshold_source": "validation",
+  "threshold_selection": {
+    "selected": false,
+    "selected_threshold": null,
+    "reason": "Aucun seuil validation ne respecte coverage >= 25% et precision small/large >= 0.40.",
+    "constraints": {
+      "min_coverage": 0.25,
+      "min_precision_small": 0.4,
+      "min_precision_large": 0.4
+    },
+    "diagnostic_best_threshold": 0.45
+  },
+  "threshold_table_validation": [
+    {
+      "threshold": 0.35,
+      "total_count": 8775,
+      "covered_count": 8109,
+      "uncertain_count": 666,
+      "coverage": 0.9241025641025641,
+      "abstention_rate": 0.0758974358974359,
+      "accuracy_non_abstained": 0.4026390430385991,
+      "macro_f1_non_abstained": 0.35554190597541124,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.760968760968761,
+          "recall": 0.3839206658402692,
+          "f1": 0.5103578154425612,
+          "support": 5647
+        },
+        "large": {
+          "precision": 0.22169959234869865,
+          "recall": 0.5425940138142747,
+          "f1": 0.3147818343722173,
+          "support": 1303
+        },
+        "small": {
+          "precision": 0.1883148237566393,
+          "recall": 0.3364969801553063,
+          "f1": 0.24148606811145515,
+          "support": 1159
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 437,
+          "abstention_rate": 0.07182774490466798
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 136,
+          "abstention_rate": 0.0945100764419736
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 93,
+          "abstention_rate": 0.0742811501597444
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          2168,
+          2078,
+          1401,
+          437
+        ],
+        [
+          316,
+          707,
+          280,
+          136
+        ],
+        [
+          365,
+          404,
+          390,
+          93
+        ]
+      ]
+    },
+    {
+      "threshold": 0.4,
+      "total_count": 8775,
+      "covered_count": 2580,
+      "uncertain_count": 6195,
+      "coverage": 0.294017094017094,
+      "abstention_rate": 0.705982905982906,
+      "accuracy_non_abstained": 0.44534883720930235,
+      "macro_f1_non_abstained": 0.3852561250197308,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.7786483839373164,
+          "recall": 0.4372937293729373,
+          "f1": 0.5600563578724903,
+          "support": 1818
+        },
+        "large": {
+          "precision": 0.2337011033099298,
+          "recall": 0.5753086419753086,
+          "f1": 0.33238231098430815,
+          "support": 405
+        },
+        "small": {
+          "precision": 0.21530249110320285,
+          "recall": 0.3389355742296919,
+          "f1": 0.2633297062023939,
+          "support": 357
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 4266,
+          "abstention_rate": 0.7011834319526628
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1034,
+          "abstention_rate": 0.718554551772064
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 895,
+          "abstention_rate": 0.7148562300319489
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          795,
+          651,
+          372,
+          4266
+        ],
+        [
+          103,
+          233,
+          69,
+          1034
+        ],
+        [
+          123,
+          113,
+          121,
+          895
+        ]
+      ]
+    },
+    {
+      "threshold": 0.45,
+      "total_count": 8775,
+      "covered_count": 301,
+      "uncertain_count": 8474,
+      "coverage": 0.0343019943019943,
+      "abstention_rate": 0.9656980056980057,
+      "accuracy_non_abstained": 0.31893687707641194,
+      "macro_f1_non_abstained": 0.257403566577919,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.7551020408163265,
+          "recall": 0.17703349282296652,
+          "f1": 0.2868217054263566,
+          "support": 209
+        },
+        "large": {
+          "precision": 0.2336065573770492,
+          "recall": 0.8636363636363636,
+          "f1": 0.3677419354838709,
+          "support": 66
+        },
+        "small": {
+          "precision": 0.25,
+          "recall": 0.07692307692307693,
+          "f1": 0.11764705882352941,
+          "support": 26
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 5875,
+          "abstention_rate": 0.9656476002629849
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1373,
+          "abstention_rate": 0.9541348158443363
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1226,
+          "abstention_rate": 0.9792332268370607
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          37,
+          167,
+          5,
+          5875
+        ],
+        [
+          8,
+          57,
+          1,
+          1373
+        ],
+        [
+          4,
+          20,
+          2,
+          1226
+        ]
+      ]
+    },
+    {
+      "threshold": 0.5,
+      "total_count": 8775,
+      "covered_count": 13,
+      "uncertain_count": 8762,
+      "coverage": 0.0014814814814814814,
+      "abstention_rate": 0.9985185185185185,
+      "accuracy_non_abstained": 0.15384615384615385,
+      "macro_f1_non_abstained": 0.09523809523809523,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 11
+        },
+        "large": {
+          "precision": 0.16666666666666666,
+          "recall": 1.0,
+          "f1": 0.2857142857142857,
+          "support": 2
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6073,
+          "abstention_rate": 0.9981919789612097
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1437,
+          "abstention_rate": 0.9986101459346769
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          10,
+          1,
+          6073
+        ],
+        [
+          0,
+          2,
+          0,
+          1437
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.55,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.6,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.65,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.7,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.75,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.8,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.85,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    },
+    {
+      "threshold": 0.9,
+      "total_count": 8775,
+      "covered_count": 0,
+      "uncertain_count": 8775,
+      "coverage": 0.0,
+      "abstention_rate": 1.0,
+      "accuracy_non_abstained": 0.0,
+      "macro_f1_non_abstained": 0.0,
+      "per_class_non_abstained": {
+        "fit": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "large": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "small": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "abstention_by_true_class": {
+        "fit": {
+          "support": 6084,
+          "abstained": 6084,
+          "abstention_rate": 1.0
+        },
+        "large": {
+          "support": 1439,
+          "abstained": 1439,
+          "abstention_rate": 1.0
+        },
+        "small": {
+          "support": 1252,
+          "abstained": 1252,
+          "abstention_rate": 1.0
+        }
+      },
+      "confusion_labels": [
+        "fit",
+        "large",
+        "small",
+        "uncertain"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          6084
+        ],
+        [
+          0,
+          0,
+          0,
+          1439
+        ],
+        [
+          0,
+          0,
+          0,
+          1252
+        ]
+      ]
+    }
+  ],
+  "test_evaluation_at_selected_threshold": {
+    "total_count": 8775,
+    "covered_count": 294,
+    "uncertain_count": 8481,
+    "coverage": 0.033504273504273506,
+    "abstention_rate": 0.9664957264957265,
+    "accuracy_non_abstained": 0.2789115646258503,
+    "macro_f1_non_abstained": 0.23779701413085555,
+    "per_class_non_abstained": {
+      "fit": {
+        "precision": 0.7,
+        "recall": 0.16990291262135923,
+        "f1": 0.2734375,
+        "support": 206
+      },
+      "large": {
+        "precision": 0.18333333333333332,
+        "recall": 0.9361702127659575,
+        "f1": 0.30662020905923343,
+        "support": 47
+      },
+      "small": {
+        "precision": 0.75,
+        "recall": 0.07317073170731707,
+        "f1": 0.13333333333333333,
+        "support": 41
+      }
+    },
+    "abstention_by_true_class": {
+      "fit": {
+        "support": 6084,
+        "abstained": 5878,
+        "abstention_rate": 0.9661406969099277
+      },
+      "large": {
+        "support": 1439,
+        "abstained": 1392,
+        "abstention_rate": 0.9673384294649062
+      },
+      "small": {
+        "support": 1252,
+        "abstained": 1211,
+        "abstention_rate": 0.9672523961661342
+      }
+    },
+    "confusion_labels": [
+      "fit",
+      "large",
+      "small",
+      "uncertain"
+    ],
+    "confusion_matrix": [
+      [
+        35,
+        170,
+        1,
+        5878
+      ],
+      [
+        3,
+        44,
+        0,
+        1392
+      ],
+      [
+        12,
+        26,
+        3,
+        1211
+      ]
+    ],
+    "threshold": 0.45
+  },
+  "decision": "No firm Streamlit recommendation. Use uncertain when confidence is below the selected or diagnostic threshold."
+}

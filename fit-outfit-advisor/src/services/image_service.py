@@ -1,7 +1,7 @@
 from typing import Any
 
 from src.mappings.category_mapping import map_to_common_category
-from src.models.load_image_model import load_image_model
+from src.models.load_image_model import load_image_artifacts
 from src.preprocessing.image_preprocessing import preprocess_image_for_cnn
 
 
@@ -13,31 +13,28 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
     Prédit la catégorie d'un vêtement à partir d'une image.
 
     Version MVP : simulation contrôlée.
-    Version future : CNN TensorFlow/Keras branché via models/fashion_model.keras.
+    Version future : CNN TensorFlow/Keras branché via models/fashion_active/.
     """
     if use_real_model:
-        model = load_image_model()
-        if model is None:
+        artifacts = load_image_artifacts()
+        if artifacts is None:
             fallback = predict_image(image, use_real_model=False)
             fallback["fallback_reason"] = (
-                "Artefact image absent. Attendu: models/fashion_model.keras."
+                "Artefacts image actifs absents ou non promus. Attendu: models/fashion_active/."
             )
             return fallback
 
-        batch = preprocess_image_for_cnn(image)
-        probabilities = model.predict(batch, verbose=0)[0]
+        architecture = artifacts.metadata.get("architecture", "simple_cnn")
+        batch = preprocess_image_for_cnn(image, architecture=architecture)
+        probabilities = artifacts.model.predict(batch, verbose=0)[0]
         class_index = int(probabilities.argmax())
         confidence = float(probabilities[class_index])
 
-        # À remplacer par le vrai fichier class_indices.json généré à l'entraînement.
-        index_to_class = {
-            0: "Tshirts",
-            1: "Shirts",
-            2: "Jeans",
-            3: "Dresses",
-            4: "Casual Shoes",
-        }
-        predicted_class = index_to_class.get(class_index, "unknown")
+        if artifacts.label_encoder is not None:
+            predicted_class = str(artifacts.label_encoder.inverse_transform([class_index])[0])
+        else:
+            class_labels = artifacts.metadata.get("class_labels", [])
+            predicted_class = str(class_labels[class_index]) if class_index < len(class_labels) else "unknown"
 
         return {
             "predicted_class": predicted_class,

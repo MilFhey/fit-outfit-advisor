@@ -529,6 +529,97 @@ La selection entre experiences doit rester faite exclusivement sur le jeu de val
 - Aucun scope ne resout le probleme de precision faible sur `small` et `large`.
 - Decision : conserver les deux resultats comme comparatif academique, mais ne promouvoir aucun artefact.
 
+## Artefacts V3 importes localement
+- Les dossiers de resultats importes ont ete ranges sous :
+  - `models/fit_v3_all/`
+  - `models/fit_v3_explicit/`
+- Les artefacts lourds restent ignores par Git ; seuls les `.gitkeep` de structure peuvent etre versionnes.
+- Ces resultats correspondent aux artefacts effectivement presents localement apres import.
+
+### Metrics test importees - V3 all
+| Metric | Value |
+| --- | ---: |
+| Accuracy | 0.4509 |
+| Balanced accuracy | 0.4338 |
+| Macro F1 | 0.3884 |
+| Weighted F1 | 0.4861 |
+
+| Classe | Precision | Recall | F1 | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `fit` | 0.7443 | 0.4661 | 0.5732 | 8477 |
+| `large` | 0.2340 | 0.4569 | 0.3095 | 1950 |
+| `small` | 0.2255 | 0.3783 | 0.2826 | 1935 |
+
+### Metrics test importees - V3 explicit
+| Metric | Value |
+| --- | ---: |
+| Accuracy | 0.3822 |
+| Balanced accuracy | 0.4080 |
+| Macro F1 | 0.3414 |
+| Weighted F1 | 0.4186 |
+
+| Classe | Precision | Recall | F1 | Support |
+| --- | ---: | ---: | ---: | ---: |
+| `fit` | 0.7491 | 0.3563 | 0.4830 | 6084 |
+| `large` | 0.2163 | 0.5337 | 0.3078 | 1439 |
+| `small` | 0.1794 | 0.3339 | 0.2334 | 1252 |
+
+### Interpretation des artefacts importes
+- Le run `all` importe est meilleur que `explicit` sur toutes les metriques globales principales :
+  - macro F1 `0.3884` vs `0.3414` ;
+  - balanced accuracy `0.4338` vs `0.4080` ;
+  - accuracy `0.4509` vs `0.3822`.
+- Le run `explicit` obtient un meilleur recall `large`, mais degrade fortement `fit`, `small`, macro F1 et accuracy.
+- Le run `all` devient donc le meilleur candidat academique V3 a commenter dans le rapport.
+- Malgre l'amelioration, les precisions `large` et `small` restent faibles (`0.2340` et `0.2255`) : le modele genere encore beaucoup de fausses alertes.
+- Decision finale V3 importee :
+  - resultat academique utile ;
+  - non promouvable vers Streamlit ;
+  - ne pas copier vers `models/fit_active/`.
+
+## Analyse d'abstention V3
+- Script prevu :
+  - `src/analysis/analyze_fit_v3_abstention.py`.
+- Commande :
+  - `python -m src.analysis.analyze_fit_v3_abstention --dataset data/raw/modcloth_final_data.json --run both`.
+- Artefacts analyses :
+  - `models/fit_v3_all/` ;
+  - `models/fit_v3_explicit/`.
+- Rapports generes :
+  - `reports/modcloth_v3_abstention_all.json` ;
+  - `reports/modcloth_v3_abstention_explicit.json`.
+- Grille de seuils :
+  - `0.35` a `0.90` par pas de `0.05`.
+- Selection :
+  - uniquement sur validation ;
+  - contraintes minimales : coverage `>= 25%`, precision `small >= 0.40`, precision `large >= 0.40`.
+- Evaluation :
+  - test evalue une seule fois au seuil selectionne ;
+  - si aucun seuil ne respecte les contraintes, le rapport utilise le meilleur seuil diagnostique et conclut qu'aucune recommandation ferme n'est acceptable.
+- Decision d'integration :
+  - meme avec un seuil acceptable, V3 reste `experimental_only` tant qu'une revue de promotion separee n'est pas faite.
+
+### Resultats de l'analyse d'abstention
+- Commande executee localement :
+  - `python -m src.analysis.analyze_fit_v3_abstention --dataset data/raw/modcloth_final_data.json --run both`.
+- Rapports generes :
+  - `reports/modcloth_v3_abstention_all.json` ;
+  - `reports/modcloth_v3_abstention_explicit.json`.
+- Resultat `fit_v3_all` :
+  - aucun seuil validation ne respecte simultanement coverage `>= 25%`, precision `small >= 0.40` et precision `large >= 0.40` ;
+  - meilleur seuil diagnostique : `0.60` ;
+  - evaluation test au seuil diagnostique : coverage `0.36%`, abstention `99.64%`, macro F1 non abstention `0.2011` ;
+  - precision test `large` `0.4318`, mais precision/recall `small` a `0.0` sur les predictions non abstention.
+- Resultat `fit_v3_explicit` :
+  - aucun seuil validation ne respecte simultanement coverage `>= 25%`, precision `small >= 0.40` et precision `large >= 0.40` ;
+  - meilleur seuil diagnostique : `0.45` ;
+  - evaluation test au seuil diagnostique : coverage `3.35%`, abstention `96.65%`, macro F1 non abstention `0.2378` ;
+  - precision test `small` `0.75`, mais precision `large` seulement `0.1833` et couverture beaucoup trop faible.
+- Interpretation :
+  - l'abstention confirme que V3 n'a pas de zone de confiance exploitable pour une recommandation ferme ;
+  - les seuils qui ameliorent une classe couvrent trop peu de cas ou degradent l'autre classe critique ;
+  - decision finale : V3 reste academique et `experimental_only`, sans promotion vers Streamlit ni copie vers `models/fit_active/`.
+
 ## Preparation Colab sans nouvel entrainement
 - Ouvrir `notebooks/01_train_fit_model_colab.ipynb` uniquement pour preparer l'environnement et telecharger le dataset.
 - Executer les cellules jusqu'a l'inspection du dataset incluse :
