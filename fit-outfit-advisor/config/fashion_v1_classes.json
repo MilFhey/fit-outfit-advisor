@@ -1,12 +1,12 @@
 {
   "target": "product_type_v0",
   "source_column": "articleType",
-  "status": "draft_requires_dataset_inspection",
-  "minimum_readable_images_per_class": null,
+  "status": "validated_for_training",
+  "minimum_readable_images_per_class": 450,
   "product_type_mapping": {
     "tshirt": ["Tshirts"],
     "shirt": ["Shirts"],
-    "top": ["Tops", "Kurtas"],
+    "top": ["Tops", "Kurtas", "Kurtis", "Tunics"],
     "jeans": ["Jeans"],
     "trousers": ["Trousers", "Track Pants"],
     "shorts": ["Shorts"],
@@ -15,17 +15,16 @@
     "casual_shoes": ["Casual Shoes"],
     "sports_shoes": ["Sports Shoes"],
     "dress_shoes": ["Formal Shoes"],
-    "sandals": ["Sandals"],
+    "sandals": ["Sandals", "Sports Sandals"],
     "flip_flops": ["Flip Flops"],
     "heels": ["Heels"],
     "flats": ["Flats"],
     "bag": ["Handbags", "Backpacks", "Clutches"],
     "watch": ["Watches"],
     "sunglasses": ["Sunglasses"],
-    "cap": ["Caps"],
     "wallet": ["Wallets"],
     "belt": ["Belts"],
-    "jewellery": ["Earrings", "Pendant", "Necklace and Chains"]
+    "jewellery": ["Earrings", "Pendant", "Necklace and Chains", "Ring", "Bangle", "Bracelet", "Jewellery Set"]
   },
   "canonical_mapping": {
     "tshirt": "top",
@@ -46,7 +45,6 @@
     "bag": "bag",
     "watch": "accessory",
     "sunglasses": "accessory",
-    "cap": "accessory",
     "wallet": "accessory",
     "belt": "accessory",
     "jewellery": "accessory"

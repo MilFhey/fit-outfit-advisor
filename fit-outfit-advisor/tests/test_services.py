@@ -77,21 +77,26 @@ def test_category_mapping_known_and_unknown():
     assert map_to_common_category("") == "unknown"
 
 
-def test_fashion_v1_class_config_is_draft_until_dataset_inspection():
+def test_fashion_v1_class_config_is_validated_after_dataset_inspection():
     config = load_fashion_v1_class_config()
 
     assert FASHION_V1_CLASSES_PATH.name == "fashion_v1_classes.json"
     assert config["target"] == "product_type_v0"
     assert config["source_column"] == "articleType"
-    assert config["status"] == "draft_requires_dataset_inspection"
-    assert config["minimum_readable_images_per_class"] is None
+    assert config["status"] == "validated_for_training"
+    assert config["minimum_readable_images_per_class"] == 450
     assert set(config["product_type_mapping"]) == set(FASHION_PRODUCT_TYPES_V0)
     assert set(config["canonical_mapping"]).issuperset(config["product_type_mapping"])
     assert set(config["canonical_mapping"].values()) <= set(FASHION_CANONICAL_CATEGORIES)
+    assert "cap" not in config["product_type_mapping"]
+    assert "Caps" not in {
+        article_type
+        for article_types in config["product_type_mapping"].values()
+        for article_type in article_types
+    }
 
     validate_fashion_v1_class_config(config)
-    with pytest.raises(FashionClassConfigError):
-        validate_fashion_v1_class_config(config, require_ready=True)
+    validate_fashion_v1_class_config(config, require_ready=True)
 
 
 def test_fashion_article_type_to_product_type_then_canonical_mapping():
@@ -151,10 +156,28 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
     assert map_article_type_to_canonical_category("Unknown", config) is None
 
 
-def test_fashion_training_refuses_draft_or_incomplete_config():
-    config = load_fashion_v1_class_config()
+def test_fashion_training_refuses_draft_config():
+    config = {
+        "target": "product_type_v0",
+        "source_column": "articleType",
+        "status": "draft_requires_dataset_inspection",
+        "minimum_readable_images_per_class": None,
+        "product_type_mapping": {"tshirt": ["Tshirts"]},
+        "canonical_mapping": {"tshirt": "top"},
+    }
 
     with pytest.raises(FashionClassConfigError):
+        prepare_fashion_v1_training_frame(
+            metadata_csv=PROJECT_ROOT / "missing_styles.csv",
+            image_dir=PROJECT_ROOT / "missing_images",
+            class_config=config,
+        )
+
+
+def test_fashion_training_refuses_missing_dataset_after_valid_config():
+    config = load_fashion_v1_class_config()
+
+    with pytest.raises(FileNotFoundError):
         prepare_fashion_v1_training_frame(
             metadata_csv=PROJECT_ROOT / "missing_styles.csv",
             image_dir=PROJECT_ROOT / "missing_images",

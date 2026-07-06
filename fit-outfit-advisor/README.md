@@ -242,7 +242,7 @@ Les classes `product_type_v0` candidates sont :
 ```text
 tshirt, shirt, top, jeans, trousers, shorts, dress, outerwear,
 casual_shoes, sports_shoes, dress_shoes, sandals, flip_flops,
-heels, flats, bag, watch, sunglasses, cap, wallet, belt, jewellery
+heels, flats, bag, watch, sunglasses, wallet, belt, jewellery
 ```
 
 Le mapping explicite est dans :
@@ -251,7 +251,9 @@ Le mapping explicite est dans :
 config/fashion_v1_classes.json
 ```
 
-Ce fichier reste volontairement en brouillon tant que le dataset image n'a pas ete inspecte dans Colab. Le pipeline impose est :
+Ce fichier est valide pour l'entrainement V1 apres audit Colab. Le seuil minimal retenu est `450` images lisibles par classe. `cap` est exclu de la V1 car la classe ne contient que `283` images lisibles.
+
+Le pipeline impose est :
 
 ```text
 styles.csv
@@ -270,7 +272,7 @@ Le notebook d'inspection image est :
 notebooks/02_train_fashion_model_colab.ipynb
 ```
 
-Il doit etre execute jusqu'au tableau final d'inspection, puis s'arreter avant entrainement tant que les classes V0 ne sont pas validees.
+Il peut etre execute pour verifier le dataset et regenerer le rapport d'audit. L'entrainement image reste dans une etape separee.
 
 Artefacts futurs attendus, sans promotion automatique :
 
@@ -412,7 +414,7 @@ pytest
 3. Sauvegarder le modèle, le scaler et les encodeurs.
 4. Brancher le modèle ModCloth dans `fit_service.py`.
 5. Cloturer ModCloth comme experimentation academique non promue.
-6. Inspecter Fashion Product Images Small dans Colab et valider les classes V0.
+6. Inspecter Fashion Product Images Small dans Colab et valider les classes V0. Fait pour Fashion V1.
 7. Entraîner le CNN Fashion Product Images Small sur `product_type_v0`, puis mapper vers `canonical_category`.
 8. Brancher le CNN promu dans `image_service.py`.
 9. Améliorer le module outfit avec des règles Polyvore simplifiées.

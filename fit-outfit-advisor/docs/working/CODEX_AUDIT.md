@@ -133,11 +133,13 @@
   - `docs/working/FASHION_CNN_V0_PLAN.md`.
 - Configuration ajoutee :
   - `config/fashion_v1_classes.json`.
-  - Le mapping `product_type_v0 -> articleType acceptes` reste en brouillon tant que le dataset n'a pas ete inspecte.
+  - Le mapping `product_type_v0 -> articleType acceptes` est valide apres audit Colab.
 - Cible image V0 :
   - `product_type_v0`, derivee de `styles.csv.articleType`.
   - `canonical_category` est derivee ensuite pour le moteur outfit.
-  - Classes candidates detaillees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats`, `bag`, `watch`, `sunglasses`, `cap`, `wallet`, `belt`, `jewellery`.
+  - Classes detaillees validees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
+  - Seuil minimal retenu : `450` images lisibles par classe.
+  - `cap` exclu de V1 : `283` images lisibles seulement.
   - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
 - Garde-fous image :
   - `models/fashion_v1/` est experimental.

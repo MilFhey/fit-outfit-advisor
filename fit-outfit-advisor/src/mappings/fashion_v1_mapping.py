@@ -24,7 +24,6 @@ FASHION_PRODUCT_TYPES_V0 = (
     "bag",
     "watch",
     "sunglasses",
-    "cap",
     "wallet",
     "belt",
     "jewellery",

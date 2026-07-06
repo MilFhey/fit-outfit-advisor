@@ -2,7 +2,8 @@
 
 ## Statut
 - Nouvelle priorite apres cloture du module ModCloth comme experimentation academique.
-- Aucun entrainement image local ne doit etre lance tant que le dataset et les classes V0 ne sont pas inspectes.
+- Dataset inspecte dans Colab ; configuration V1 validee pour entrainement.
+- Aucun entrainement image local ne doit etre lance tant que le dataset image n'est pas present.
 - Le notebook d'inspection officiel est `notebooks/02_train_fashion_model_colab.ipynb`.
 
 ## Dataset attendu
@@ -45,7 +46,6 @@
   - `bag` ;
   - `watch` ;
   - `sunglasses` ;
-  - `cap` ;
   - `wallet` ;
   - `belt` ;
   - `jewellery`.
@@ -59,15 +59,12 @@
 - Format :
   - `target`: `product_type_v0` ;
   - `source_column`: `articleType` ;
-  - `status`: `draft_requires_dataset_inspection` tant que les classes ne sont pas validees ;
-  - `minimum_readable_images_per_class`: `null` tant que le seuil n'est pas choisi ;
+  - `status`: `validated_for_training` ;
+  - `minimum_readable_images_per_class`: `450` ;
   - `product_type_mapping`: dictionnaire `product_type_v0 -> liste des articleType acceptes` ;
   - `canonical_mapping`: dictionnaire `product_type_v0 -> canonical_category`.
-- Le mapping reste en brouillon avant inspection reelle du dataset.
-- Aucune classe V0 ne doit etre consideree comme retenue tant que :
-  - le tableau final du notebook n'a pas ete relu ;
-  - les `articleType` acceptes n'ont pas ete inscrits dans `config/fashion_v1_classes.json` ;
-  - un seuil minimal d'images lisibles par classe n'a pas ete documente.
+- Le mapping a ete valide apres audit reel du dataset image.
+- `cap` est exclu de la V1 : seulement `283` images lisibles.
 
 ## Mapping metier candidat
 - `tshirt`, `shirt`, `top` -> `top`.
@@ -76,7 +73,7 @@
 - `outerwear` -> `outerwear`.
 - `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats` -> `shoes`.
 - `bag` -> `bag`.
-- `watch`, `sunglasses`, `cap`, `wallet`, `belt`, `jewellery` -> `accessory`.
+- `watch`, `sunglasses`, `wallet`, `belt`, `jewellery` -> `accessory`.
 
 ## Pipeline impose
 ```text
@@ -102,18 +99,18 @@ Le notebook doit produire un tableau par `articleType` avec :
 - `decision` : `garder` ou `exclure` ;
 - `exclusion_reason`.
 
-Tant que la configuration reste en brouillon, la decision peut rester `exclure` meme si un `product_type_v0` est propose pour revue.
+Depuis la validation V1, les `articleType` retenus doivent passer en `garder` si les images lisibles respectent le seuil minimal de `450`.
 
 ## Criteres de selection des classes
-- Viser environ 10 a 20 classes `product_type_v0` visuellement coherentes, selon les effectifs lisibles reels.
-- `bag`, `watch`, `sunglasses`, `cap`, `wallet`, `belt` et `jewellery` peuvent rester des classes distinctes si elles respectent le seuil d'images lisibles.
-- `sandals`, `flip_flops`, `heels` et `flats` peuvent rester separes de `casual_shoes`, `sports_shoes` et `dress_shoes` si les effectifs restent suffisants.
+- V1 retient 21 classes `product_type_v0` visuellement coherentes.
+- `bag`, `watch`, `sunglasses`, `wallet`, `belt` et `jewellery` restent des classes distinctes.
+- `sandals`, `flip_flops`, `heels` et `flats` restent separes de `casual_shoes`, `sports_shoes` et `dress_shoes`.
 - Exclure un `articleType` si :
   - categorie trop rare apres verification images lisibles ;
   - label ambigu ou incoherent avec les types produit V0 ;
   - lien faible avec le futur moteur outfit ;
   - trop grand taux d'images manquantes ou corrompues.
-- Le seuil minimal d'images lisibles par classe doit etre choisi apres inspection et inscrit dans `config/fashion_v1_classes.json`.
+- Le seuil minimal retenu est `450` images lisibles par classe.
 
 ## Split
 - Split stratifie par `product_type_v0`.
