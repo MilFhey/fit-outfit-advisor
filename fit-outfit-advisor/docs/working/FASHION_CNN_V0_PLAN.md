@@ -127,6 +127,9 @@ Depuis la validation V1, les `articleType` retenus doivent passer en `garder` si
 - Variante 2 : transfer learning MobileNetV2.
   - Normalisation image : `tf.keras.applications.mobilenet_v2.preprocess_input` uniquement.
 - Ne jamais appliquer `/255` puis `preprocess_input` sur la meme image.
+- Le script `src/training/train_fashion_model_v1.py` compare `simple_cnn` et `mobilenet_v2` via `--architecture both`.
+- La selection de l'architecture se fait uniquement sur validation.
+- Le test est evalue une seule fois apres selection finale.
 
 ## Artefacts futurs attendus
 ```text
@@ -142,6 +145,28 @@ models/fashion_v1/
 ```
 
 `models/fashion_v1/` reste experimental. Un futur modele actif devra etre copie volontairement dans `models/fashion_active/` avec metadata promues.
+
+## Commandes Colab
+Dry-run sans entrainement :
+
+```bash
+python -m src.training.train_fashion_model_v1 \
+  --metadata-csv /content/fit-outfit-runtime/kaggle_downloads/myntradataset/styles.csv \
+  --image-dir /content/fit-outfit-runtime/kaggle_downloads/images \
+  --dry-run
+```
+
+Entrainement experimental :
+
+```bash
+python -m src.training.train_fashion_model_v1 \
+  --metadata-csv /content/fit-outfit-runtime/kaggle_downloads/myntradataset/styles.csv \
+  --image-dir /content/fit-outfit-runtime/kaggle_downloads/images \
+  --architecture both \
+  --epochs 12 \
+  --batch-size 32 \
+  --image-size 224
+```
 
 ## Metriques attendues
 - accuracy ;

@@ -62,7 +62,10 @@ from src.services.image_service import predict_image
 from src.services.fit_service import _predict_with_artifacts, predict_fit
 from src.services.outfit_service import recommend_outfit
 from src.services.advice_service import generate_advice
-from src.training.train_fashion_model_v1 import prepare_fashion_v1_training_frame
+from src.training.train_fashion_model_v1 import (
+    prepare_fashion_v1_training_frame,
+    select_experiment,
+)
 
 
 def test_category_mapping_known_and_unknown():
@@ -183,6 +186,26 @@ def test_fashion_training_refuses_missing_dataset_after_valid_config():
             image_dir=PROJECT_ROOT / "missing_images",
             class_config=config,
         )
+
+
+def test_fashion_validation_selection_prefers_macro_f1_then_balanced_accuracy():
+    selected, reason = select_experiment(
+        {
+            "simple_cnn": {
+                "macro_f1": 0.70,
+                "balanced_accuracy": 0.72,
+                "accuracy": 0.80,
+            },
+            "mobilenet_v2": {
+                "macro_f1": 0.71,
+                "balanced_accuracy": 0.70,
+                "accuracy": 0.78,
+            },
+        }
+    )
+
+    assert selected == "mobilenet_v2"
+    assert "validation only" in reason
 
 
 def test_color_mapping_fallback():

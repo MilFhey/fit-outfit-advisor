@@ -147,3 +147,6 @@
   - Le service image doit refuser tout artefact non promu et revenir au fallback simule.
 - Notebook cible :
   - `notebooks/02_train_fashion_model_colab.ipynb` doit inspecter le dataset, produire le tableau final par `articleType`, puis s'arreter avant entrainement si le mapping reste en brouillon.
+- Entrainement Fashion V1 :
+  - `src/training/train_fashion_model_v1.py` implemente le dry-run, le split stratifie, `simple_cnn`, `mobilenet_v2`, la selection validation-only et l'evaluation test finale.
+  - Les artefacts sont ecrits dans `models/fashion_v1/` avec `model_status: "experimental_only"` et `promotable_to_streamlit: false`.

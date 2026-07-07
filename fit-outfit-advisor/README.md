@@ -290,6 +290,29 @@ models/fashion_v1/
 
 `models/fashion_v1/` est experimental. Le service image ne pourra utiliser un modele reel que depuis `models/fashion_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`. Sa sortie minimale est `product_type`, `canonical_category`, `confidence` et `model_status`.
 
+Commande de diagnostic sans entrainement :
+
+```bash
+python -m src.training.train_fashion_model_v1 \
+  --metadata-csv data/raw/fashion-product-images-small/styles.csv \
+  --image-dir data/raw/fashion-product-images-small/images \
+  --dry-run
+```
+
+Commande d'entrainement experimental Fashion V1 :
+
+```bash
+python -m src.training.train_fashion_model_v1 \
+  --metadata-csv data/raw/fashion-product-images-small/styles.csv \
+  --image-dir data/raw/fashion-product-images-small/images \
+  --architecture both \
+  --epochs 12 \
+  --batch-size 32 \
+  --image-size 224
+```
+
+Le script compare `simple_cnn` et `mobilenet_v2`, selectionne uniquement sur validation, puis evalue le test une seule fois apres selection. Les artefacts restent `experimental_only`.
+
 ## Datasets
 
 Place les datasets localement, sans les committer :
