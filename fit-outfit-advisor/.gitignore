@@ -22,6 +22,7 @@ env/
 !/data/raw/.gitkeep
 !/data/processed/.gitkeep
 /audit/
+/auditv*/
 /models/*.keras
 /models/*.h5
 /models/encoders/*
