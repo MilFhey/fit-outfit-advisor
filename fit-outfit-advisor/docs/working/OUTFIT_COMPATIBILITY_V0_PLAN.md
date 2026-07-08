@@ -26,7 +26,9 @@
   - cloner ou mettre a jour le repo ;
   - installer les dependances ;
   - creer `/content/fit-outfit-runtime/polyvore/...` ;
-  - accepter une source Kaggle ou un zip Google Drive ;
+  - charger la source principale Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY` ;
+  - privilegier les configurations/splits `disjoint` et `nondisjoint` si disponibles ;
+  - sauvegarder aussi le dataset dans Google Drive sous `MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits` ;
   - detecter les fichiers outfits/items/images/metadonnees ;
   - inspecter shapes, colonnes, valeurs manquantes, categories, outfits et items par outfit ;
   - generer `reports/polyvore_v0_dataset_audit.json` ;

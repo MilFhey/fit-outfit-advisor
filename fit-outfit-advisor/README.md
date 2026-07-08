@@ -502,6 +502,8 @@ reports/polyvore_v0_dataset_audit.json
 
 Aucun entrainement Polyvore ne doit etre lance avant audit dataset. `models/outfit_v1/` restera experimental et `models/outfit_active/` sera le seul emplacement actif futur avec metadata promues.
 
+Le notebook Polyvore utilise comme source principale Hugging Face `mvasil/polyvore-outfits`, via le secret Colab `HUGGIN_KEY`. Il inspecte les configurations/splits `disjoint` et `nondisjoint` si disponibles, puis sauvegarde une copie du dataset dans Google Drive sous `MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits`.
+
 ## Critère de réussite de la première semaine
 
 Le projet est réussi pour la première semaine si :

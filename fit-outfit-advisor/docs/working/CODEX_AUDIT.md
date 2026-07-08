@@ -170,4 +170,5 @@
 - Ajout de `config/outfit_v1_config.json` en statut `draft_requires_dataset_inspection`.
 - Ajout des helpers de mapping Polyvore -> Fashion V1 et preprocessing paires outfit.
 - `outfit_service` conserve son contrat historique et ajoute les champs V0 : `input_product_type`, `recommended_product_types`, `compatible_roles`, `raw_compatibility_score`, `model_status`.
+- Notebook Polyvore ajuste pour utiliser Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY`, inspecter `disjoint`/`nondisjoint` si disponibles et sauvegarder le dataset dans Google Drive.
 - Aucun entrainement Polyvore n'est lance dans cette etape.

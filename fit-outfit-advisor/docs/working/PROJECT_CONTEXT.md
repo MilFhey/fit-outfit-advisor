@@ -471,5 +471,7 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - Le module outfit doit rester aligne avec Fashion V1.1 : `product_type_v0`, `canonical_category`, `outfit_role`.
 - Polyvore ne doit pas introduire de taxonomie independante ; tout label Polyvore doit passer par un mapping explicite.
 - Premier livrable : `docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md`, `config/outfit_v1_config.json`, `notebooks/03_polyvore_exploration_colab.ipynb`.
+- Source principale audit : Hugging Face `mvasil/polyvore-outfits`, via le secret Colab `HUGGIN_KEY`.
+- Le notebook doit privilegier les configurations/splits `disjoint` et `nondisjoint` si disponibles et sauvegarder une copie dans Google Drive.
 - Aucun entrainement TensorFlow outfit avant audit dataset et validation du mapping.
 - `models/outfit_v1/` est experimental ; `models/outfit_active/` sera le seul emplacement actif futur.
