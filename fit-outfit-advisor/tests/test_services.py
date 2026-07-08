@@ -92,6 +92,8 @@ def test_fashion_v1_class_config_is_validated_after_dataset_inspection():
     assert set(config["canonical_mapping"]).issuperset(config["product_type_mapping"])
     assert set(config["canonical_mapping"].values()) <= set(FASHION_CANONICAL_CATEGORIES)
     assert "cap" not in config["product_type_mapping"]
+    assert "flats" not in config["product_type_mapping"]
+    assert "Flats" in config["product_type_mapping"]["dress_shoes"]
     assert "Caps" not in {
         article_type
         for article_types in config["product_type_mapping"].values()
@@ -114,10 +116,10 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
             "jeans": ["Jeans"],
             "dress": ["Dresses"],
             "casual_shoes": ["Casual Shoes"],
+            "dress_shoes": ["Formal Shoes", "Flats"],
             "sandals": ["Sandals"],
             "flip_flops": ["Flip Flops"],
             "heels": ["Heels"],
-            "flats": ["Flats"],
             "outerwear": ["Jackets"],
             "bag": ["Handbags"],
             "watch": ["Watches"],
@@ -131,10 +133,10 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
             "jeans": "bottom",
             "dress": "dress",
             "casual_shoes": "shoes",
+            "dress_shoes": "shoes",
             "sandals": "shoes",
             "flip_flops": "shoes",
             "heels": "shoes",
-            "flats": "shoes",
             "outerwear": "outerwear",
             "bag": "bag",
             "watch": "accessory",
@@ -149,11 +151,13 @@ def test_fashion_article_type_to_product_type_then_canonical_mapping():
     assert map_article_type_to_product_type("Jeans", config) == "jeans"
     assert map_article_type_to_product_type("Sandals", config) == "sandals"
     assert map_article_type_to_product_type("Flip Flops", config) == "flip_flops"
+    assert map_article_type_to_product_type("Flats", config) == "dress_shoes"
     assert map_article_type_to_product_type("Wallets", config) == "wallet"
     assert map_article_type_to_product_type("Earrings", config) == "jewellery"
     assert map_article_type_to_canonical_category("Tshirts", config) == "top"
     assert map_article_type_to_canonical_category("Jeans", config) == "bottom"
     assert map_article_type_to_canonical_category("Heels", config) == "shoes"
+    assert map_article_type_to_canonical_category("Flats", config) == "shoes"
     assert map_article_type_to_canonical_category("Belts", config) == "accessory"
     assert map_product_type_to_canonical_category("watch", config) == "accessory"
     assert map_article_type_to_canonical_category("Unknown", config) is None

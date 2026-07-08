@@ -120,10 +120,10 @@ fit-outfit-advisor/
 ### Taxonomie image V0
 - `product_type_v0` : sortie detaillee predite par le CNN, derivee de `styles.csv.articleType`.
 - `canonical_category` : role metier derive deterministiquement apres prediction, utilise par le moteur outfit.
-- Classes `product_type_v0` V1 validees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
+- Classes `product_type_v0` V1.1 validees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
 - Categories metier derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`, `unknown`.
 - Les accessoires visuellement differents comme `watch`, `jewellery`, `sunglasses`, `wallet` et `belt` restent des sorties CNN distinctes.
-- Les chaussures visuellement differentes comme `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels` et `flats` peuvent rester des sorties CNN distinctes si leurs images lisibles sont suffisantes.
+- Les chaussures visuellement differentes comme `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops` et `heels` restent des sorties CNN distinctes. `Flats` est conserve comme `articleType` source mais mappe vers `dress_shoes` en V1.1.
 - `unknown` : product type non mappe, categorie non mappable ou confiance insuffisante.
 
 ### Objets métier / données runtime
@@ -357,7 +357,7 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - Export du conseil, sauvegarde préférences, catalogue réel.
 
 ## Hypothèses / points à arbitrer
-- Classes image V1 : 21 classes fréquentes, lisibles et visuellement séparables, avec seuil minimal `450` images lisibles.
+- Classes image V1.1 : 20 classes fréquentes, lisibles et visuellement séparables, avec seuil minimal `450` images lisibles.
 - Cible image principale : `product_type_v0`, derivee de `articleType` ; `canonical_category` est derivee ensuite pour le moteur outfit ; `baseColour`/`usage` restent hors cible V0.
 - Architecture image : CNN simple pour cohérence cours vs MobileNetV2 pour robustesse. Arbitrer selon temps/performance.
 - Variables ModCloth réellement disponibles : confirmer colonnes (`height`, `weight`, `body type`, `size`, `category`, `rating`, `fit`).
@@ -442,8 +442,9 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - Le modele ne doit pas apprendre simultanement `articleType`, couleur ou usage en V0.
 - Classes `product_type_v0` validees :
   - vetements : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear` ;
-  - chaussures : `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats` ;
+  - chaussures : `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels` ;
   - accessoires : `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
+- Decision V1.1 : `Flats` n'est plus une sortie visible ; `articleType = "Flats"` est mappe vers `dress_shoes` apres analyse du premier entrainement.
 - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
 - Le mapping officiel est porte par `config/fashion_v1_classes.json`.
 - Ce mapping est en statut `validated_for_training` apres audit dataset.

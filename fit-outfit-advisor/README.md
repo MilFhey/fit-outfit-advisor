@@ -242,7 +242,7 @@ Les classes `product_type_v0` candidates sont :
 ```text
 tshirt, shirt, top, jeans, trousers, shorts, dress, outerwear,
 casual_shoes, sports_shoes, dress_shoes, sandals, flip_flops,
-heels, flats, bag, watch, sunglasses, wallet, belt, jewellery
+heels, bag, watch, sunglasses, wallet, belt, jewellery
 ```
 
 Le mapping explicite est dans :
@@ -252,6 +252,8 @@ config/fashion_v1_classes.json
 ```
 
 Ce fichier est valide pour l'entrainement V1 apres audit Colab. Le seuil minimal retenu est `450` images lisibles par classe. `cap` est exclu de la V1 car la classe ne contient que `283` images lisibles.
+
+Decision V1.1 apres analyse du premier entrainement : `Flats` n'est plus une sortie visible du CNN. Les images `articleType = "Flats"` restent utilisees comme exemples de `product_type_v0 = "dress_shoes"`, car la classe separee `flats` etait trop mal reconnue (`F1 test 0.138`, recall `0.080`) et etait majoritairement confondue avec `heels`.
 
 Le pipeline impose est :
 

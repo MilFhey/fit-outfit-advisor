@@ -42,7 +42,6 @@
   - `sandals` ;
   - `flip_flops` ;
   - `heels` ;
-  - `flats` ;
   - `bag` ;
   - `watch` ;
   - `sunglasses` ;
@@ -71,7 +70,7 @@
 - `jeans`, `trousers`, `shorts` -> `bottom`.
 - `dress` -> `dress`.
 - `outerwear` -> `outerwear`.
-- `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats` -> `shoes`.
+- `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels` -> `shoes`.
 - `bag` -> `bag`.
 - `watch`, `sunglasses`, `wallet`, `belt`, `jewellery` -> `accessory`.
 
@@ -102,9 +101,10 @@ Le notebook doit produire un tableau par `articleType` avec :
 Depuis la validation V1, les `articleType` retenus doivent passer en `garder` si les images lisibles respectent le seuil minimal de `450`.
 
 ## Criteres de selection des classes
-- V1 retient 21 classes `product_type_v0` visuellement coherentes.
+- V1.1 retient 20 classes `product_type_v0` visuellement coherentes.
 - `bag`, `watch`, `sunglasses`, `wallet`, `belt` et `jewellery` restent des classes distinctes.
-- `sandals`, `flip_flops`, `heels` et `flats` restent separes de `casual_shoes`, `sports_shoes` et `dress_shoes`.
+- `sandals`, `flip_flops` et `heels` restent separes de `casual_shoes`, `sports_shoes` et `dress_shoes`.
+- Decision V1.1 : `articleType = "Flats"` est conserve dans le dataset mais mappe vers `product_type_v0 = "dress_shoes"`. La classe visible `flats` est retiree apres le premier entrainement, car elle avait un F1 test de `0.138`, un recall de `0.080`, et une confusion majoritaire vers `heels`.
 - Exclure un `articleType` si :
   - categorie trop rare apres verification images lisibles ;
   - label ambigu ou incoherent avec les types produit V0 ;

@@ -20,7 +20,6 @@ FASHION_PRODUCT_TYPES_V0 = (
     "sandals",
     "flip_flops",
     "heels",
-    "flats",
     "bag",
     "watch",
     "sunglasses",

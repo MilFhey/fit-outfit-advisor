@@ -137,7 +137,8 @@
 - Cible image V0 :
   - `product_type_v0`, derivee de `styles.csv.articleType`.
   - `canonical_category` est derivee ensuite pour le moteur outfit.
-  - Classes detaillees validees : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `flats`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
+  - Classes detaillees validees V1.1 : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
+  - Decision V1.1 : `Flats` n'est plus une sortie visible du CNN ; `articleType = "Flats"` est conserve et mappe vers `dress_shoes`.
   - Seuil minimal retenu : `450` images lisibles par classe.
   - `cap` exclu de V1 : `283` images lisibles seulement.
   - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.

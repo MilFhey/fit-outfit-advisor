@@ -20,7 +20,6 @@ CATEGORY_MAPPING = {
     "sandals": "shoes",
     "flip_flops": "shoes",
     "heels": "shoes",
-    "flats": "shoes",
     "watch": "accessory",
     "sunglasses": "accessory",
     "cap": "accessory",
