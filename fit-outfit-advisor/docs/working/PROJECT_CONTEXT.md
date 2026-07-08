@@ -445,6 +445,8 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
   - chaussures : `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels` ;
   - accessoires : `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
 - Decision V1.1 : `Flats` n'est plus une sortie visible ; `articleType = "Flats"` est mappe vers `dress_shoes` apres analyse du premier entrainement.
+- Resultat experimental V1.1 : MobileNetV2, accuracy test `0.8748`, balanced accuracy test `0.8483`, macro F1 test `0.8526`.
+- Avant promotion, executer `src.analysis.analyze_fashion_v1_abstention` pour choisir un seuil de confiance sur validation uniquement.
 - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
 - Le mapping officiel est porte par `config/fashion_v1_classes.json`.
 - Ce mapping est en statut `validated_for_training` apres audit dataset.
@@ -459,4 +461,5 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
   - split stratifie.
 - `models/fashion_v1/` est experimental.
 - `models/fashion_active/` sera le seul emplacement actif futur et exigera `model_status: "promoted"` avec `promotable_to_streamlit: true`.
+- Un modele image promu devra definir `abstention_strategy.minimum_confidence`; sous ce seuil, `image_service` retourne `product_type: "unknown"`.
 - `image_service` doit rester en fallback simule tant qu'aucun artefact image actif n'est promu.

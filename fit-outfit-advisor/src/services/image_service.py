@@ -25,7 +25,11 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
             )
             return fallback
 
-        architecture = artifacts.metadata.get("architecture", "simple_cnn")
+        architecture = (
+            artifacts.metadata.get("architecture")
+            or artifacts.metadata.get("selected_experiment")
+            or "simple_cnn"
+        )
         batch = preprocess_image_for_cnn(image, architecture=architecture)
         probabilities = artifacts.model.predict(batch, verbose=0)[0]
         class_index = int(probabilities.argmax())
@@ -37,10 +41,15 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
             class_labels = artifacts.metadata.get("class_labels", [])
             product_type = str(class_labels[class_index]) if class_index < len(class_labels) else "unknown"
 
-        canonical_category = map_product_type_to_canonical_category(
-            product_type,
-            artifacts.metadata,
+        raw_product_type = product_type
+        minimum_confidence = float(
+            artifacts.metadata.get("abstention_strategy", {}).get("minimum_confidence", 0.0)
         )
+        if minimum_confidence and confidence < minimum_confidence:
+            product_type = "unknown"
+
+        category_config = artifacts.metadata.get("class_config", artifacts.metadata)
+        canonical_category = map_product_type_to_canonical_category(product_type, category_config)
         if canonical_category == "unknown":
             canonical_category = map_to_common_category(product_type)
 
@@ -50,6 +59,8 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
             "predicted_class": product_type,
             "common_category": canonical_category,
             "confidence": confidence,
+            "raw_product_type": raw_product_type,
+            "minimum_confidence": minimum_confidence,
             "model_status": artifacts.metadata.get("model_status", "promoted"),
             "mode": "real_model",
         }

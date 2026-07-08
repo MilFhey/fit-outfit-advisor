@@ -255,6 +255,25 @@ Ce fichier est valide pour l'entrainement V1 apres audit Colab. Le seuil minimal
 
 Decision V1.1 apres analyse du premier entrainement : `Flats` n'est plus une sortie visible du CNN. Les images `articleType = "Flats"` restent utilisees comme exemples de `product_type_v0 = "dress_shoes"`, car la classe separee `flats` etait trop mal reconnue (`F1 test 0.138`, recall `0.080`) et etait majoritairement confondue avec `heels`.
 
+Resultat experimental V1.1 MobileNetV2 :
+
+- accuracy test : `0.8748` ;
+- balanced accuracy test : `0.8483` ;
+- macro F1 test : `0.8526` ;
+- weighted F1 test : `0.8725`.
+
+`dress_shoes` reste la classe la plus fragile (`precision 0.729`, `recall 0.456`, `F1 0.561`). Avant toute promotion, il faut generer l'analyse de seuils de confiance :
+
+```bash
+python -m src.analysis.analyze_fashion_v1_abstention \
+  --metadata-csv data/raw/fashion-product-images-small/styles.csv \
+  --image-dir data/raw/fashion-product-images-small/images \
+  --artifact-dir models/fashion_v1 \
+  --output reports/fashion_v1_abstention.json
+```
+
+Le seuil est choisi sur validation uniquement. Le test est evalue une seule fois au seuil retenu ou diagnostique. Si un modele image est promu plus tard, le seuil retenu devra etre inscrit dans `metadata.json` sous `abstention_strategy.minimum_confidence`.
+
 Le pipeline impose est :
 
 ```text
@@ -314,6 +333,16 @@ python -m src.training.train_fashion_model_v1 \
 ```
 
 Le script compare `simple_cnn` et `mobilenet_v2`, selectionne uniquement sur validation, puis evalue le test une seule fois apres selection. Les artefacts restent `experimental_only`.
+
+Analyse des seuils de confiance apres entrainement :
+
+```bash
+python -m src.analysis.analyze_fashion_v1_abstention \
+  --metadata-csv data/raw/fashion-product-images-small/styles.csv \
+  --image-dir data/raw/fashion-product-images-small/images \
+  --artifact-dir models/fashion_v1 \
+  --output reports/fashion_v1_abstention.json
+```
 
 ## Datasets
 

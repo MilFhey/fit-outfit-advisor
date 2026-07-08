@@ -146,6 +146,16 @@ models/fashion_v1/
 
 `models/fashion_v1/` reste experimental. Un futur modele actif devra etre copie volontairement dans `models/fashion_active/` avec metadata promues.
 
+## Resultat experimental V1.1
+- Architecture selectionnee : `mobilenet_v2`.
+- Test accuracy : `0.8748`.
+- Test balanced accuracy : `0.8483`.
+- Test macro F1 : `0.8526`.
+- Test weighted F1 : `0.8725`.
+- `flats` n'est plus une sortie visible ; `articleType = "Flats"` est mappe vers `dress_shoes`.
+- Classe la plus fragile : `dress_shoes`, avec precision `0.729`, recall `0.456`, F1 `0.561`.
+- Decision : V1.1 est un candidat serieux, mais reste `experimental_only` tant que l'analyse de seuils de confiance et la revue de promotion ne sont pas terminees.
+
 ## Commandes Colab
 Dry-run sans entrainement :
 
@@ -166,6 +176,16 @@ python -m src.training.train_fashion_model_v1 \
   --epochs 12 \
   --batch-size 32 \
   --image-size 224
+```
+
+Analyse des seuils de confiance sans reentrainement :
+
+```bash
+python -m src.analysis.analyze_fashion_v1_abstention \
+  --metadata-csv /content/fit-outfit-runtime/kaggle_downloads/myntradataset/styles.csv \
+  --image-dir /content/fit-outfit-runtime/kaggle_downloads/images \
+  --artifact-dir models/fashion_v1 \
+  --output reports/fashion_v1_abstention.json
 ```
 
 ## Metriques attendues
@@ -190,4 +210,6 @@ python -m src.training.train_fashion_model_v1 \
 - Le modele doit etre dans `models/fashion_active/`, pas seulement dans `models/fashion_v1/`.
 - Les metriques doivent etre relues apres test final et documentees.
 - Les classes predites doivent etre les `product_type_v0`; le mapping vers `canonical_category` doit etre deterministe et documente.
+- Le seuil de confiance doit etre choisi sur validation uniquement et stocke dans `metadata.abstention_strategy.minimum_confidence` si le modele est promu.
+- Sous ce seuil, le service image doit retourner `product_type: "unknown"` plutot qu'une classe ferme.
 - Tant que ces conditions ne sont pas remplies, `image_service` reste en fallback simule.

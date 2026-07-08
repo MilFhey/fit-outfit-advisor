@@ -31,6 +31,13 @@ from src.analysis.analyze_fit_v3_abstention import (
     evaluate_thresholds,
     select_threshold,
 )
+from src.analysis.analyze_fashion_v1_abstention import (
+    UNKNOWN_LABEL,
+    apply_image_abstention,
+    evaluate_image_abstention,
+    evaluate_thresholds as evaluate_image_thresholds,
+    select_threshold as select_image_threshold,
+)
 from src.mappings.fashion_v1_mapping import (
     FashionClassConfigError,
     FASHION_CANONICAL_CATEGORIES,
@@ -59,6 +66,7 @@ from src.preprocessing.tabular_preprocessing import (
     prepare_fit_training_frame_v3,
 )
 from src.services.image_service import predict_image
+import src.services.image_service as image_service_module
 from src.services.fit_service import _predict_with_artifacts, predict_fit
 from src.services.outfit_service import recommend_outfit
 from src.services.advice_service import generate_advice
@@ -265,6 +273,40 @@ def test_image_metadata_fail_closed_and_active_path():
     assert is_image_metadata_promoted(
         {"model_status": "promoted", "promotable_to_streamlit": True}
     ) is True
+
+
+def test_image_service_promoted_low_confidence_returns_unknown(monkeypatch):
+    metadata = {
+        "model_status": "promoted",
+        "promotable_to_streamlit": True,
+        "selected_experiment": "mobilenet_v2",
+        "class_labels": ["dress_shoes", "heels"],
+        "canonical_mapping": {"dress_shoes": "shoes", "heels": "shoes"},
+        "abstention_strategy": {"minimum_confidence": 0.80},
+    }
+
+    monkeypatch.setattr(
+        image_service_module,
+        "load_image_artifacts",
+        lambda: FakeImageArtifacts(
+            model=FakeImageModel([[0.76, 0.24]]),
+            label_encoder=FakeImageLabelEncoder(["dress_shoes", "heels"]),
+            metadata=metadata,
+        ),
+    )
+    monkeypatch.setattr(
+        image_service_module,
+        "preprocess_image_for_cnn",
+        lambda image, architecture: image,
+    )
+
+    result = predict_image(None, use_real_model=True)
+
+    assert result["product_type"] == "unknown"
+    assert result["canonical_category"] == "unknown"
+    assert result["raw_product_type"] == "dress_shoes"
+    assert result["confidence"] == 0.76
+    assert result["minimum_confidence"] == 0.80
 
 
 def test_image_preprocessing_modes_are_not_double_normalized():
@@ -582,6 +624,83 @@ def test_threshold_selection_uses_validation_rows_only():
     assert "validation" in selection["reason"]
 
 
+def test_fashion_image_abstention_below_threshold_returns_unknown():
+    import numpy as np
+
+    result = apply_image_abstention(
+        np.array([[0.76, 0.24]]),
+        ["dress_shoes", "heels"],
+        threshold=0.80,
+    )
+
+    assert result["raw_predictions"] == ["dress_shoes"]
+    assert result["predictions"] == [UNKNOWN_LABEL]
+    assert result["confidences"] == [0.76]
+
+
+def test_fashion_image_abstention_at_threshold_keeps_prediction():
+    import numpy as np
+
+    result = apply_image_abstention(
+        np.array([[0.80, 0.20]]),
+        ["dress_shoes", "heels"],
+        threshold=0.80,
+    )
+
+    assert result["raw_predictions"] == ["dress_shoes"]
+    assert result["predictions"] == ["dress_shoes"]
+    assert result["confidences"] == [0.80]
+
+
+def test_fashion_image_abstention_metrics_compute_unknown_rate():
+    metrics = evaluate_image_abstention(
+        ["dress_shoes", "heels", "heels", "dress_shoes"],
+        ["dress_shoes", UNKNOWN_LABEL, "heels", UNKNOWN_LABEL],
+        ["dress_shoes", "heels"],
+    )
+
+    assert metrics["total_count"] == 4
+    assert metrics["covered_count"] == 2
+    assert metrics["unknown_count"] == 2
+    assert metrics["coverage"] == 0.5
+    assert metrics["unknown_rate"] == 0.5
+    assert metrics["accuracy_non_unknown"] == 1.0
+    assert metrics["confusion_labels"] == ["dress_shoes", "heels", UNKNOWN_LABEL]
+    assert metrics["unknown_by_true_class"]["dress_shoes"]["unknown_rate"] == 0.5
+    assert metrics["unknown_by_true_class"]["heels"]["unknown_rate"] == 0.5
+
+
+def test_fashion_threshold_selection_uses_validation_constraints_only():
+    import numpy as np
+
+    y_true = ["dress_shoes", "heels", "dress_shoes", "heels"]
+    probabilities = np.array(
+        [
+            [0.90, 0.10],
+            [0.20, 0.80],
+            [0.45, 0.55],
+            [0.52, 0.48],
+        ]
+    )
+    rows = evaluate_image_thresholds(
+        y_true,
+        probabilities,
+        ["dress_shoes", "heels"],
+        thresholds=[0.50, 0.80],
+    )
+    selection = select_image_threshold(
+        rows,
+        min_coverage=0.50,
+        min_macro_f1=0.60,
+        min_precision_per_monitored_class=0.90,
+        monitored_classes=["dress_shoes", "heels"],
+    )
+
+    assert selection["selected"] is True
+    assert selection["selected_threshold"] == 0.80
+    assert "validation" in selection["reason"]
+
+
 def test_fit_service_fallback_output_keys_without_real_artifacts():
     user_profile = {
         "height_cm": 175,
@@ -654,6 +773,31 @@ class FakeFitModel:
 
 class FakeLabelEncoder:
     labels = ["large", "fit", "small"]
+
+    def inverse_transform(self, indexes):
+        return [self.labels[index] for index in indexes]
+
+
+class FakeImageArtifacts:
+    def __init__(self, model, label_encoder, metadata):
+        self.model = model
+        self.label_encoder = label_encoder
+        self.metadata = metadata
+
+
+class FakeImageModel:
+    def __init__(self, probabilities):
+        self.probabilities = probabilities
+
+    def predict(self, batch, verbose=0):
+        import numpy as np
+
+        return np.array(self.probabilities)
+
+
+class FakeImageLabelEncoder:
+    def __init__(self, labels):
+        self.labels = labels
 
     def inverse_transform(self, indexes):
         return [self.labels[index] for index in indexes]

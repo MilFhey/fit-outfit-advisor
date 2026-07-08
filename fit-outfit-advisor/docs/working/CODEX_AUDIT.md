@@ -139,6 +139,8 @@
   - `canonical_category` est derivee ensuite pour le moteur outfit.
   - Classes detaillees validees V1.1 : `tshirt`, `shirt`, `top`, `jeans`, `trousers`, `shorts`, `dress`, `outerwear`, `casual_shoes`, `sports_shoes`, `dress_shoes`, `sandals`, `flip_flops`, `heels`, `bag`, `watch`, `sunglasses`, `wallet`, `belt`, `jewellery`.
   - Decision V1.1 : `Flats` n'est plus une sortie visible du CNN ; `articleType = "Flats"` est conserve et mappe vers `dress_shoes`.
+  - Resultats experimentaux V1.1 : MobileNetV2, accuracy test `0.8748`, balanced accuracy test `0.8483`, macro F1 test `0.8526`, weighted F1 test `0.8725`.
+  - Classe fragile restante : `dress_shoes`, precision `0.729`, recall `0.456`, F1 `0.561`.
   - Seuil minimal retenu : `450` images lisibles par classe.
   - `cap` exclu de V1 : `283` images lisibles seulement.
   - Categories canoniques derivees : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
@@ -151,3 +153,8 @@
 - Entrainement Fashion V1 :
   - `src/training/train_fashion_model_v1.py` implemente le dry-run, le split stratifie, `simple_cnn`, `mobilenet_v2`, la selection validation-only et l'evaluation test finale.
   - Les artefacts sont ecrits dans `models/fashion_v1/` avec `model_status: "experimental_only"` et `promotable_to_streamlit: false`.
+- Analyse post-entrainement Fashion V1.1 :
+  - Ajout de `src/analysis/analyze_fashion_v1_abstention.py`.
+  - Le seuil de confiance est selectionne sur validation uniquement.
+  - Le test est evalue une seule fois au seuil retenu ou diagnostique.
+  - Sous seuil, la sortie future doit etre `unknown`, pas une classe ferme.

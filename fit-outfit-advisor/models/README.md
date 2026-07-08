@@ -25,6 +25,7 @@ Règle de promotion fail-closed :
 - un modèle fit actif doit être copié volontairement dans `fit_active/` avec des metadata explicitement promues ;
 - `fashion_v1/` n'est jamais l'emplacement actif par défaut ;
 - un modèle image actif doit être copié volontairement dans `fashion_active/` avec des metadata explicitement promues ;
+- un modèle image promu doit inclure `abstention_strategy.minimum_confidence` dans `fashion_active/metadata.json` pour retourner `unknown` sous seuil de confiance ;
 - tout metadata absent, illisible ou incomplet doit refuser l'usage du modèle.
 
 Les fichiers lourds de modèles ne sont pas versionnés par défaut.
