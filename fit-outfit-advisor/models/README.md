@@ -13,7 +13,7 @@ Ce dossier accueillera les modèles générés après entraînement :
 - `fit_v2/metadata.json` : métadonnées V2 ; ce dossier reste expérimental même s'il contient des artefacts ;
 - `fit_v2/metrics.json` : métriques validation/test et sélection d'expérience ;
 - `fashion_v1/` : artefacts expérimentaux du pipeline CNN Fashion Product Images Small ; V1.1 retire `flats` comme sortie visible et mappe `Flats` vers `dress_shoes` ;
-- `fashion_active/fashion_model.keras` : seul modèle image actif futur ;
+- `fashion_active/fashion_model.keras` : seul modèle image actif ; Fashion V1.1 promu localement avec seuil `0.90` ;
 - `fashion_active/label_encoder.joblib` : encodeur des `product_type_v0` image actifs ;
 - `fashion_active/metadata.json` : doit contenir `model_status: "promoted"` et `promotable_to_streamlit: true` ;
 - `encoders/` : dossier conservé pour compatibilité avec les premiers essais.

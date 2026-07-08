@@ -274,6 +274,14 @@ python -m src.analysis.analyze_fashion_v1_abstention \
 
 Le seuil est choisi sur validation uniquement. Le test est evalue une seule fois au seuil retenu ou diagnostique. Si un modele image est promu plus tard, le seuil retenu devra etre inscrit dans `metadata.json` sous `abstention_strategy.minimum_confidence`.
 
+Decision de promotion controlee :
+
+- Fashion V1.1 est promu localement dans `models/fashion_active/` ;
+- metadata active : `model_status: "promoted"` et `promotable_to_streamlit: true` ;
+- seuil actif : `abstention_strategy.minimum_confidence: 0.90` ;
+- sous seuil, `image_service` retourne `product_type: "unknown"` ;
+- smoke test local `predict_image(..., use_real_model=True)` OK avec chargement du modele actif.
+
 Le pipeline impose est :
 
 ```text
@@ -309,7 +317,7 @@ models/fashion_v1/
 └── sample_predictions.png
 ```
 
-`models/fashion_v1/` est experimental. Le service image ne pourra utiliser un modele reel que depuis `models/fashion_active/` avec `model_status: "promoted"` et `promotable_to_streamlit: true`. Sa sortie minimale est `product_type`, `canonical_category`, `confidence` et `model_status`.
+`models/fashion_v1/` reste l'emplacement experimental. Le service image utilise uniquement `models/fashion_active/` si les metadata contiennent `model_status: "promoted"` et `promotable_to_streamlit: true`. Sa sortie minimale est `product_type`, `canonical_category`, `confidence` et `model_status`.
 
 Commande de diagnostic sans entrainement :
 

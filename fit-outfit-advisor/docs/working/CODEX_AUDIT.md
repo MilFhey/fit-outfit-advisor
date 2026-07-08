@@ -158,3 +158,9 @@
   - Le seuil de confiance est selectionne sur validation uniquement.
   - Le test est evalue une seule fois au seuil retenu ou diagnostique.
   - Sous seuil, la sortie future doit etre `unknown`, pas une classe ferme.
+- Promotion controlee Fashion V1.1 :
+  - Seuil retenu : `0.90`.
+  - Test au seuil : coverage `0.7083`, unknown rate `0.2917`, accuracy non-unknown `0.9695`, macro F1 non-unknown `0.9425`.
+  - Artefacts copies localement dans `models/fashion_active/`.
+  - Metadata active : `model_status: "promoted"`, `promotable_to_streamlit: true`, `abstention_strategy.minimum_confidence: 0.90`.
+  - Smoke test local du chargement via `image_service.predict_image(..., use_real_model=True)` OK.

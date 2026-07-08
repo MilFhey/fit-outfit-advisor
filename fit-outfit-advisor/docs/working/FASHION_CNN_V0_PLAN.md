@@ -154,7 +154,8 @@ models/fashion_v1/
 - Test weighted F1 : `0.8725`.
 - `flats` n'est plus une sortie visible ; `articleType = "Flats"` est mappe vers `dress_shoes`.
 - Classe la plus fragile : `dress_shoes`, avec precision `0.729`, recall `0.456`, F1 `0.561`.
-- Decision : V1.1 est un candidat serieux, mais reste `experimental_only` tant que l'analyse de seuils de confiance et la revue de promotion ne sont pas terminees.
+- Analyse d'abstention : seuil `0.90` selectionne sur validation ; test coverage `0.7083`, unknown rate `0.2917`, accuracy non-unknown `0.9695`, macro F1 non-unknown `0.9425`.
+- Decision : V1.1 est promu localement dans `models/fashion_active/` avec abstention obligatoire sous `0.90`.
 
 ## Commandes Colab
 Dry-run sans entrainement :
@@ -208,6 +209,7 @@ python -m src.analysis.analyze_fashion_v1_abstention \
   - `model_status: "promoted"` ;
   - `promotable_to_streamlit: true`.
 - Le modele doit etre dans `models/fashion_active/`, pas seulement dans `models/fashion_v1/`.
+- Etat courant : Fashion V1.1 est copie localement dans `models/fashion_active/` avec `abstention_strategy.minimum_confidence: 0.90`.
 - Les metriques doivent etre relues apres test final et documentees.
 - Les classes predites doivent etre les `product_type_v0`; le mapping vers `canonical_category` doit etre deterministe et documente.
 - Le seuil de confiance doit etre choisi sur validation uniquement et stocke dans `metadata.abstention_strategy.minimum_confidence` si le modele est promu.

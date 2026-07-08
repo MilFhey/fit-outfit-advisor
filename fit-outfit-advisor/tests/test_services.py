@@ -253,19 +253,21 @@ def test_image_service_simulated_output_keys():
     } <= set(image_result)
 
 
-def test_image_service_real_mode_falls_back_without_model():
+def test_image_service_real_mode_falls_back_without_model(monkeypatch):
+    monkeypatch.setattr(image_service_module, "load_image_artifacts", lambda: None)
+
     image_result = predict_image(None, use_real_model=True)
     assert image_result["product_type"] == "tshirt"
     assert image_result["mode"] == "simulation"
     assert "fallback_reason" in image_result
 
 
-def test_image_metadata_fail_closed_and_active_path():
+def test_image_metadata_fail_closed_and_active_path(tmp_path):
     assert FASHION_ACTIVE_DIR.name == "fashion_active"
     assert FASHION_MODEL_PATH.parent == FASHION_ACTIVE_DIR
     assert IMAGE_MODEL_PATH == FASHION_MODEL_PATH
     assert FASHION_METADATA_PATH.name == "metadata.json"
-    assert read_image_metadata() is None
+    assert read_image_metadata(tmp_path / "missing_metadata.json") is None
     assert is_image_metadata_promoted(None) is False
     assert is_image_metadata_promoted(
         {"model_status": "experimental_only", "promotable_to_streamlit": True}
@@ -275,11 +277,25 @@ def test_image_metadata_fail_closed_and_active_path():
     ) is True
 
 
+def test_image_metadata_reader_accepts_utf8_bom(tmp_path):
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text(
+        '{"model_status": "promoted", "promotable_to_streamlit": true}',
+        encoding="utf-8-sig",
+    )
+
+    metadata = read_image_metadata(metadata_path)
+
+    assert metadata is not None
+    assert is_image_metadata_promoted(metadata) is True
+
+
 def test_image_service_promoted_low_confidence_returns_unknown(monkeypatch):
     metadata = {
         "model_status": "promoted",
         "promotable_to_streamlit": True,
         "selected_experiment": "mobilenet_v2",
+        "image_size": 224,
         "class_labels": ["dress_shoes", "heels"],
         "canonical_mapping": {"dress_shoes": "shoes", "heels": "shoes"},
         "abstention_strategy": {"minimum_confidence": 0.80},
@@ -297,7 +313,7 @@ def test_image_service_promoted_low_confidence_returns_unknown(monkeypatch):
     monkeypatch.setattr(
         image_service_module,
         "preprocess_image_for_cnn",
-        lambda image, architecture: image,
+        lambda image, image_size, architecture: image,
     )
 
     result = predict_image(None, use_real_model=True)
@@ -307,6 +323,7 @@ def test_image_service_promoted_low_confidence_returns_unknown(monkeypatch):
     assert result["raw_product_type"] == "dress_shoes"
     assert result["confidence"] == 0.76
     assert result["minimum_confidence"] == 0.80
+    assert result["image_size"] == 224
 
 
 def test_image_preprocessing_modes_are_not_double_normalized():
@@ -332,7 +349,10 @@ def test_model_paths_and_missing_loaders_do_not_crash():
     assert IMAGE_MODEL_PATH.is_absolute()
     assert load_fit_model() is None
     assert load_fit_artifacts() is None
-    assert load_image_model() is None
+    assert load_image_model(
+        model_path=PROJECT_ROOT / "missing_fashion_model.keras",
+        metadata_path=PROJECT_ROOT / "missing_fashion_metadata.json",
+    ) is None
 
 
 def test_modcloth_v2_feature_contract_excludes_incoherent_placeholders():

@@ -30,7 +30,12 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
             or artifacts.metadata.get("selected_experiment")
             or "simple_cnn"
         )
-        batch = preprocess_image_for_cnn(image, architecture=architecture)
+        image_size = int(artifacts.metadata.get("image_size", 128))
+        batch = preprocess_image_for_cnn(
+            image,
+            image_size=(image_size, image_size),
+            architecture=architecture,
+        )
         probabilities = artifacts.model.predict(batch, verbose=0)[0]
         class_index = int(probabilities.argmax())
         confidence = float(probabilities[class_index])
@@ -61,6 +66,7 @@ def predict_image(image: Any, use_real_model: bool = False) -> dict:
             "confidence": confidence,
             "raw_product_type": raw_product_type,
             "minimum_confidence": minimum_confidence,
+            "image_size": image_size,
             "model_status": artifacts.metadata.get("model_status", "promoted"),
             "mode": "real_model",
         }

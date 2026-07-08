@@ -21,7 +21,7 @@ def read_image_metadata(metadata_path: Path = FASHION_METADATA_PATH) -> dict | N
     if not metadata_path.exists():
         return None
     try:
-        with metadata_path.open("r", encoding="utf-8") as handle:
+        with metadata_path.open("r", encoding="utf-8-sig") as handle:
             return json.load(handle)
     except Exception:
         return None
