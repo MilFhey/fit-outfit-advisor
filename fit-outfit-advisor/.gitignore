@@ -39,6 +39,10 @@ env/
 !/models/fashion_v1/.gitkeep
 /models/fashion_active/*
 !/models/fashion_active/.gitkeep
+/models/outfit_v1/*
+!/models/outfit_v1/.gitkeep
+/models/outfit_active/*
+!/models/outfit_active/.gitkeep
 
 # OS / IDE
 .DS_Store

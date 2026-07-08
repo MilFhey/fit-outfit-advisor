@@ -1,0 +1,50 @@
+{
+  "target": "outfit_compatibility_v0",
+  "status": "draft_requires_dataset_inspection",
+  "taxonomy_source": "fashion_v1",
+  "source_label_column": null,
+  "seed": 42,
+  "negative_sampling": {
+    "positive_to_negative_ratio": 1.0,
+    "strategy": "hard_negatives_same_role_when_possible",
+    "exclude_known_positive_pairs": true
+  },
+  "allowed_outfit_roles": [
+    "top",
+    "bottom",
+    "dress",
+    "shoes",
+    "outerwear",
+    "bag",
+    "accessory"
+  ],
+  "compatible_role_pairs": [
+    ["top", "bottom"],
+    ["top", "shoes"],
+    ["top", "outerwear"],
+    ["top", "bag"],
+    ["bottom", "shoes"],
+    ["dress", "shoes"],
+    ["dress", "outerwear"],
+    ["dress", "bag"],
+    ["outerwear", "bottom"],
+    ["shoes", "bag"]
+  ],
+  "polyvore_label_mapping": {},
+  "feature_policy": {
+    "forbidden_direct_features": ["item_id", "outfit_id"],
+    "allowed_features": [
+      "input_product_type",
+      "input_canonical_category",
+      "input_outfit_role",
+      "candidate_product_type",
+      "candidate_canonical_category",
+      "candidate_outfit_role"
+    ],
+    "optional_features_after_audit": ["base_colour", "usage", "style"]
+  },
+  "metrics": {
+    "classification": ["balanced_accuracy", "roc_auc", "macro_f1"],
+    "ranking": ["precision_at_k", "recall_at_k", "ndcg_at_k", "mrr"]
+  }
+}

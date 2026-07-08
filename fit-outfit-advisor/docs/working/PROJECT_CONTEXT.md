@@ -465,3 +465,11 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - `models/fashion_active/` est le seul emplacement actif image et exige `model_status: "promoted"` avec `promotable_to_streamlit: true`.
 - Un modele image promu devra definir `abstention_strategy.minimum_confidence`; sous ce seuil, `image_service` retourne `product_type: "unknown"`.
 - `image_service` doit rester en fallback simule tant qu'aucun artefact image actif n'est promu.
+
+## Mise a jour priorite - Outfit Compatibility V0
+- Prochain module : audit Polyvore et baseline cooccurrence.
+- Le module outfit doit rester aligne avec Fashion V1.1 : `product_type_v0`, `canonical_category`, `outfit_role`.
+- Polyvore ne doit pas introduire de taxonomie independante ; tout label Polyvore doit passer par un mapping explicite.
+- Premier livrable : `docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md`, `config/outfit_v1_config.json`, `notebooks/03_polyvore_exploration_colab.ipynb`.
+- Aucun entrainement TensorFlow outfit avant audit dataset et validation du mapping.
+- `models/outfit_v1/` est experimental ; `models/outfit_active/` sera le seul emplacement actif futur.

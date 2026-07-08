@@ -48,11 +48,27 @@ from src.mappings.fashion_v1_mapping import (
     map_product_type_to_canonical_category,
     validate_fashion_v1_class_config,
 )
+from src.mappings.polyvore_mapping import (
+    OutfitConfigError,
+    build_compatible_role_pair_set,
+    load_outfit_v1_config,
+    map_polyvore_label_to_fashion,
+    validate_outfit_v1_config,
+)
 from src.preprocessing.image_preprocessing import (
     MOBILENET_V2_ARCHITECTURE,
     SIMPLE_CNN_ARCHITECTURE,
     get_image_preprocessing_mode,
     preprocess_image_for_cnn,
+)
+from src.preprocessing.outfit_preprocessing import (
+    OUTFIT_PAIR_FEATURE_COLUMNS,
+    assert_no_positive_pair_leakage,
+    build_outfit_feature_frame,
+    build_positive_outfit_pairs,
+    exact_item_pair_key,
+    generate_hard_negative_pairs,
+    split_outfits_by_id,
 )
 from src.preprocessing.tabular_preprocessing import (
     AMBIGUOUS_COMMERCIAL_CATEGORIES,
@@ -232,6 +248,147 @@ def test_category_mapping_preserves_fashion_v1_granular_roles():
     assert map_to_common_category("Earrings") == "accessory"
     assert map_to_common_category("Handbags") == "bag"
     assert map_to_common_category("Sweatshirts") == "outerwear"
+
+
+def test_outfit_v1_config_is_draft_and_aligned_with_fashion_v1():
+    config = load_outfit_v1_config()
+
+    assert config["target"] == "outfit_compatibility_v0"
+    assert config["taxonomy_source"] == "fashion_v1"
+    assert config["status"] == "draft_requires_dataset_inspection"
+    assert set(config["allowed_outfit_roles"]) <= set(FASHION_CANONICAL_CATEGORIES)
+    assert {"item_id", "outfit_id"} <= set(
+        config["feature_policy"]["forbidden_direct_features"]
+    )
+    assert "item_id" not in config["feature_policy"]["allowed_features"]
+    assert "outfit_id" not in config["feature_policy"]["allowed_features"]
+
+    validate_outfit_v1_config(config)
+    with pytest.raises(OutfitConfigError):
+        validate_outfit_v1_config(config, require_ready=True)
+
+
+def test_polyvore_label_maps_to_fashion_v1_taxonomy():
+    config = {
+        "target": "outfit_compatibility_v0",
+        "taxonomy_source": "fashion_v1",
+        "status": "validated_for_training",
+        "source_label_column": "category",
+        "allowed_outfit_roles": ["top", "bottom", "shoes"],
+        "compatible_role_pairs": [["top", "bottom"], ["top", "shoes"]],
+        "polyvore_label_mapping": {
+            "blouse": {
+                "product_type_v0": "shirt",
+                "canonical_category": "top",
+                "outfit_role": "top",
+            },
+            "denim pants": {
+                "product_type_v0": "jeans",
+                "canonical_category": "bottom",
+                "outfit_role": "bottom",
+            },
+        },
+        "feature_policy": {
+            "forbidden_direct_features": ["item_id", "outfit_id"],
+            "allowed_features": OUTFIT_PAIR_FEATURE_COLUMNS,
+        },
+    }
+
+    validate_outfit_v1_config(config, require_ready=True)
+    mapped = map_polyvore_label_to_fashion("blouse", config)
+    assert mapped == {
+        "polyvore_label": "blouse",
+        "product_type_v0": "shirt",
+        "canonical_category": "top",
+        "outfit_role": "top",
+    }
+    assert map_polyvore_label_to_fashion("unknown label", config) is None
+
+
+def test_outfit_positive_pairs_and_hard_negatives_exclude_known_positives():
+    import pandas as pd
+
+    config = {
+        "compatible_role_pairs": [["top", "bottom"], ["top", "shoes"]],
+    }
+    items = pd.DataFrame(
+        [
+            {"outfit_id": "o1", "item_id": "shirt-1", "product_type_v0": "shirt", "canonical_category": "top", "outfit_role": "top"},
+            {"outfit_id": "o1", "item_id": "jeans-1", "product_type_v0": "jeans", "canonical_category": "bottom", "outfit_role": "bottom"},
+            {"outfit_id": "o2", "item_id": "shirt-2", "product_type_v0": "shirt", "canonical_category": "top", "outfit_role": "top"},
+            {"outfit_id": "o2", "item_id": "jeans-2", "product_type_v0": "jeans", "canonical_category": "bottom", "outfit_role": "bottom"},
+            {"outfit_id": "o3", "item_id": "jeans-3", "product_type_v0": "jeans", "canonical_category": "bottom", "outfit_role": "bottom"},
+        ]
+    )
+
+    positives = build_positive_outfit_pairs(items, config)
+    known_positive_keys = set(positives["pair_key"])
+    negatives = generate_hard_negative_pairs(
+        positives,
+        items,
+        positive_pair_keys=known_positive_keys,
+        ratio=1.0,
+        seed=7,
+    )
+
+    assert not positives.empty
+    assert not negatives.empty
+    assert set(negatives["label"]) == {0}
+    assert set(negatives["pair_key"]).isdisjoint(known_positive_keys)
+    assert set(negatives["candidate_outfit_role"]).issubset({"bottom", "top"})
+
+
+def test_outfit_feature_frame_excludes_item_id_and_outfit_id():
+    import pandas as pd
+
+    pairs = pd.DataFrame(
+        [
+            {
+                "outfit_id": "o1",
+                "input_item_id": "shirt-1",
+                "candidate_item_id": "jeans-1",
+                "input_product_type": "shirt",
+                "input_canonical_category": "top",
+                "input_outfit_role": "top",
+                "candidate_product_type": "jeans",
+                "candidate_canonical_category": "bottom",
+                "candidate_outfit_role": "bottom",
+                "pair_key": exact_item_pair_key("shirt-1", "jeans-1"),
+                "label": 1,
+            }
+        ]
+    )
+
+    features, target = build_outfit_feature_frame(pairs)
+
+    assert list(features.columns) == OUTFIT_PAIR_FEATURE_COLUMNS
+    assert "item_id" not in " ".join(features.columns)
+    assert "outfit_id" not in features.columns
+    assert list(target) == [1]
+
+
+def test_outfit_split_groups_by_outfit_and_detects_positive_pair_leakage():
+    import pandas as pd
+
+    frame = pd.DataFrame(
+        [
+            {"outfit_id": f"o{index}", "pair_key": exact_item_pair_key(f"a{index}", f"b{index}"), "label": 1}
+            for index in range(20)
+        ]
+    )
+    train, validation, test = split_outfits_by_id(frame, seed=42)
+
+    assert set(train["outfit_id"]).isdisjoint(set(validation["outfit_id"]))
+    assert set(train["outfit_id"]).isdisjoint(set(test["outfit_id"]))
+    assert set(validation["outfit_id"]).isdisjoint(set(test["outfit_id"]))
+    assert_no_positive_pair_leakage({"train": train, "validation": validation, "test": test})
+
+    leaked_validation = validation.copy()
+    leaked_validation.at[leaked_validation.index[0], "pair_key"] = train.iloc[0]["pair_key"]
+    with pytest.raises(ValueError):
+        assert_no_positive_pair_leakage(
+            {"train": train, "validation": leaked_validation, "test": test}
+        )
 
 
 def test_image_service_simulated_output_keys():
@@ -744,7 +901,23 @@ def test_outfit_service_output_keys():
     assert outfit_result["compatibility_score"] > 0
     assert outfit_result["compatible_items"]
     assert outfit_result["compatible_colors"]
-    assert {"compatible_items", "compatible_colors", "compatibility_score", "reason", "mode"} <= set(outfit_result)
+    assert outfit_result["recommended_product_types"]
+    assert outfit_result["compatible_roles"]
+    assert outfit_result["raw_compatibility_score"] == outfit_result["compatibility_score"]
+    assert outfit_result["mode"] == "rule_based"
+    assert outfit_result["model_status"] == "fallback"
+    assert {
+        "input_product_type",
+        "recommended_product_types",
+        "compatible_roles",
+        "raw_compatibility_score",
+        "compatible_items",
+        "compatible_colors",
+        "compatibility_score",
+        "reason",
+        "mode",
+        "model_status",
+    } <= set(outfit_result)
 
 
 def test_advice_service_output_keys():

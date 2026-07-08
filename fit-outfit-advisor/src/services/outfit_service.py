@@ -10,6 +10,28 @@ BASE_SUGGESTIONS = {
     "unknown": ["pièces neutres", "couleurs simples", "coupe classique"],
 }
 
+RECOMMENDED_PRODUCT_TYPES = {
+    "top": ["jeans", "trousers", "shorts", "casual_shoes"],
+    "bottom": ["tshirt", "shirt", "top", "casual_shoes"],
+    "dress": ["heels", "dress_shoes", "bag", "outerwear"],
+    "shoes": ["jeans", "trousers", "tshirt", "shirt"],
+    "outerwear": ["shirt", "top", "jeans", "trousers"],
+    "bag": ["dress", "heels", "shirt", "trousers"],
+    "accessory": ["shirt", "dress", "jeans", "outerwear"],
+    "unknown": ["tshirt", "jeans", "casual_shoes"],
+}
+
+COMPATIBLE_ROLES = {
+    "top": ["bottom", "shoes", "outerwear", "bag"],
+    "bottom": ["top", "shoes", "outerwear"],
+    "dress": ["shoes", "outerwear", "bag"],
+    "shoes": ["top", "bottom", "dress", "bag"],
+    "outerwear": ["top", "bottom", "dress"],
+    "bag": ["top", "dress", "shoes"],
+    "accessory": ["top", "bottom", "dress"],
+    "unknown": ["top", "bottom", "shoes"],
+}
+
 CONTEXT_RULES = {
     "casual": "Privilégier une association simple, confortable et facile à porter.",
     "travail": "Privilégier des pièces sobres, structurées et peu voyantes.",
@@ -41,9 +63,16 @@ def recommend_outfit(common_category: str, context: str, color: str) -> dict:
         score = 0.86
 
     return {
+        "input_product_type": category,
+        "recommended_product_types": RECOMMENDED_PRODUCT_TYPES.get(
+            category, RECOMMENDED_PRODUCT_TYPES["unknown"]
+        ),
+        "compatible_roles": COMPATIBLE_ROLES.get(category, COMPATIBLE_ROLES["unknown"]),
+        "raw_compatibility_score": score,
         "compatible_items": base_items,
         "compatible_colors": compatible_colors,
         "compatibility_score": score,
         "reason": context_reason,
-        "mode": "rule_based_mvp",
+        "mode": "rule_based",
+        "model_status": "fallback",
     }

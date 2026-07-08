@@ -164,3 +164,10 @@
   - Artefacts copies localement dans `models/fashion_active/`.
   - Metadata active : `model_status: "promoted"`, `promotable_to_streamlit: true`, `abstention_strategy.minimum_confidence: 0.90`.
   - Smoke test local du chargement via `image_service.predict_image(..., use_real_model=True)` OK.
+
+## Priorite Outfit Compatibility V0
+- Ajout du plan `docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md`.
+- Ajout de `config/outfit_v1_config.json` en statut `draft_requires_dataset_inspection`.
+- Ajout des helpers de mapping Polyvore -> Fashion V1 et preprocessing paires outfit.
+- `outfit_service` conserve son contrat historique et ajoute les champs V0 : `input_product_type`, `recommended_product_types`, `compatible_roles`, `raw_compatibility_score`, `model_status`.
+- Aucun entrainement Polyvore n'est lance dans cette etape.

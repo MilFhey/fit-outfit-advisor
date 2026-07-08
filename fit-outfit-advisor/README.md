@@ -479,8 +479,28 @@ pytest
 6. Inspecter Fashion Product Images Small dans Colab et valider les classes V0. Fait pour Fashion V1.
 7. Entraîner le CNN Fashion Product Images Small sur `product_type_v0`, puis mapper vers `canonical_category`.
 8. Brancher le CNN promu dans `image_service.py`.
-9. Améliorer le module outfit avec des règles Polyvore simplifiées.
+9. Améliorer le module outfit avec audit Polyvore, baseline cooccurrence et règles alignées Fashion V1.
 10. Enrichir le conseil final.
+
+## Outfit Compatibility V0
+
+Le prochain module est documente dans :
+
+```text
+docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md
+```
+
+Objectif : recommander des `product_type_v0` complementaires, pas generer une tenue complete. Le module doit rester aligne sur Fashion V1.1 via `product_type_v0`, `canonical_category` et `outfit_role`.
+
+Livrables initiaux :
+
+```text
+config/outfit_v1_config.json
+notebooks/03_polyvore_exploration_colab.ipynb
+reports/polyvore_v0_dataset_audit.json
+```
+
+Aucun entrainement Polyvore ne doit etre lance avant audit dataset. `models/outfit_v1/` restera experimental et `models/outfit_active/` sera le seul emplacement actif futur avec metadata promues.
 
 ## Critère de réussite de la première semaine
 
