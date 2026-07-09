@@ -473,6 +473,7 @@ Une personne peut lancer Streamlit, tester un cas complet, voir les prédictions
 - Premier livrable : `docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md`, `config/outfit_v1_config.json`, `notebooks/03_polyvore_exploration_colab.ipynb`.
 - Source principale audit : Hugging Face `mvasil/polyvore-outfits`, via le secret Colab `HUGGIN_KEY`.
 - Le notebook doit privilegier les configurations/splits `disjoint` et `nondisjoint` si disponibles et sauvegarder une copie dans Google Drive.
+- Le notebook doit verifier la copie Drive avant tout retelechargement Hugging Face et afficher les fichiers/features reellement exposes.
 - Audit recu le 2026-07-09 : cette source fournit `item_id` et `image`, mais pas `outfit_id`, labels produit ni composition de tenue ; elle est insuffisante seule pour la baseline cooccurrence.
 - Aucun entrainement TensorFlow outfit avant audit dataset et validation du mapping.
 - `models/outfit_v1/` est experimental ; `models/outfit_active/` sera le seul emplacement actif futur.

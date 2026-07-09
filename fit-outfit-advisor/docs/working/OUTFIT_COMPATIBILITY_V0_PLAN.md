@@ -29,6 +29,8 @@
   - charger la source principale Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY` ;
   - privilegier les configurations/splits `disjoint` et `nondisjoint` si disponibles ;
   - sauvegarder aussi le dataset dans Google Drive sous `MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits` ;
+  - verifier d'abord cette copie Drive pour eviter de retelecharger le dataset ;
+  - afficher les fichiers Hugging Face, les `features` chargees et les cles de premiere ligne ;
   - detecter les fichiers outfits/items/images/metadonnees ;
   - inspecter shapes, colonnes, valeurs manquantes, categories, outfits et items par outfit ;
   - generer `reports/polyvore_v0_dataset_audit.json` ;

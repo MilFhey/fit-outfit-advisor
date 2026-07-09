@@ -502,7 +502,7 @@ reports/polyvore_v0_dataset_audit.json
 
 Aucun entrainement Polyvore ne doit etre lance avant audit dataset. `models/outfit_v1/` restera experimental et `models/outfit_active/` sera le seul emplacement actif futur avec metadata promues.
 
-Le notebook Polyvore utilise comme source principale Hugging Face `mvasil/polyvore-outfits`, via le secret Colab `HUGGIN_KEY`. Il inspecte les configurations/splits `disjoint` et `nondisjoint` si disponibles, puis sauvegarde une copie du dataset dans Google Drive sous `MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits`.
+Le notebook Polyvore utilise comme source principale Hugging Face `mvasil/polyvore-outfits`, via le secret Colab `HUGGIN_KEY`. Il inspecte les configurations/splits `disjoint` et `nondisjoint` si disponibles, puis sauvegarde une copie du dataset dans Google Drive sous `MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits`. Au lancement suivant, il verifie cette copie Drive avant tout telechargement Hugging Face.
 
 Audit du 2026-07-09 : cette source expose les splits `disjoint`/`nondisjoint` avec `item_id` et `image`, mais sans `outfit_id`, sans labels produit et sans composition de tenue. Elle est donc insuffisante seule pour la baseline cooccurrence. Il faut une source metadata Polyvore complementaire avant toute baseline ou entrainement outfit.
 
