@@ -172,5 +172,5 @@
 - `outfit_service` conserve son contrat historique et ajoute les champs V0 : `input_product_type`, `recommended_product_types`, `compatible_roles`, `raw_compatibility_score`, `model_status`.
 - Notebook Polyvore ajuste pour utiliser Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY`, inspecter `disjoint`/`nondisjoint` si disponibles et sauvegarder le dataset dans Google Drive.
 - Notebook Polyvore ajuste pour verifier d'abord la copie Drive et eviter un retelechargement systematique du dataset.
-- Rapport audit recu le 2026-07-09 : `mvasil/polyvore-outfits` expose `item_id` + `image`, sans `outfit_id`, labels produit ou composition de tenue ; source insuffisante seule pour baseline cooccurrence.
+- Rapport audit recu le 2026-07-09 : le loader `datasets` expose `item_id` + `image`, mais la liste des fichiers HF contient les metadata brutes Polyvore (`categories.csv`, `polyvore_item_metadata.json`, splits JSON et fichiers compatibility). Notebook ajuste pour telecharger/cache Drive et inspecter ces fichiers raw avant baseline cooccurrence.
 - Aucun entrainement Polyvore n'est lance dans cette etape.

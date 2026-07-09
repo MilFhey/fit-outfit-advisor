@@ -61,9 +61,10 @@
 - Rapport local : `reports/polyvore_v0_dataset_audit.json`.
 - Configurations disponibles : `disjoint` et `nondisjoint`.
 - Colonnes observees dans les splits Hugging Face : `item_id`, `image`.
-- Colonnes absentes pour Outfit V0 : `outfit_id`/`set_id`, labels de categorie/type, composition des outfits.
-- Decision : source insuffisante seule pour baseline cooccurrence ; elle peut servir de source image, mais pas de dataset compatibilite tenue.
-- Prochaine action : trouver ou brancher une source metadata Polyvore contenant au minimum `outfit_id`, `item_id` et un label produit/categorie.
+- Le loader `datasets` seul ne suffit pas pour Outfit V0 : il n'expose pas directement `outfit_id`/`set_id`, labels de categorie/type, ni composition des outfits.
+- La liste des fichiers HF contient toutefois les metadata brutes attendues : `categories.csv`, `polyvore_item_metadata.json`, `polyvore_outfit_titles.json`, `disjoint/*.json`, `nondisjoint/*.json`, `compatibility_*.txt`.
+- Decision revisee : source Hugging Face probablement exploitable via fichiers raw ; il faut inspecter leur schema avant baseline cooccurrence.
+- Prochaine action : telecharger/cache Drive les fichiers raw HF, verifier leurs cles et construire le mapping Polyvore -> Fashion V1.
 
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.
