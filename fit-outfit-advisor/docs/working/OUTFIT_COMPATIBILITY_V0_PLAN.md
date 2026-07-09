@@ -55,6 +55,14 @@
 - Produire des scores normalises pour classer des types complementaires.
 - La baseline doit devenir le premier candidat exploitable du service avant tout modele TensorFlow.
 
+## Resultat audit `mvasil/polyvore-outfits` - 2026-07-09
+- Rapport local : `reports/polyvore_v0_dataset_audit.json`.
+- Configurations disponibles : `disjoint` et `nondisjoint`.
+- Colonnes observees dans les splits Hugging Face : `item_id`, `image`.
+- Colonnes absentes pour Outfit V0 : `outfit_id`/`set_id`, labels de categorie/type, composition des outfits.
+- Decision : source insuffisante seule pour baseline cooccurrence ; elle peut servir de source image, mais pas de dataset compatibilite tenue.
+- Prochaine action : trouver ou brancher une source metadata Polyvore contenant au minimum `outfit_id`, `item_id` et un label produit/categorie.
+
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.
 - Remplacer un item par un autre item du meme role, et de meme famille quand possible.

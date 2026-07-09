@@ -1,0 +1,915 @@
+{
+  "version": "polyvore_v0_dataset_audit",
+  "dataset_root": "/content/fit-outfit-runtime/polyvore/mvasil_polyvore_outfits",
+  "source": {
+    "hugging_face_dataset_id": "mvasil/polyvore-outfits",
+    "hugging_face_secret_name": "HUGGIN_KEY",
+    "available_configs": [
+      "nondisjoint",
+      "disjoint"
+    ],
+    "selected_configs": [
+      "disjoint",
+      "nondisjoint"
+    ],
+    "drive_dataset_dir": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits"
+  },
+  "file_counts": {
+    "total_files": 26,
+    "tabular_files": 14,
+    "image_files": 0
+  },
+  "tabular_file_summary": [
+    {
+      "relative_path": "disjoint/dataset_dict.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 43
+    },
+    {
+      "relative_path": "nondisjoint/dataset_dict.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 43
+    },
+    {
+      "relative_path": "disjoint/validation/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 255
+    },
+    {
+      "relative_path": "disjoint/validation/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1088
+    },
+    {
+      "relative_path": "disjoint/train/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 309
+    },
+    {
+      "relative_path": "disjoint/train/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1088
+    },
+    {
+      "relative_path": "disjoint/test/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 308
+    },
+    {
+      "relative_path": "disjoint/test/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1088
+    },
+    {
+      "relative_path": "nondisjoint/validation/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 255
+    },
+    {
+      "relative_path": "nondisjoint/validation/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1093
+    },
+    {
+      "relative_path": "nondisjoint/train/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 486
+    },
+    {
+      "relative_path": "nondisjoint/train/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1093
+    },
+    {
+      "relative_path": "nondisjoint/test/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 249
+    },
+    {
+      "relative_path": "nondisjoint/test/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1093
+    }
+  ],
+  "table_reports": [
+    {
+      "relative_path": "disjoint/dataset_dict.json",
+      "readable": true,
+      "sample_shape": [
+        3,
+        0
+      ],
+      "columns": [],
+      "missing_pct_top": {},
+      "id_like_columns": [],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/dataset_dict.json",
+      "readable": true,
+      "sample_shape": [
+        3,
+        0
+      ],
+      "columns": [],
+      "missing_pct_top": {},
+      "id_like_columns": [],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "disjoint/validation/state.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "disjoint/validation/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "disjoint/train/state.json",
+      "readable": true,
+      "sample_shape": [
+        2,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "disjoint/train/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "disjoint/test/state.json",
+      "readable": true,
+      "sample_shape": [
+        2,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "disjoint/test/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "nondisjoint/validation/state.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/validation/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "nondisjoint/train/state.json",
+      "readable": true,
+      "sample_shape": [
+        5,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/train/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "nondisjoint/test/state.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/test/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    }
+  ],
+  "hf_split_reports": [
+    {
+      "config": "disjoint",
+      "split": "train",
+      "row_count": 71967,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "config": "disjoint",
+      "split": "validation",
+      "row_count": 14657,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "config": "disjoint",
+      "split": "test",
+      "row_count": 70035,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "config": "nondisjoint",
+      "split": "train",
+      "row_count": 204679,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "config": "nondisjoint",
+      "split": "validation",
+      "row_count": 25132,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    },
+    {
+      "config": "nondisjoint",
+      "split": "test",
+      "row_count": 47854,
+      "sample_shape": [
+        5000,
+        2
+      ],
+      "columns": [
+        "item_id",
+        "image"
+      ],
+      "missing_pct_top": {
+        "item_id": 0.0,
+        "image": 0.0
+      },
+      "id_like_columns": [
+        "item_id"
+      ],
+      "category_like_columns": [],
+      "outfit_like_columns": []
+    }
+  ],
+  "outfit_config_status": "draft_requires_dataset_inspection",
+  "taxonomy_alignment_required": [
+    "product_type_v0",
+    "canonical_category",
+    "outfit_role"
+  ],
+  "cooccurrence_baseline_possible": false,
+  "dataset_exploitable_for_outfit_v0": false,
+  "audit_decision": "not_exploitable_for_cooccurrence_baseline",
+  "audit_blockers": [
+    "Aucune colonne outfit/set detectee dans les splits Hugging Face.",
+    "Aucune colonne categorie/type/label/name detectee dans les splits Hugging Face."
+  ],
+  "training_executed": false,
+  "next_decision": "Source insuffisante pour baseline cooccurrence: chercher metadata outfits/items avec outfit_id et labels."
+}
