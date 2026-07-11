@@ -173,4 +173,5 @@
 - Notebook Polyvore ajuste pour utiliser Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY`, inspecter `disjoint`/`nondisjoint` si disponibles et sauvegarder le dataset dans Google Drive.
 - Notebook Polyvore ajuste pour verifier d'abord la copie Drive et eviter un retelechargement systematique du dataset.
 - Rapport audit recu le 2026-07-09 : le loader `datasets` expose `item_id` + `image`, mais la liste des fichiers HF contient les metadata brutes Polyvore (`categories.csv`, `polyvore_item_metadata.json`, splits JSON et fichiers compatibility). Notebook ajuste pour telecharger/cache Drive et inspecter ces fichiers raw avant baseline cooccurrence.
+- Rapport raw metadata recu le 2026-07-11 : `raw_metadata_ready_for_schema_audit: true`, 29 fichiers raw, 251 008 items metadata, 68 306 outfits titres, splits disjoint/nondisjoint exploitables pour schema/mapping.
 - Aucun entrainement Polyvore n'est lance dans cette etape.

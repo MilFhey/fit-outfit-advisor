@@ -54,7 +54,9 @@
       "nondisjoint/valid.json",
       "polyvore_item_metadata.json",
       "polyvore_outfit_titles.json"
-    ]
+    ],
+    "raw_hf_files_dir": "/content/fit-outfit-runtime/polyvore/raw_hf_files",
+    "drive_raw_hf_files_dir": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files"
   },
   "file_counts": {
     "total_files": 26,
@@ -75,25 +77,7 @@
       "size_bytes": 43
     },
     {
-      "relative_path": "disjoint/train/state.json",
-      "suffix": ".json",
-      "kind_guess": "other_tabular",
-      "size_bytes": 309
-    },
-    {
-      "relative_path": "disjoint/train/dataset_info.json",
-      "suffix": ".json",
-      "kind_guess": "outfit_candidate",
-      "size_bytes": 1088
-    },
-    {
-      "relative_path": "disjoint/test/state.json",
-      "suffix": ".json",
-      "kind_guess": "other_tabular",
-      "size_bytes": 308
-    },
-    {
-      "relative_path": "disjoint/test/dataset_info.json",
+      "relative_path": "disjoint/validation/dataset_info.json",
       "suffix": ".json",
       "kind_guess": "outfit_candidate",
       "size_bytes": 1088
@@ -105,31 +89,31 @@
       "size_bytes": 255
     },
     {
-      "relative_path": "disjoint/validation/dataset_info.json",
+      "relative_path": "disjoint/test/dataset_info.json",
       "suffix": ".json",
       "kind_guess": "outfit_candidate",
       "size_bytes": 1088
     },
     {
-      "relative_path": "nondisjoint/train/state.json",
+      "relative_path": "disjoint/test/state.json",
       "suffix": ".json",
       "kind_guess": "other_tabular",
-      "size_bytes": 486
+      "size_bytes": 308
     },
     {
-      "relative_path": "nondisjoint/train/dataset_info.json",
+      "relative_path": "disjoint/train/dataset_info.json",
       "suffix": ".json",
       "kind_guess": "outfit_candidate",
-      "size_bytes": 1093
+      "size_bytes": 1088
     },
     {
-      "relative_path": "nondisjoint/test/state.json",
+      "relative_path": "disjoint/train/state.json",
       "suffix": ".json",
       "kind_guess": "other_tabular",
-      "size_bytes": 249
+      "size_bytes": 309
     },
     {
-      "relative_path": "nondisjoint/test/dataset_info.json",
+      "relative_path": "nondisjoint/validation/dataset_info.json",
       "suffix": ".json",
       "kind_guess": "outfit_candidate",
       "size_bytes": 1093
@@ -141,10 +125,28 @@
       "size_bytes": 255
     },
     {
-      "relative_path": "nondisjoint/validation/dataset_info.json",
+      "relative_path": "nondisjoint/test/dataset_info.json",
       "suffix": ".json",
       "kind_guess": "outfit_candidate",
       "size_bytes": 1093
+    },
+    {
+      "relative_path": "nondisjoint/test/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 249
+    },
+    {
+      "relative_path": "nondisjoint/train/dataset_info.json",
+      "suffix": ".json",
+      "kind_guess": "outfit_candidate",
+      "size_bytes": 1093
+    },
+    {
+      "relative_path": "nondisjoint/train/state.json",
+      "suffix": ".json",
+      "kind_guess": "other_tabular",
+      "size_bytes": 486
     }
   ],
   "table_reports": [
@@ -175,131 +177,7 @@
       "outfit_like_columns": []
     },
     {
-      "relative_path": "disjoint/train/state.json",
-      "readable": true,
-      "sample_shape": [
-        2,
-        1
-      ],
-      "columns": [
-        "filename"
-      ],
-      "missing_pct_top": {
-        "filename": 0.0
-      },
-      "id_like_columns": [],
-      "category_like_columns": [
-        "filename"
-      ],
-      "outfit_like_columns": []
-    },
-    {
-      "relative_path": "disjoint/train/dataset_info.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        32
-      ],
-      "columns": [
-        "builder_name",
-        "citation",
-        "config_name",
-        "dataset_name",
-        "dataset_size",
-        "description",
-        "download_size",
-        "homepage",
-        "license",
-        "size_in_bytes",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.num_bytes",
-        "splits.train.num_examples",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.num_bytes",
-        "splits.test.num_examples",
-        "splits.test.dataset_name",
-        "version.version_str",
-        "version.major",
-        "version.minor",
-        "version.patch"
-      ],
-      "missing_pct_top": {
-        "builder_name": 0.0,
-        "citation": 0.0,
-        "config_name": 0.0,
-        "dataset_name": 0.0,
-        "dataset_size": 0.0,
-        "description": 0.0,
-        "download_size": 0.0,
-        "homepage": 0.0,
-        "license": 0.0,
-        "size_in_bytes": 0.0
-      },
-      "id_like_columns": [
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name"
-      ],
-      "category_like_columns": [
-        "builder_name",
-        "config_name",
-        "dataset_name",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.dataset_name"
-      ],
-      "outfit_like_columns": [
-        "dataset_name",
-        "dataset_size",
-        "splits.train.dataset_name",
-        "splits.validation.dataset_name",
-        "splits.test.dataset_name"
-      ]
-    },
-    {
-      "relative_path": "disjoint/test/state.json",
-      "readable": true,
-      "sample_shape": [
-        2,
-        1
-      ],
-      "columns": [
-        "filename"
-      ],
-      "missing_pct_top": {
-        "filename": 0.0
-      },
-      "id_like_columns": [],
-      "category_like_columns": [
-        "filename"
-      ],
-      "outfit_like_columns": []
-    },
-    {
-      "relative_path": "disjoint/test/dataset_info.json",
+      "relative_path": "disjoint/validation/dataset_info.json",
       "readable": true,
       "sample_shape": [
         1,
@@ -404,7 +282,427 @@
       "outfit_like_columns": []
     },
     {
-      "relative_path": "disjoint/validation/dataset_info.json",
+      "relative_path": "disjoint/test/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "disjoint/test/state.json",
+      "readable": true,
+      "sample_shape": [
+        2,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "disjoint/train/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "disjoint/train/state.json",
+      "readable": true,
+      "sample_shape": [
+        2,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/validation/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "nondisjoint/validation/state.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/test/dataset_info.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        32
+      ],
+      "columns": [
+        "builder_name",
+        "citation",
+        "config_name",
+        "dataset_name",
+        "dataset_size",
+        "description",
+        "download_size",
+        "homepage",
+        "license",
+        "size_in_bytes",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.num_bytes",
+        "splits.train.num_examples",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.num_bytes",
+        "splits.test.num_examples",
+        "splits.test.dataset_name",
+        "version.version_str",
+        "version.major",
+        "version.minor",
+        "version.patch"
+      ],
+      "missing_pct_top": {
+        "builder_name": 0.0,
+        "citation": 0.0,
+        "config_name": 0.0,
+        "dataset_name": 0.0,
+        "dataset_size": 0.0,
+        "description": 0.0,
+        "download_size": 0.0,
+        "homepage": 0.0,
+        "license": 0.0,
+        "size_in_bytes": 0.0
+      },
+      "id_like_columns": [
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "splits.validation.name",
+        "splits.validation.num_bytes",
+        "splits.validation.num_examples",
+        "splits.validation.dataset_name"
+      ],
+      "category_like_columns": [
+        "builder_name",
+        "config_name",
+        "dataset_name",
+        "features.item_id.dtype",
+        "features.item_id._type",
+        "features.image.bytes.dtype",
+        "features.image.bytes._type",
+        "features.image.path.dtype",
+        "features.image.path._type",
+        "splits.train.name",
+        "splits.train.dataset_name",
+        "splits.validation.name",
+        "splits.validation.dataset_name",
+        "splits.test.name",
+        "splits.test.dataset_name"
+      ],
+      "outfit_like_columns": [
+        "dataset_name",
+        "dataset_size",
+        "splits.train.dataset_name",
+        "splits.validation.dataset_name",
+        "splits.test.dataset_name"
+      ]
+    },
+    {
+      "relative_path": "nondisjoint/test/state.json",
+      "readable": true,
+      "sample_shape": [
+        1,
+        1
+      ],
+      "columns": [
+        "filename"
+      ],
+      "missing_pct_top": {
+        "filename": 0.0
+      },
+      "id_like_columns": [],
+      "category_like_columns": [
+        "filename"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "relative_path": "nondisjoint/train/dataset_info.json",
       "readable": true,
       "sample_shape": [
         1,
@@ -507,302 +805,6 @@
         "filename"
       ],
       "outfit_like_columns": []
-    },
-    {
-      "relative_path": "nondisjoint/train/dataset_info.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        32
-      ],
-      "columns": [
-        "builder_name",
-        "citation",
-        "config_name",
-        "dataset_name",
-        "dataset_size",
-        "description",
-        "download_size",
-        "homepage",
-        "license",
-        "size_in_bytes",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.num_bytes",
-        "splits.train.num_examples",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.num_bytes",
-        "splits.test.num_examples",
-        "splits.test.dataset_name",
-        "version.version_str",
-        "version.major",
-        "version.minor",
-        "version.patch"
-      ],
-      "missing_pct_top": {
-        "builder_name": 0.0,
-        "citation": 0.0,
-        "config_name": 0.0,
-        "dataset_name": 0.0,
-        "dataset_size": 0.0,
-        "description": 0.0,
-        "download_size": 0.0,
-        "homepage": 0.0,
-        "license": 0.0,
-        "size_in_bytes": 0.0
-      },
-      "id_like_columns": [
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name"
-      ],
-      "category_like_columns": [
-        "builder_name",
-        "config_name",
-        "dataset_name",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.dataset_name"
-      ],
-      "outfit_like_columns": [
-        "dataset_name",
-        "dataset_size",
-        "splits.train.dataset_name",
-        "splits.validation.dataset_name",
-        "splits.test.dataset_name"
-      ]
-    },
-    {
-      "relative_path": "nondisjoint/test/state.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        1
-      ],
-      "columns": [
-        "filename"
-      ],
-      "missing_pct_top": {
-        "filename": 0.0
-      },
-      "id_like_columns": [],
-      "category_like_columns": [
-        "filename"
-      ],
-      "outfit_like_columns": []
-    },
-    {
-      "relative_path": "nondisjoint/test/dataset_info.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        32
-      ],
-      "columns": [
-        "builder_name",
-        "citation",
-        "config_name",
-        "dataset_name",
-        "dataset_size",
-        "description",
-        "download_size",
-        "homepage",
-        "license",
-        "size_in_bytes",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.num_bytes",
-        "splits.train.num_examples",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.num_bytes",
-        "splits.test.num_examples",
-        "splits.test.dataset_name",
-        "version.version_str",
-        "version.major",
-        "version.minor",
-        "version.patch"
-      ],
-      "missing_pct_top": {
-        "builder_name": 0.0,
-        "citation": 0.0,
-        "config_name": 0.0,
-        "dataset_name": 0.0,
-        "dataset_size": 0.0,
-        "description": 0.0,
-        "download_size": 0.0,
-        "homepage": 0.0,
-        "license": 0.0,
-        "size_in_bytes": 0.0
-      },
-      "id_like_columns": [
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name"
-      ],
-      "category_like_columns": [
-        "builder_name",
-        "config_name",
-        "dataset_name",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.dataset_name"
-      ],
-      "outfit_like_columns": [
-        "dataset_name",
-        "dataset_size",
-        "splits.train.dataset_name",
-        "splits.validation.dataset_name",
-        "splits.test.dataset_name"
-      ]
-    },
-    {
-      "relative_path": "nondisjoint/validation/state.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        1
-      ],
-      "columns": [
-        "filename"
-      ],
-      "missing_pct_top": {
-        "filename": 0.0
-      },
-      "id_like_columns": [],
-      "category_like_columns": [
-        "filename"
-      ],
-      "outfit_like_columns": []
-    },
-    {
-      "relative_path": "nondisjoint/validation/dataset_info.json",
-      "readable": true,
-      "sample_shape": [
-        1,
-        32
-      ],
-      "columns": [
-        "builder_name",
-        "citation",
-        "config_name",
-        "dataset_name",
-        "dataset_size",
-        "description",
-        "download_size",
-        "homepage",
-        "license",
-        "size_in_bytes",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.num_bytes",
-        "splits.train.num_examples",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.num_bytes",
-        "splits.test.num_examples",
-        "splits.test.dataset_name",
-        "version.version_str",
-        "version.major",
-        "version.minor",
-        "version.patch"
-      ],
-      "missing_pct_top": {
-        "builder_name": 0.0,
-        "citation": 0.0,
-        "config_name": 0.0,
-        "dataset_name": 0.0,
-        "dataset_size": 0.0,
-        "description": 0.0,
-        "download_size": 0.0,
-        "homepage": 0.0,
-        "license": 0.0,
-        "size_in_bytes": 0.0
-      },
-      "id_like_columns": [
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "splits.validation.name",
-        "splits.validation.num_bytes",
-        "splits.validation.num_examples",
-        "splits.validation.dataset_name"
-      ],
-      "category_like_columns": [
-        "builder_name",
-        "config_name",
-        "dataset_name",
-        "features.item_id.dtype",
-        "features.item_id._type",
-        "features.image.bytes.dtype",
-        "features.image.bytes._type",
-        "features.image.path.dtype",
-        "features.image.path._type",
-        "splits.train.name",
-        "splits.train.dataset_name",
-        "splits.validation.name",
-        "splits.validation.dataset_name",
-        "splits.test.name",
-        "splits.test.dataset_name"
-      ],
-      "outfit_like_columns": [
-        "dataset_name",
-        "dataset_size",
-        "splits.train.dataset_name",
-        "splits.validation.dataset_name",
-        "splits.test.dataset_name"
-      ]
     }
   ],
   "hf_split_reports": [
@@ -1025,6 +1027,864 @@
       }
     }
   ],
+  "raw_metadata_files": [
+    {
+      "repo_file": "categories.csv",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/categories.csv",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/categories.csv",
+      "source": "hugging_face_download",
+      "size_bytes": 4910
+    },
+    {
+      "repo_file": "disjoint/compatibility_test.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/compatibility_test.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 1837218
+    },
+    {
+      "repo_file": "disjoint/compatibility_train.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/compatibility_train.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 2140466
+    },
+    {
+      "repo_file": "disjoint/compatibility_valid.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/compatibility_valid.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 380523
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_test.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/fill_in_blank_test.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2536094
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_train.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/fill_in_blank_train.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2898038
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_valid.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/fill_in_blank_valid.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 513216
+    },
+    {
+      "repo_file": "disjoint/test.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/test.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 8364949
+    },
+    {
+      "repo_file": "disjoint/train.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/train.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 9654112
+    },
+    {
+      "repo_file": "disjoint/typespaces.p",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/typespaces.p",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/typespaces.p",
+      "source": "hugging_face_download",
+      "size_bytes": 1466
+    },
+    {
+      "repo_file": "disjoint/valid.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/disjoint/valid.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/disjoint/valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1715690
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_test.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/compatibility_test.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 442049
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_train.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/compatibility_train.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 2707503
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_valid.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/compatibility_valid.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 215759
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_test.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/fill_in_blank_test.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1102277
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_train.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/fill_in_blank_train.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 6487293
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_valid.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/maryland_polyvore_hardneg/fill_in_blank_valid.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/maryland_polyvore_hardneg/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 536894
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_test.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/compatibility_test.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 1329653
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_train.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/compatibility_train.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 7076089
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_valid.txt",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/compatibility_valid.txt",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 665403
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_test.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/fill_in_blank_test.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1749071
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_train.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/fill_in_blank_train.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 9316292
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_valid.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/fill_in_blank_valid.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 874943
+    },
+    {
+      "repo_file": "nondisjoint/test.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/test.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 5968052
+    },
+    {
+      "repo_file": "nondisjoint/train.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/train.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 31769038
+    },
+    {
+      "repo_file": "nondisjoint/typespaces.p",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/typespaces.p",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/typespaces.p",
+      "source": "hugging_face_download",
+      "size_bytes": 1404
+    },
+    {
+      "repo_file": "nondisjoint/valid.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/nondisjoint/valid.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/nondisjoint/valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2986871
+    },
+    {
+      "repo_file": "polyvore_item_metadata.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/polyvore_item_metadata.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/polyvore_item_metadata.json",
+      "source": "hugging_face_download",
+      "size_bytes": 105137208
+    },
+    {
+      "repo_file": "polyvore_outfit_titles.json",
+      "local_path": "/content/fit-outfit-runtime/polyvore/raw_hf_files/polyvore_outfit_titles.json",
+      "drive_path": "/content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files/polyvore_outfit_titles.json",
+      "source": "hugging_face_download",
+      "size_bytes": 6970887
+    }
+  ],
+  "raw_metadata_reports": [
+    {
+      "repo_file": "categories.csv",
+      "source": "hugging_face_download",
+      "size_bytes": 4910,
+      "suffix": ".csv",
+      "readable": true,
+      "kind": "csv",
+      "sample_shape": [
+        223,
+        3
+      ],
+      "columns": [
+        "2",
+        "undefined",
+        "Unnamed: 2"
+      ],
+      "id_like_columns": [],
+      "category_like_columns": [
+        "Unnamed: 2"
+      ],
+      "outfit_like_columns": []
+    },
+    {
+      "repo_file": "disjoint/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 1837218,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 30290,
+      "sample_lines": [
+        "1 222049137_1 222049137_2 222049137_3 222049137_4 222049137_5 222049137_6",
+        "1 171638917_1 171638917_2 171638917_3 171638917_4 171638917_5",
+        "1 209614451_1 209614451_2 209614451_3 209614451_4 209614451_5",
+        "1 208805759_1 208805759_2 208805759_3 208805759_4",
+        "1 181727193_1 181727193_2 181727193_3 181727193_4"
+      ]
+    },
+    {
+      "repo_file": "disjoint/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 2140466,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 33990,
+      "sample_lines": [
+        "1 199244701_1 199244701_2 199244701_3 199244701_4 199244701_5 199244701_6",
+        "1 200742384_1 200742384_2 200742384_3 200742384_4 200742384_5",
+        "1 206955877_1 206955877_2 206955877_3 206955877_4 206955877_5 206955877_6",
+        "1 220340816_1 220340816_2 220340816_3 220340816_4 220340816_5",
+        "1 219393187_1 219393187_2 219393187_3 219393187_4 219393187_5"
+      ]
+    },
+    {
+      "repo_file": "disjoint/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 380523,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 6000,
+      "sample_lines": [
+        "1 223648758_1 223648758_2 223648758_3 223648758_4 223648758_5",
+        "1 219849644_1 219849644_2 219849644_3 219849644_4 219849644_5 219849644_6 219849644_7",
+        "1 208264087_1 208264087_2 208264087_3 208264087_4 208264087_5",
+        "1 135005113_1 135005113_2 135005113_3 135005113_4 135005113_5",
+        "1 216934649_1 216934649_2 216934649_3 216934649_4"
+      ]
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2536094,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 15145,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2898038,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 16995,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "disjoint/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 513216,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 3000,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "disjoint/test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 8364949,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 15145,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "disjoint/train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 9654112,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 16995,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "disjoint/typespaces.p",
+      "source": "hugging_face_download",
+      "size_bytes": 1466,
+      "suffix": ".p",
+      "readable": true,
+      "kind": "pickle",
+      "note": "Non charge automatiquement dans cette cellule."
+    },
+    {
+      "repo_file": "disjoint/valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1715690,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 3000,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 442049,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 6081,
+      "sample_lines": [
+        "1 119704139_1 119704139_2 119704139_3 119704139_4 119704139_5",
+        "1 119314458_1 119314458_2 119314458_3 119314458_4 119314458_5 119314458_6 119314458_7 119314458_8",
+        "1 147361785_1 147361785_2 147361785_3 147361785_4 147361785_5 147361785_6",
+        "1 148015877_1 148015877_2 148015877_3 148015877_4",
+        "1 192637078_1 192637078_2 192637078_3 192637078_4 192637078_5 192637078_6 192637078_7 192637078_8"
+      ]
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 2707503,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 34508,
+      "sample_lines": [
+        "1 214181831_1 214181831_2 214181831_3 214181831_4 214181831_5 214181831_6 214181831_7",
+        "1 120161271_1 120161271_2 120161271_3 120161271_4 120161271_5 120161271_6 120161271_7 120161271_8",
+        "1 143656996_1 143656996_2 143656996_3 143656996_4 143656996_5 143656996_6",
+        "1 186627934_1 186627934_2 186627934_3 186627934_4 186627934_5 186627934_6 186627934_7 186627934_8",
+        "1 206969379_1 206969379_2 206969379_3 206969379_4 206969379_5 206969379_6 206969379_7 206969379_8"
+      ]
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 215759,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 2964,
+      "sample_lines": [
+        "1 209512492_1 209512492_2 209512492_3 209512492_4",
+        "1 202881124_1 202881124_2 202881124_3 202881124_5 202881124_6",
+        "1 204980379_1 204980379_2 204980379_3 204980379_4 204980379_5 204980379_6 204980379_7 204980379_8",
+        "1 204510570_1 204510570_2 204510570_3 204510570_4 204510570_5",
+        "1 214272106_1 214272106_2 214272106_3 214272106_4 214272106_5 214272106_6 214272106_7 214272106_8"
+      ]
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1102277,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 3076,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 6487293,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 17316,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "maryland_polyvore_hardneg/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 536894,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 1497,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_test.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 1329653,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 20000,
+      "sample_lines": [
+        "1 217320763_1 217320763_2 217320763_3 217320763_4",
+        "1 221590515_1 221590515_2 221590515_3 221590515_4 221590515_5",
+        "1 42911078_1 42911078_2 42911078_3 42911078_4 42911078_5 42911078_6 42911078_7",
+        "1 211636597_1 211636597_2 211636597_3",
+        "1 147466579_1 147466579_2 147466579_3 147466579_4"
+      ]
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_train.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 7076089,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 106612,
+      "sample_lines": [
+        "1 210750761_1 210750761_2 210750761_3",
+        "1 217602530_1 217602530_2 217602530_3 217602530_4 217602530_5 217602530_6",
+        "1 221884093_1 221884093_2 221884093_3",
+        "1 202131990_1 202131990_2 202131990_3 202131990_4",
+        "1 224733539_1 224733539_2 224733539_3 224733539_4 224733539_5"
+      ]
+    },
+    {
+      "repo_file": "nondisjoint/compatibility_valid.txt",
+      "source": "hugging_face_download",
+      "size_bytes": 665403,
+      "suffix": ".txt",
+      "readable": true,
+      "kind": "txt",
+      "line_count": 10000,
+      "sample_lines": [
+        "1 224930161_1 224930161_2 224930161_3 224930161_4",
+        "1 208756998_1 208756998_2 208756998_3 208756998_4 208756998_5",
+        "1 218698690_1 218698690_2 218698690_3 218698690_4 218698690_5 218698690_6 218698690_7 218698690_8",
+        "1 201033839_1 201033839_2 201033839_3 201033839_4 201033839_5",
+        "1 205002070_1 205002070_2 205002070_3 205002070_4 205002070_5 205002070_6"
+      ]
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 1749071,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 10000,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 9316292,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 53306,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "nondisjoint/fill_in_blank_valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 874943,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 5000,
+      "sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "nested_sample_keys": [
+        "answers",
+        "blank_position",
+        "question"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "nondisjoint/test.json",
+      "source": "hugging_face_download",
+      "size_bytes": 5968052,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 10000,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "nondisjoint/train.json",
+      "source": "hugging_face_download",
+      "size_bytes": 31769038,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 53306,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "nondisjoint/typespaces.p",
+      "source": "hugging_face_download",
+      "size_bytes": 1404,
+      "suffix": ".p",
+      "readable": true,
+      "kind": "pickle",
+      "note": "Non charge automatiquement dans cette cellule."
+    },
+    {
+      "repo_file": "nondisjoint/valid.json",
+      "source": "hugging_face_download",
+      "size_bytes": 2986871,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "list",
+      "record_count": 5000,
+      "sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "nested_sample_keys": [
+        "items",
+        "set_id"
+      ],
+      "id_like_keys": [
+        "set_id",
+        "set_id"
+      ],
+      "category_like_keys": [],
+      "outfit_like_keys": [
+        "set_id",
+        "set_id"
+      ]
+    },
+    {
+      "repo_file": "polyvore_item_metadata.json",
+      "source": "hugging_face_download",
+      "size_bytes": 105137208,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "dict",
+      "record_count": 251008,
+      "sample_keys": [
+        "211990161",
+        "183179503",
+        "152771755",
+        "190445143",
+        "211444470",
+        "192704091",
+        "117334561",
+        "127403908",
+        "149817672",
+        "210309753",
+        "150379320",
+        "182043322",
+        "210244384",
+        "120679156",
+        "184924381",
+        "190235023",
+        "167454138",
+        "203920987",
+        "195532901",
+        "117427809"
+      ],
+      "nested_sample_keys": [
+        "category_id",
+        "catgeories",
+        "description",
+        "related",
+        "semantic_category",
+        "title",
+        "url_name"
+      ],
+      "id_like_keys": [
+        "category_id"
+      ],
+      "category_like_keys": [
+        "category_id",
+        "catgeories",
+        "semantic_category",
+        "url_name"
+      ],
+      "outfit_like_keys": []
+    },
+    {
+      "repo_file": "polyvore_outfit_titles.json",
+      "source": "hugging_face_download",
+      "size_bytes": 6970887,
+      "suffix": ".json",
+      "readable": true,
+      "kind": "json",
+      "top_level_type": "dict",
+      "record_count": 68306,
+      "sample_keys": [
+        "219779031",
+        "211158670",
+        "222049137",
+        "207880976",
+        "171638917",
+        "81476629",
+        "219905886",
+        "215768200",
+        "205180079",
+        "96522071",
+        "168949043",
+        "199080895",
+        "223685706",
+        "206850610",
+        "212978478",
+        "217221015",
+        "221846218",
+        "111349122",
+        "220327079",
+        "224921807"
+      ],
+      "nested_sample_keys": [
+        "title",
+        "url_name"
+      ],
+      "id_like_keys": [],
+      "category_like_keys": [
+        "url_name"
+      ],
+      "outfit_like_keys": []
+    }
+  ],
+  "raw_metadata_available": true,
+  "raw_outfit_files_available": true,
+  "raw_item_metadata_available": true,
+  "raw_categories_available": true,
+  "raw_compatibility_files_available": true,
+  "raw_metadata_ready_for_schema_audit": true,
   "outfit_config_status": "draft_requires_dataset_inspection",
   "taxonomy_alignment_required": [
     "product_type_v0",
@@ -1032,40 +1892,13 @@
     "outfit_role"
   ],
   "loader_only_cooccurrence_possible": false,
-  "raw_metadata_repo_files_available": true,
-  "raw_metadata_repo_files": [
-    "categories.csv",
-    "disjoint/compatibility_test.txt",
-    "disjoint/compatibility_train.txt",
-    "disjoint/compatibility_valid.txt",
-    "disjoint/fill_in_blank_test.json",
-    "disjoint/fill_in_blank_train.json",
-    "disjoint/fill_in_blank_valid.json",
-    "disjoint/test.json",
-    "disjoint/train.json",
-    "disjoint/typespaces.p",
-    "disjoint/valid.json",
-    "nondisjoint/compatibility_test.txt",
-    "nondisjoint/compatibility_train.txt",
-    "nondisjoint/compatibility_valid.txt",
-    "nondisjoint/fill_in_blank_test.json",
-    "nondisjoint/fill_in_blank_train.json",
-    "nondisjoint/fill_in_blank_valid.json",
-    "nondisjoint/test.json",
-    "nondisjoint/train.json",
-    "nondisjoint/typespaces.p",
-    "nondisjoint/valid.json",
-    "polyvore_item_metadata.json",
-    "polyvore_outfit_titles.json"
-  ],
   "cooccurrence_baseline_possible": true,
   "dataset_exploitable_for_outfit_v0": true,
   "audit_decision": "raw_metadata_available_requires_schema_mapping",
   "audit_blockers": [],
   "audit_notes": [
-    "Le loader datasets expose surtout item_id/image.",
-    "Les fichiers raw Hugging Face contiennent les metadata Polyvore necessaires a inspecter avant baseline."
+    "Le loader datasets expose surtout item_id/image ; les metadata brutes HF doivent etre inspectees."
   ],
   "training_executed": false,
-  "next_decision": "Rerun notebook raw metadata cells, inspecter raw_metadata_reports, puis construire mapping Polyvore -> Fashion V1 avant baseline cooccurrence."
+  "next_decision": "Inspecter raw_metadata_reports puis construire mapping Polyvore -> Fashion V1 avant baseline cooccurrence."
 }

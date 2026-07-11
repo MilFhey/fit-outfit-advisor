@@ -66,6 +66,22 @@
 - Decision revisee : source Hugging Face probablement exploitable via fichiers raw ; il faut inspecter leur schema avant baseline cooccurrence.
 - Prochaine action : telecharger/cache Drive les fichiers raw HF, verifier leurs cles et construire le mapping Polyvore -> Fashion V1.
 
+## Resultat audit raw metadata - 2026-07-11
+- Rapport officiel : `reports/polyvore_v0_dataset_audit.json`.
+- `raw_metadata_ready_for_schema_audit: true`.
+- Fichiers raw telecharges et caches Drive : 29.
+- Outfits disponibles :
+  - `disjoint/train.json` : 16 995 outfits ;
+  - `disjoint/valid.json` : 3 000 outfits ;
+  - `disjoint/test.json` : 15 145 outfits ;
+  - `nondisjoint/train.json` : 53 306 outfits ;
+  - `nondisjoint/valid.json` : 5 000 outfits ;
+  - `nondisjoint/test.json` : 10 000 outfits.
+- `polyvore_item_metadata.json` : 251 008 items avec `category_id`, `catgeories`, `semantic_category`, `title`, `description`, `url_name`.
+- `polyvore_outfit_titles.json` : 68 306 outfits.
+- Decision : audit dataset valide pour passer a l'etape schema/mapping avant baseline.
+- Prochaine action : analyser `items` dans les splits, extraire les paires positives, mapper `semantic_category`/`category_id` vers Fashion V1 puis generer la baseline cooccurrence.
+
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.
 - Remplacer un item par un autre item du meme role, et de meme famille quand possible.

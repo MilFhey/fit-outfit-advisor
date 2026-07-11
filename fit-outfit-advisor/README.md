@@ -506,6 +506,8 @@ Le notebook Polyvore utilise comme source principale Hugging Face `mvasil/polyvo
 
 Audit du 2026-07-09 : le loader `datasets` expose les splits `disjoint`/`nondisjoint` avec `item_id` et `image`, mais pas directement `outfit_id`, labels produit ou composition de tenue. La liste des fichiers Hugging Face contient toutefois les metadata brutes Polyvore (`categories.csv`, `polyvore_item_metadata.json`, `disjoint/*.json`, `nondisjoint/*.json`, `compatibility_*.txt`). Le notebook telecharge/cache maintenant ces fichiers raw pour verifier leur schema avant toute baseline ou entrainement outfit.
 
+Audit raw du 2026-07-11 : `raw_metadata_ready_for_schema_audit` est vrai. Les splits outfits et `polyvore_item_metadata.json` sont exploitables pour construire le mapping Polyvore -> Fashion V1 et une baseline cooccurrence. Aucun entrainement n'est encore lance.
+
 ## Critère de réussite de la première semaine
 
 Le projet est réussi pour la première semaine si :
