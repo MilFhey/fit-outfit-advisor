@@ -280,6 +280,7 @@ Premier constat :
 
 - le loader `datasets` expose surtout `item_id` + `image` ;
 - ce loader seul ne suffit pas pour la baseline cooccurrence.
+- comptages loader observes : `disjoint` 71 967 / 14 657 / 70 035 lignes pour train/validation/test, `nondisjoint` 204 679 / 25 132 / 47 854 lignes pour train/validation/test.
 
 Correction :
 
@@ -320,6 +321,27 @@ Decision :
 - dataset exploitable pour schema/mapping ;
 - pas d'entrainement encore ;
 - prochaine etape : mapping Polyvore vers Fashion V1 puis baseline cooccurrence.
+
+### 6.5 Audit schema/mapping Polyvore
+
+Un script reproductible a ete ajoute pour transformer l'audit raw en audit de schema/mapping :
+
+- script : `src/analysis/analyze_polyvore_v0_schema_mapping.py` ;
+- rapport cible : `reports/polyvore_v0_schema_mapping_audit.json` ;
+- entree attendue : dossier raw HF contenant `polyvore_item_metadata.json`, `categories.csv` et les splits `disjoint`/`nondisjoint`.
+
+Le script :
+
+- inspecte la structure exacte des `items` dans les splits ;
+- relie les items aux metadata ;
+- extrait les distributions des champs `semantic_category`, `category_id`, `catgeories`, `title` et `url_name` ;
+- propose un mapping vers la taxonomie Fashion V1.1 ;
+- documente les exclusions ;
+- force `training_executed: false` et `streamlit_integration_executed: false`.
+
+Etat local observe : les fichiers raw HF ne sont pas presents dans `data/raw/`, donc le rapport local est marque `raw_files_missing_requires_colab_or_drive_raw_root`. Les distributions reelles doivent etre regenerees dans Colab ou dans un environnement disposant du cache Drive raw.
+
+Le fichier fourni `models/polyvore/polyvore_v0_dataset_audit (2).json` a ete compare au rapport `reports/polyvore_v0_dataset_audit.json` et ne presente aucune difference. Le rapport schema/mapping reprend donc ce rapport versionne comme entree officielle et y ajoute le resume loader/raw.
 
 ## 7. Decisions importantes
 
@@ -378,15 +400,13 @@ Non finalise :
 
 ### Priorite immediate
 
-Construire l'audit schema/mapping Polyvore :
+Finaliser l'audit schema/mapping Polyvore depuis les raw HF :
 
-1. Inspecter la structure exacte de `items` dans les splits `disjoint` et `nondisjoint`.
-2. Relier les items aux entrees `polyvore_item_metadata.json`.
-3. Extraire les distributions de `semantic_category`, `category_id` et `catgeories`.
-4. Proposer un mapping Polyvore -> `product_type_v0`.
-5. Mapper ensuite vers `canonical_category` et `outfit_role`.
-6. Documenter les labels exclus.
-7. Generer `reports/polyvore_v0_schema_mapping_audit.json`.
+1. Executer `src.analysis.analyze_polyvore_v0_schema_mapping` avec `--raw-root` vers le cache Drive raw.
+2. Relire les distributions de `semantic_category`, `category_id`, `catgeories`, `title` et `url_name`.
+3. Promouvoir manuellement les labels fiables dans `config/outfit_v1_config.json`.
+4. Conserver les exclusions justifiees.
+5. Ensuite seulement, construire la baseline cooccurrence.
 
 ### Ensuite
 

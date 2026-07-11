@@ -1,0 +1,658 @@
+{
+  "version": "polyvore_v0_schema_mapping_audit",
+  "training_executed": false,
+  "streamlit_integration_executed": false,
+  "raw_root": null,
+  "dataset_audit_path": "C:\\Users\\bossk\\PC\\02-PROJETS\\ETUDES\\M2\\TensorFlow\\fit-outfit-advisor\\reports\\polyvore_v0_dataset_audit.json",
+  "input_dataset_audit_decision": "raw_metadata_available_requires_schema_mapping",
+  "input_raw_metadata_ready_for_schema_audit": true,
+  "input_dataset_audit_summary": {
+    "loader_only_cooccurrence_possible": false,
+    "cooccurrence_baseline_possible": true,
+    "dataset_exploitable_for_outfit_v0": true,
+    "audit_decision": "raw_metadata_available_requires_schema_mapping",
+    "audit_notes": [
+      "Le loader datasets expose surtout item_id/image ; les metadata brutes HF doivent etre inspectees."
+    ],
+    "hf_split_rows": [
+      {
+        "config": "disjoint",
+        "split": "train",
+        "row_count": 71967,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      },
+      {
+        "config": "disjoint",
+        "split": "validation",
+        "row_count": 14657,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      },
+      {
+        "config": "disjoint",
+        "split": "test",
+        "row_count": 70035,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      },
+      {
+        "config": "nondisjoint",
+        "split": "train",
+        "row_count": 204679,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      },
+      {
+        "config": "nondisjoint",
+        "split": "validation",
+        "row_count": 25132,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      },
+      {
+        "config": "nondisjoint",
+        "split": "test",
+        "row_count": 47854,
+        "sample_shape": [
+          5000,
+          2
+        ],
+        "id_like_columns": [
+          "item_id"
+        ],
+        "category_like_columns": [],
+        "outfit_like_columns": []
+      }
+    ],
+    "raw_key_files": {
+      "categories.csv": {
+        "readable": true,
+        "kind": "csv",
+        "record_count": null,
+        "sample_shape": [
+          223,
+          3
+        ],
+        "sample_keys": null,
+        "nested_sample_keys": null
+      },
+      "disjoint/test.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 15145,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "disjoint/train.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 16995,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "disjoint/valid.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 3000,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "nondisjoint/test.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 10000,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "nondisjoint/train.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 53306,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "nondisjoint/valid.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 5000,
+        "sample_shape": null,
+        "sample_keys": [
+          "items",
+          "set_id"
+        ],
+        "nested_sample_keys": [
+          "items",
+          "set_id"
+        ]
+      },
+      "polyvore_item_metadata.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 251008,
+        "sample_shape": null,
+        "sample_keys": [
+          "211990161",
+          "183179503",
+          "152771755",
+          "190445143",
+          "211444470",
+          "192704091",
+          "117334561",
+          "127403908",
+          "149817672",
+          "210309753",
+          "150379320",
+          "182043322",
+          "210244384",
+          "120679156",
+          "184924381",
+          "190235023",
+          "167454138",
+          "203920987",
+          "195532901",
+          "117427809"
+        ],
+        "nested_sample_keys": [
+          "category_id",
+          "catgeories",
+          "description",
+          "related",
+          "semantic_category",
+          "title",
+          "url_name"
+        ]
+      },
+      "polyvore_outfit_titles.json": {
+        "readable": true,
+        "kind": "json",
+        "record_count": 68306,
+        "sample_shape": null,
+        "sample_keys": [
+          "219779031",
+          "211158670",
+          "222049137",
+          "207880976",
+          "171638917",
+          "81476629",
+          "219905886",
+          "215768200",
+          "205180079",
+          "96522071",
+          "168949043",
+          "199080895",
+          "223685706",
+          "206850610",
+          "212978478",
+          "217221015",
+          "221846218",
+          "111349122",
+          "220327079",
+          "224921807"
+        ],
+        "nested_sample_keys": [
+          "title",
+          "url_name"
+        ]
+      }
+    }
+  },
+  "taxonomy_alignment": {
+    "source": "fashion_v1",
+    "allowed_roles": [
+      "accessory",
+      "bag",
+      "bottom",
+      "dress",
+      "outerwear",
+      "shoes",
+      "top"
+    ],
+    "allowed_product_types": [
+      "tshirt",
+      "shirt",
+      "top",
+      "jeans",
+      "trousers",
+      "shorts",
+      "dress",
+      "outerwear",
+      "casual_shoes",
+      "sports_shoes",
+      "dress_shoes",
+      "sandals",
+      "flip_flops",
+      "heels",
+      "bag",
+      "watch",
+      "sunglasses",
+      "wallet",
+      "belt",
+      "jewellery"
+    ]
+  },
+  "mapping_rules": [
+    {
+      "keywords": [
+        "running shoe",
+        "training shoe",
+        "athletic shoe",
+        "sneaker"
+      ],
+      "product_type_v0": "sports_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "heel",
+        "pump",
+        "stiletto"
+      ],
+      "product_type_v0": "heels",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "sandal"
+      ],
+      "product_type_v0": "sandals",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "flip flop",
+        "thong sandal"
+      ],
+      "product_type_v0": "flip_flops",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "flat",
+        "loafer",
+        "oxford",
+        "formal shoe"
+      ],
+      "product_type_v0": "dress_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "medium"
+    },
+    {
+      "keywords": [
+        "shoe",
+        "footwear"
+      ],
+      "product_type_v0": "casual_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes",
+      "confidence": "medium"
+    },
+    {
+      "keywords": [
+        "coat",
+        "jacket",
+        "blazer",
+        "cardigan",
+        "sweater",
+        "sweatshirt"
+      ],
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "jean",
+        "denim"
+      ],
+      "product_type_v0": "jeans",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "short"
+      ],
+      "product_type_v0": "shorts",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "trouser",
+        "pant",
+        "chino",
+        "slack"
+      ],
+      "product_type_v0": "trousers",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom",
+      "confidence": "medium"
+    },
+    {
+      "keywords": [
+        "dress",
+        "gown"
+      ],
+      "product_type_v0": "dress",
+      "canonical_category": "dress",
+      "outfit_role": "dress",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "jumpsuit",
+        "romper"
+      ],
+      "product_type_v0": "dress",
+      "canonical_category": "dress",
+      "outfit_role": "dress",
+      "confidence": "medium"
+    },
+    {
+      "keywords": [
+        "t shirt",
+        "tee",
+        "tshirt"
+      ],
+      "product_type_v0": "tshirt",
+      "canonical_category": "top",
+      "outfit_role": "top",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "shirt",
+        "blouse",
+        "button down"
+      ],
+      "product_type_v0": "shirt",
+      "canonical_category": "top",
+      "outfit_role": "top",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "top",
+        "tunic",
+        "kurta",
+        "camisole",
+        "tank"
+      ],
+      "product_type_v0": "top",
+      "canonical_category": "top",
+      "outfit_role": "top",
+      "confidence": "medium"
+    },
+    {
+      "keywords": [
+        "bag",
+        "handbag",
+        "backpack",
+        "clutch",
+        "purse",
+        "tote"
+      ],
+      "product_type_v0": "bag",
+      "canonical_category": "bag",
+      "outfit_role": "bag",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "watch"
+      ],
+      "product_type_v0": "watch",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "sunglass",
+        "eyewear"
+      ],
+      "product_type_v0": "sunglasses",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "wallet"
+      ],
+      "product_type_v0": "wallet",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "belt"
+      ],
+      "product_type_v0": "belt",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory",
+      "confidence": "high"
+    },
+    {
+      "keywords": [
+        "jewelry",
+        "jewellery",
+        "earring",
+        "necklace",
+        "bracelet",
+        "ring",
+        "bangle",
+        "pendant"
+      ],
+      "product_type_v0": "jewellery",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory",
+      "confidence": "high"
+    }
+  ],
+  "excluded_keyword_policy": [
+    {
+      "keyword": "beauty",
+      "reason": "beauty/cosmetics outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "boot",
+      "reason": "boots have no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "bra",
+      "reason": "underwear outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "cap",
+      "reason": "cap/headwear excluded from Fashion V1.1"
+    },
+    {
+      "keyword": "case",
+      "reason": "generic case/accessory too ambiguous for Fashion V1"
+    },
+    {
+      "keyword": "decor",
+      "reason": "home/decor outside outfit roles"
+    },
+    {
+      "keyword": "fragrance",
+      "reason": "fragrance outside outfit roles"
+    },
+    {
+      "keyword": "furniture",
+      "reason": "home/decor outside outfit roles"
+    },
+    {
+      "keyword": "glove",
+      "reason": "gloves have no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "hair",
+      "reason": "hair products outside outfit roles"
+    },
+    {
+      "keyword": "hat",
+      "reason": "headwear not retained in Fashion V1.1"
+    },
+    {
+      "keyword": "home",
+      "reason": "home/decor outside outfit roles"
+    },
+    {
+      "keyword": "hosiery",
+      "reason": "hosiery has no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "legging",
+      "reason": "leggings have no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "lingerie",
+      "reason": "underwear outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "lipstick",
+      "reason": "beauty/cosmetics outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "makeup",
+      "reason": "beauty/cosmetics outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "nail",
+      "reason": "beauty/cosmetics outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "perfume",
+      "reason": "fragrance outside outfit roles"
+    },
+    {
+      "keyword": "phone",
+      "reason": "electronics outside outfit roles"
+    },
+    {
+      "keyword": "scarf",
+      "reason": "scarf has no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "skirt",
+      "reason": "skirt has no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "sock",
+      "reason": "hosiery has no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "swim",
+      "reason": "swimwear outside Fashion V1 product_type_v0"
+    }
+  ],
+  "source_files": {
+    "raw_root_exists": false,
+    "required_files": [
+      "polyvore_item_metadata.json",
+      "categories.csv",
+      "disjoint/train.json",
+      "disjoint/valid.json",
+      "disjoint/test.json",
+      "nondisjoint/train.json",
+      "nondisjoint/valid.json",
+      "nondisjoint/test.json"
+    ]
+  },
+  "split_structure": {},
+  "linkage": {},
+  "field_distributions": {},
+  "mapping_proposal": [],
+  "excluded_labels": [],
+  "audit_decision": "raw_files_missing_requires_colab_or_drive_raw_root",
+  "audit_notes": [
+    "Local raw Polyvore files are absent; distributions and linked mapping support cannot be computed in this workspace."
+  ],
+  "next_decision": "Run this script with --raw-root pointing to the cached Hugging Face raw files before building the cooccurrence baseline."
+}

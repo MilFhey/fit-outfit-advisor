@@ -1,6 +1,8 @@
-from src.mappings.category_mapping import map_to_common_category
+import json
+
 import pytest
 
+from src.mappings.category_mapping import map_to_common_category
 from src.mappings.color_mapping import get_compatible_colors
 from src.config.paths import (
     FASHION_ACTIVE_DIR,
@@ -37,6 +39,10 @@ from src.analysis.analyze_fashion_v1_abstention import (
     evaluate_image_abstention,
     evaluate_thresholds as evaluate_image_thresholds,
     select_threshold as select_image_threshold,
+)
+from src.analysis.analyze_polyvore_v0_schema_mapping import (
+    build_schema_mapping_audit,
+    detect_product_type,
 )
 from src.mappings.fashion_v1_mapping import (
     FashionClassConfigError,
@@ -389,6 +395,82 @@ def test_outfit_split_groups_by_outfit_and_detects_positive_pair_leakage():
         assert_no_positive_pair_leakage(
             {"train": train, "validation": leaked_validation, "test": test}
         )
+
+
+def test_polyvore_schema_mapping_rules_stay_within_fashion_v1():
+    fashion_config = load_fashion_v1_class_config()
+
+    blouse = detect_product_type("women blouse", fashion_config)
+    assert blouse["status"] == "mapped"
+    assert blouse["product_type_v0"] == "shirt"
+    assert blouse["outfit_role"] == "top"
+
+    lipstick = detect_product_type("red lipstick", fashion_config)
+    assert lipstick["status"] == "excluded"
+    assert "outside" in lipstick["reason"]
+
+
+def test_polyvore_schema_mapping_audit_links_raw_items(tmp_path):
+    raw_root = tmp_path / "raw_hf_files"
+    (raw_root / "disjoint").mkdir(parents=True)
+    (raw_root / "nondisjoint").mkdir(parents=True)
+    (raw_root / "polyvore_item_metadata.json").write_text(
+        json.dumps(
+            {
+                "item-1": {
+                    "semantic_category": "blouse",
+                    "category_id": "10",
+                    "catgeories": ["Women", "Tops"],
+                    "title": "Silk blouse",
+                    "url_name": "silk-blouse",
+                },
+                "item-2": {
+                    "semantic_category": "lipstick",
+                    "category_id": "99",
+                    "catgeories": ["Beauty"],
+                    "title": "Matte lipstick",
+                    "url_name": "matte-lipstick",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (raw_root / "categories.csv").write_text(
+        "10,1,Blouses\n99,1,Beauty\n",
+        encoding="utf-8",
+    )
+    split_payload = [
+        {
+            "set_id": "set-1",
+            "items": [
+                {"item_id": "item-1", "index": 1},
+                {"item_id": "item-2", "index": 2},
+            ],
+        }
+    ]
+    (raw_root / "disjoint" / "train.json").write_text(
+        json.dumps(split_payload),
+        encoding="utf-8",
+    )
+    for relative_path in [
+        "disjoint/valid.json",
+        "disjoint/test.json",
+        "nondisjoint/train.json",
+        "nondisjoint/valid.json",
+        "nondisjoint/test.json",
+    ]:
+        path = raw_root / relative_path
+        path.write_text("[]", encoding="utf-8")
+
+    report = build_schema_mapping_audit(raw_root=raw_root)
+
+    assert report["audit_decision"] == "schema_mapping_ready_for_manual_review"
+    assert report["linkage"]["linked_item_count"] == 2
+    assert any(
+        row["polyvore_label"] == "blouse" and row["product_type_v0"] == "shirt"
+        for row in report["mapping_proposal"]
+    )
+    assert any(row["polyvore_label"] == "lipstick" for row in report["excluded_labels"])
 
 
 def test_image_service_simulated_output_keys():

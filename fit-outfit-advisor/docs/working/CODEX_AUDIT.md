@@ -174,5 +174,18 @@
 - Notebook Polyvore ajuste pour utiliser Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY`, inspecter `disjoint`/`nondisjoint` si disponibles et sauvegarder le dataset dans Google Drive.
 - Notebook Polyvore ajuste pour verifier d'abord la copie Drive et eviter un retelechargement systematique du dataset.
 - Rapport audit recu le 2026-07-09 : le loader `datasets` expose `item_id` + `image`, mais la liste des fichiers HF contient les metadata brutes Polyvore (`categories.csv`, `polyvore_item_metadata.json`, splits JSON et fichiers compatibility). Notebook ajuste pour telecharger/cache Drive et inspecter ces fichiers raw avant baseline cooccurrence.
+- Resultats Colab confirmes : loader seul non suffisant pour la baseline, baseline via fichiers raw HF possible ; split rows loader = 71 967 / 14 657 / 70 035 pour `disjoint` train/validation/test et 204 679 / 25 132 / 47 854 pour `nondisjoint`.
 - Rapport raw metadata recu le 2026-07-11 : `raw_metadata_ready_for_schema_audit: true`, 29 fichiers raw, 251 008 items metadata, 68 306 outfits titres, splits disjoint/nondisjoint exploitables pour schema/mapping.
 - Aucun entrainement Polyvore n'est lance dans cette etape.
+
+## Audit schema/mapping Polyvore V0
+- Ajout de `src/analysis/analyze_polyvore_v0_schema_mapping.py`.
+- Ajout de `reports/polyvore_v0_schema_mapping_audit.json`.
+- Mise a jour de `notebooks/03_polyvore_exploration_colab.ipynb` pour generer `reports/polyvore_v0_schema_mapping_audit.json` depuis le cache raw HF Colab/Drive avant l'arret volontaire.
+- Verification : `models/polyvore/polyvore_v0_dataset_audit (2).json` est identique a `reports/polyvore_v0_dataset_audit.json`.
+- Le script construit l'audit depuis les raw HF quand ils sont disponibles localement ou via `--raw-root`.
+- Le rapport schema/mapping inclut le resume de l'audit dataset officiel : decision, possibilite de baseline cooccurrence, split rows du loader et fichiers raw cles.
+- Champs analyses : structure `items` des splits, liaison `item_id` vers `polyvore_item_metadata.json`, distributions `semantic_category`, `category_id`, `catgeories`, `title`, `url_name`.
+- Le mapping propose reste aligne avec Fashion V1.1 et ne produit que les roles `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
+- Le rapport genere localement signale que les raw HF ne sont pas dans le workspace : `raw_files_missing_requires_colab_or_drive_raw_root`.
+- Decision : aucune mise a jour de `config/outfit_v1_config.json`, aucun entrainement TensorFlow et aucune integration Streamlit tant que le rapport n'a pas ete regenere avec les raw.

@@ -61,6 +61,13 @@
 - Rapport local : `reports/polyvore_v0_dataset_audit.json`.
 - Configurations disponibles : `disjoint` et `nondisjoint`.
 - Colonnes observees dans les splits Hugging Face : `item_id`, `image`.
+- Comptages loader `datasets` confirmes par Colab :
+  - `disjoint/train` : 71 967 lignes ;
+  - `disjoint/validation` : 14 657 lignes ;
+  - `disjoint/test` : 70 035 lignes ;
+  - `nondisjoint/train` : 204 679 lignes ;
+  - `nondisjoint/validation` : 25 132 lignes ;
+  - `nondisjoint/test` : 47 854 lignes.
 - Le loader `datasets` seul ne suffit pas pour Outfit V0 : il n'expose pas directement `outfit_id`/`set_id`, labels de categorie/type, ni composition des outfits.
 - La liste des fichiers HF contient toutefois les metadata brutes attendues : `categories.csv`, `polyvore_item_metadata.json`, `polyvore_outfit_titles.json`, `disjoint/*.json`, `nondisjoint/*.json`, `compatibility_*.txt`.
 - Decision revisee : source Hugging Face probablement exploitable via fichiers raw ; il faut inspecter leur schema avant baseline cooccurrence.
@@ -81,6 +88,32 @@
 - `polyvore_outfit_titles.json` : 68 306 outfits.
 - Decision : audit dataset valide pour passer a l'etape schema/mapping avant baseline.
 - Prochaine action : analyser `items` dans les splits, extraire les paires positives, mapper `semantic_category`/`category_id` vers Fashion V1 puis generer la baseline cooccurrence.
+
+## Audit schema/mapping local - 2026-07-11
+- Nouveau script : `src/analysis/analyze_polyvore_v0_schema_mapping.py`.
+- Nouveau rapport : `reports/polyvore_v0_schema_mapping_audit.json`.
+- Notebook `notebooks/03_polyvore_exploration_colab.ipynb` mis a jour : apres le rapport dataset, il genere aussi le rapport schema/mapping, l'affiche en apercu et le copie dans Drive.
+- Le fichier `models/polyvore/polyvore_v0_dataset_audit (2).json` a ete verifie comme identique a `reports/polyvore_v0_dataset_audit.json` ; le rapport versionne reste la reference.
+- Le script lit les fichiers raw HF attendus :
+  - `polyvore_item_metadata.json` ;
+  - `categories.csv` ;
+  - `disjoint/{train,valid,test}.json` ;
+  - `nondisjoint/{train,valid,test}.json`.
+- Il inspecte la structure des splits, relie les `item_id` candidats a `polyvore_item_metadata.json`, extrait les distributions `semantic_category`, `category_id`, `catgeories`, `title` et `url_name`, puis propose un mapping vers `product_type_v0 -> canonical_category -> outfit_role`.
+- Etat local actuel : les fichiers raw HF ne sont pas presents dans `data/raw/`; le rapport local est donc volontairement marque `raw_files_missing_requires_colab_or_drive_raw_root`.
+- Le rapport schema/mapping reprend maintenant le resume de l'audit Colab : `loader_only_cooccurrence_possible: false`, `cooccurrence_baseline_possible: true`, split rows du loader et fichiers raw cles.
+- Le rapport local contient quand meme la politique de mapping/exclusion reproductible, alignee avec Fashion V1.1 :
+  - roles retenus : `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory` ;
+  - exclusions explicites : beauty/cosmetics, fragrance, home/decor, electronics, headwear non retenu, hosiery, underwear, swimwear, boots, skirts et scarves sans `product_type_v0` fidele.
+- Commande a executer dans Colab ou dans un environnement ou le cache Drive est monte :
+
+```bash
+python -m src.analysis.analyze_polyvore_v0_schema_mapping \
+  --raw-root /content/drive/MyDrive/fit-outfit-advisor/datasets/mvasil_polyvore_outfits_raw_files \
+  --output reports/polyvore_v0_schema_mapping_audit.json
+```
+
+- Decision : ne pas remplir `config/outfit_v1_config.json` ni lancer la baseline cooccurrence tant que les distributions reelles et les labels exclus n'ont pas ete calcules depuis les raw.
 
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.
