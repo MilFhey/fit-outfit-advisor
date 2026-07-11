@@ -492,6 +492,12 @@ docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md
 
 Objectif : recommander des `product_type_v0` complementaires, pas generer une tenue complete. Le module doit rester aligne sur Fashion V1.1 via `product_type_v0`, `canonical_category` et `outfit_role`.
 
+Pour le rapport projet, la synthese complete des objectifs, resultats, decisions, limites et prochaines etapes est disponible ici :
+
+```text
+docs/working/PROJECT_REPORT_SYNTHESIS.md
+```
+
 Livrables initiaux :
 
 ```text
