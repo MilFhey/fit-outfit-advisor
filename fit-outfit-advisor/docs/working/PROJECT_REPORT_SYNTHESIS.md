@@ -425,7 +425,7 @@ Construire la baseline cooccurrence Polyvore :
 4. Extraire les paires positives d'items d'un meme outfit.
 5. Agreger au niveau `product_type_v0` et `outfit_role`.
 6. Calculer des scores de cooccurrence normalises.
-7. Verifier l'absence de fuite train/validation/test.
+7. Verifier l'absence de fuite train/validation/test au sein de chaque config.
 
 Implementation amorcee :
 
@@ -434,7 +434,7 @@ Implementation amorcee :
 - statut local : fail-closed, raw HF absents du workspace ;
 - execution attendue : Colab, cellule `Baseline cooccurrence Polyvore V0`.
 
-La baseline reste interpretable et non TensorFlow. Elle produit des recommandations par `product_type_v0` et un score brut de cooccurrence pour preparer l'integration experimentale future.
+La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split.
 
 ### Ensuite
 
@@ -444,7 +444,7 @@ Construire la baseline cooccurrence :
 2. Agreger au niveau `product_type_v0`.
 3. Calculer scores de cooccurrence normalises.
 4. Evaluer ranking : Precision@K, Recall@K, MRR ou NDCG@K.
-5. Verifier absence de fuite entre splits.
+5. Verifier absence de fuite intra-config entre splits.
 6. Integrer en fallback/rule-based si robuste.
 
 ### Plus tard seulement
@@ -467,7 +467,7 @@ pytest --basetemp=.tmp_pytest -p no:cacheprovider
 
 Resultat courant observe :
 
-- 43 tests passent.
+- 46 tests passent.
 
 ## 12. Fichiers de reference pour le rapport
 

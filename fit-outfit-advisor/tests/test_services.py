@@ -541,10 +541,11 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
     assert report["baseline_ready"] is True
     assert report["training_executed"] is False
     assert report["tensorflow_used"] is False
-    top_recommendations = report["aggregate"]["recommendations_by_product_type"]["top"]
+    assert report["primary_config"] == "disjoint"
+    top_recommendations = report["primary_baseline"]["recommendations_by_product_type"]["top"]
     assert top_recommendations[0]["product_type_v0"] == "jeans"
     assert any(row["product_type_v0"] == "sports_shoes" for row in top_recommendations)
-    assert report["leakage"]["has_exact_positive_pair_leakage"] is False
+    assert report["leakage"]["has_within_config_positive_pair_leakage"] is False
 
 
 def test_image_service_simulated_output_keys():

@@ -179,11 +179,12 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - extrait les paires positives compatibles dans un meme outfit ;
   - agrege les cooccurrences dirigees par `product_type_v0` ;
   - calcule un `raw_compatibility_score` simple : count candidat / total cooccurrences de l'input ;
-  - verifie les recouvrements de paires positives exactes entre splits.
+  - verifie les recouvrements de paires positives exactes entre splits au sein de chaque config (`disjoint` puis `nondisjoint`).
 - Aucun negatif, aucun modele TensorFlow et aucune integration Streamlit ne sont generes a cette etape.
 - Le rapport local est fail-closed (`raw_files_missing_requires_colab_or_drive_raw_root`) car les raw HF ne sont pas dans le workspace.
 - Le notebook `03_polyvore_exploration_colab.ipynb` genere maintenant le vrai rapport complet dans Drive via la cellule `Baseline cooccurrence Polyvore V0`.
-- Prochaine decision apres execution Colab : relire les recommandations par `product_type_v0`, verifier la fuite de paires positives exactes, puis decider si cette baseline peut alimenter le service outfit experimental.
+- La baseline primaire est `disjoint`. Les recouvrements entre `disjoint` et `nondisjoint` sont conserves comme diagnostic seulement, car ce sont deux configurations alternatives du dataset.
+- Prochaine decision apres execution Colab : relire les recommandations `primary_baseline` par `product_type_v0`, verifier l'absence de fuite intra-config, puis decider si cette baseline peut alimenter le service outfit experimental.
 
 ## Promotion future
 - `models/outfit_v1/` reste experimental.

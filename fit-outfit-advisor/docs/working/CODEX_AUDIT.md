@@ -204,3 +204,5 @@
 - Le script applique le mapping valide, construit les paires positives compatibles, agrege les cooccurrences par `product_type_v0`, produit des recommandations et controle la fuite de paires positives exactes entre splits.
 - Rapport local : `baseline_ready: false`, raison `raw_files_missing_requires_colab_or_drive_raw_root`.
 - Aucun entrainement TensorFlow et aucune integration Streamlit.
+- Resultat Colab recu : `baseline_ready: true`, 608 038 paires dirigees agregees et 32 paires `product_type_v0` uniques sur l'agregat initial.
+- Correction d'interpretation : le flag de fuite initial comparait aussi `disjoint` et `nondisjoint`, qui sont deux configurations alternatives. Le rapport distingue maintenant `primary_baseline` sur `disjoint`, `aggregate_by_config` et la fuite intra-config uniquement.

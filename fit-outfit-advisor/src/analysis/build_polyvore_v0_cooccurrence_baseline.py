@@ -208,6 +208,32 @@ def positive_pair_leakage(split_pair_keys: dict[str, set[tuple[str, str]]]) -> d
     }
 
 
+def split_config_name(relative_split: str) -> str:
+    return relative_split.split("/", maxsplit=1)[0]
+
+
+def split_short_name(relative_split: str) -> str:
+    return Path(relative_split).stem
+
+
+def aggregate_payload(
+    directed_counts: Counter[tuple[str, str]],
+    input_counts: Counter[str],
+    role_pair_counts: Counter[tuple[str, str]],
+) -> dict[str, Any]:
+    return {
+        "directed_pair_count": sum(directed_counts.values()),
+        "unique_directed_product_pair_count": len(directed_counts),
+        "role_pair_counts": {
+            "|".join(key): count for key, count in role_pair_counts.most_common()
+        },
+        "recommendations_by_product_type": recommendations_from_counts(
+            directed_counts,
+            input_counts,
+        ),
+    }
+
+
 def build_cooccurrence_baseline(
     *,
     raw_root: Path | None = None,
@@ -252,11 +278,17 @@ def build_cooccurrence_baseline(
     split_diagnostics: dict[str, Any] = {}
     split_recommendations: dict[str, Any] = {}
     split_pair_keys: dict[str, set[tuple[str, str]]] = {}
+    split_pair_keys_by_config: dict[str, dict[str, set[tuple[str, str]]]] = defaultdict(dict)
     aggregate_directed_counts: Counter[tuple[str, str]] = Counter()
     aggregate_input_counts: Counter[str] = Counter()
     aggregate_role_pair_counts: Counter[tuple[str, str]] = Counter()
+    config_directed_counts: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
+    config_input_counts: dict[str, Counter[str]] = defaultdict(Counter)
+    config_role_pair_counts: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
 
     for relative_split in SPLIT_FILES:
+        config_name = split_config_name(relative_split)
+        short_name = split_short_name(relative_split)
         split_name = relative_split.replace("/", "_").replace(".json", "")
         rows, diagnostics = load_mapped_split_items(
             resolved_raw_root / relative_split,
@@ -282,29 +314,58 @@ def build_cooccurrence_baseline(
             input_counts,
         )
         split_pair_keys[split_name] = pair_keys
+        split_pair_keys_by_config[config_name][short_name] = pair_keys
         aggregate_directed_counts.update(directed_counts)
         aggregate_input_counts.update(input_counts)
         aggregate_role_pair_counts.update(role_pair_counts)
+        config_directed_counts[config_name].update(directed_counts)
+        config_input_counts[config_name].update(input_counts)
+        config_role_pair_counts[config_name].update(role_pair_counts)
 
-    leakage = positive_pair_leakage(split_pair_keys)
+    leakage_by_config = {
+        config_name: positive_pair_leakage(config_split_pair_keys)
+        for config_name, config_split_pair_keys in split_pair_keys_by_config.items()
+    }
+    has_within_config_leakage = any(
+        payload["has_exact_positive_pair_leakage"]
+        for payload in leakage_by_config.values()
+    )
+    aggregate_by_config = {
+        config_name: aggregate_payload(
+            config_directed_counts[config_name],
+            config_input_counts[config_name],
+            config_role_pair_counts[config_name],
+        )
+        for config_name in sorted(config_directed_counts)
+    }
+    primary_config = "disjoint" if "disjoint" in aggregate_by_config else next(iter(aggregate_by_config))
+    cross_config_diagnostic = positive_pair_leakage(split_pair_keys)
+    leakage = {
+        "by_config": leakage_by_config,
+        "has_within_config_positive_pair_leakage": has_within_config_leakage,
+        "cross_config_diagnostic": {
+            **cross_config_diagnostic,
+            "decision_note": (
+                "Cross-config overlaps are diagnostic only because disjoint and "
+                "nondisjoint are alternative dataset configurations."
+            ),
+        },
+    }
     report.update(
         {
             "baseline_ready": True,
             "reason": "cooccurrence_baseline_built_from_raw_metadata",
             "split_diagnostics": split_diagnostics,
+            "split_recommendations": split_recommendations,
             "leakage": leakage,
-            "aggregate": {
-                "directed_pair_count": sum(aggregate_directed_counts.values()),
-                "unique_directed_product_pair_count": len(aggregate_directed_counts),
-                "role_pair_counts": {
-                    "|".join(key): count
-                    for key, count in aggregate_role_pair_counts.most_common()
-                },
-                "recommendations_by_product_type": recommendations_from_counts(
-                    aggregate_directed_counts,
-                    aggregate_input_counts,
-                ),
-            },
+            "primary_config": primary_config,
+            "primary_baseline": aggregate_by_config[primary_config],
+            "aggregate_by_config": aggregate_by_config,
+            "aggregate": aggregate_payload(
+                aggregate_directed_counts,
+                aggregate_input_counts,
+                aggregate_role_pair_counts,
+            ),
         }
     )
     return report
