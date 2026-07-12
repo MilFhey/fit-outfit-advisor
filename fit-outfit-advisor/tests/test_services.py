@@ -465,8 +465,21 @@ def test_polyvore_schema_mapping_audit_links_raw_items(tmp_path):
         json.dumps(split_payload),
         encoding="utf-8",
     )
+    (raw_root / "disjoint" / "valid.json").write_text(
+        json.dumps(
+            [
+                {
+                    "set_id": "set-validation-leak",
+                    "items": [
+                        {"item_id": "top-1"},
+                        {"item_id": "jeans-1"},
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
     for relative_path in [
-        "disjoint/valid.json",
         "disjoint/test.json",
         "nondisjoint/train.json",
         "nondisjoint/valid.json",
@@ -527,8 +540,21 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
         json.dumps(split_payload),
         encoding="utf-8",
     )
+    (raw_root / "disjoint" / "valid.json").write_text(
+        json.dumps(
+            [
+                {
+                    "set_id": "set-validation-leak",
+                    "items": [
+                        {"item_id": "top-1"},
+                        {"item_id": "jeans-1"},
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
     for relative_path in [
-        "disjoint/valid.json",
         "disjoint/test.json",
         "nondisjoint/train.json",
         "nondisjoint/valid.json",
@@ -542,10 +568,15 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
     assert report["training_executed"] is False
     assert report["tensorflow_used"] is False
     assert report["primary_config"] == "disjoint"
+    assert report["primary_training_split"] == "disjoint_train"
+    assert report["primary_baseline"] == report["split_baselines"]["disjoint_train"]
     top_recommendations = report["primary_baseline"]["recommendations_by_product_type"]["top"]
     assert top_recommendations[0]["product_type_v0"] == "jeans"
     assert any(row["product_type_v0"] == "sports_shoes" for row in top_recommendations)
-    assert report["leakage"]["has_within_config_positive_pair_leakage"] is False
+    assert report["leakage"]["has_within_config_positive_pair_leakage"] is True
+    assert report["leakage"]["has_primary_train_eval_positive_pair_leakage"] is True
+    assert report["evaluation_ready_without_leakage"] is False
+    assert report["baseline_decision"] == "train_only_baseline_built_evaluation_requires_leakage_filter"
 
 
 def test_image_service_simulated_output_keys():

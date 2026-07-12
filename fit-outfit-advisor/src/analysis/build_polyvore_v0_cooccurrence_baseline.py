@@ -234,6 +234,23 @@ def aggregate_payload(
     }
 
 
+def train_eval_positive_pair_leakage(
+    config_split_pair_keys: dict[str, set[tuple[str, str]]],
+) -> dict[str, Any]:
+    train_keys = config_split_pair_keys.get("train", set())
+    overlaps: dict[str, int] = {}
+    for split_name, pair_keys in config_split_pair_keys.items():
+        if split_name == "train":
+            continue
+        overlaps[f"train__{split_name}"] = len(train_keys.intersection(pair_keys))
+    return {
+        "exact_positive_pair_overlap_counts": overlaps,
+        "has_train_eval_positive_pair_leakage": any(
+            count > 0 for count in overlaps.values()
+        ),
+    }
+
+
 def build_cooccurrence_baseline(
     *,
     raw_root: Path | None = None,
@@ -277,6 +294,7 @@ def build_cooccurrence_baseline(
 
     split_diagnostics: dict[str, Any] = {}
     split_recommendations: dict[str, Any] = {}
+    split_baselines: dict[str, Any] = {}
     split_pair_keys: dict[str, set[tuple[str, str]]] = {}
     split_pair_keys_by_config: dict[str, dict[str, set[tuple[str, str]]]] = defaultdict(dict)
     aggregate_directed_counts: Counter[tuple[str, str]] = Counter()
@@ -313,6 +331,11 @@ def build_cooccurrence_baseline(
             directed_counts,
             input_counts,
         )
+        split_baselines[split_name] = aggregate_payload(
+            directed_counts,
+            input_counts,
+            role_pair_counts,
+        )
         split_pair_keys[split_name] = pair_keys
         split_pair_keys_by_config[config_name][short_name] = pair_keys
         aggregate_directed_counts.update(directed_counts)
@@ -339,10 +362,20 @@ def build_cooccurrence_baseline(
         for config_name in sorted(config_directed_counts)
     }
     primary_config = "disjoint" if "disjoint" in aggregate_by_config else next(iter(aggregate_by_config))
+    primary_training_split = f"{primary_config}_train"
+    if primary_training_split not in split_baselines:
+        primary_training_split = next(iter(split_baselines))
+    primary_train_eval_leakage = train_eval_positive_pair_leakage(
+        split_pair_keys_by_config.get(primary_config, {})
+    )
     cross_config_diagnostic = positive_pair_leakage(split_pair_keys)
     leakage = {
         "by_config": leakage_by_config,
         "has_within_config_positive_pair_leakage": has_within_config_leakage,
+        "primary_train_eval": primary_train_eval_leakage,
+        "has_primary_train_eval_positive_pair_leakage": primary_train_eval_leakage[
+            "has_train_eval_positive_pair_leakage"
+        ],
         "cross_config_diagnostic": {
             **cross_config_diagnostic,
             "decision_note": (
@@ -357,9 +390,19 @@ def build_cooccurrence_baseline(
             "reason": "cooccurrence_baseline_built_from_raw_metadata",
             "split_diagnostics": split_diagnostics,
             "split_recommendations": split_recommendations,
+            "split_baselines": split_baselines,
             "leakage": leakage,
             "primary_config": primary_config,
-            "primary_baseline": aggregate_by_config[primary_config],
+            "primary_training_split": primary_training_split,
+            "primary_baseline": split_baselines[primary_training_split],
+            "evaluation_ready_without_leakage": not primary_train_eval_leakage[
+                "has_train_eval_positive_pair_leakage"
+            ],
+            "baseline_decision": (
+                "train_only_baseline_ready_for_evaluation"
+                if not primary_train_eval_leakage["has_train_eval_positive_pair_leakage"]
+                else "train_only_baseline_built_evaluation_requires_leakage_filter"
+            ),
             "aggregate_by_config": aggregate_by_config,
             "aggregate": aggregate_payload(
                 aggregate_directed_counts,

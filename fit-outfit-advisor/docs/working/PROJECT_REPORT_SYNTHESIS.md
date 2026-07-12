@@ -434,7 +434,7 @@ Implementation amorcee :
 - statut local : fail-closed, raw HF absents du workspace ;
 - execution attendue : Colab, cellule `Baseline cooccurrence Polyvore V0`.
 
-La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split.
+La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint_train`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split. Si une paire exacte fuit entre train et evaluation, l'evaluation brute est bloquee ou doit filtrer explicitement les paires recouvertes.
 
 ### Ensuite
 

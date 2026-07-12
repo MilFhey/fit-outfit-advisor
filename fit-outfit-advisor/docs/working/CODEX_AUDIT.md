@@ -206,3 +206,4 @@
 - Aucun entrainement TensorFlow et aucune integration Streamlit.
 - Resultat Colab recu : `baseline_ready: true`, 608 038 paires dirigees agregees et 32 paires `product_type_v0` uniques sur l'agregat initial.
 - Correction d'interpretation : le flag de fuite initial comparait aussi `disjoint` et `nondisjoint`, qui sont deux configurations alternatives. Le rapport distingue maintenant `primary_baseline` sur `disjoint`, `aggregate_by_config` et la fuite intra-config uniquement.
+- Resultat suivant : la fuite intra-config reste vraie. Correction de design : `primary_baseline` est maintenant calculee uniquement sur `disjoint_train`; l'audit expose `has_primary_train_eval_positive_pair_leakage` et bloque l'evaluation brute si des paires exactes train/eval se recouvrent.

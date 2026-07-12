@@ -183,8 +183,10 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
 - Aucun negatif, aucun modele TensorFlow et aucune integration Streamlit ne sont generes a cette etape.
 - Le rapport local est fail-closed (`raw_files_missing_requires_colab_or_drive_raw_root`) car les raw HF ne sont pas dans le workspace.
 - Le notebook `03_polyvore_exploration_colab.ipynb` genere maintenant le vrai rapport complet dans Drive via la cellule `Baseline cooccurrence Polyvore V0`.
-- La baseline primaire est `disjoint`. Les recouvrements entre `disjoint` et `nondisjoint` sont conserves comme diagnostic seulement, car ce sont deux configurations alternatives du dataset.
-- Prochaine decision apres execution Colab : relire les recommandations `primary_baseline` par `product_type_v0`, verifier l'absence de fuite intra-config, puis decider si cette baseline peut alimenter le service outfit experimental.
+- La baseline primaire est calculee uniquement depuis `disjoint_train`. Les aggregats complets par config restent des diagnostics, pas une source de scoring primaire.
+- Les recouvrements entre `disjoint` et `nondisjoint` sont conserves comme diagnostic seulement, car ce sont deux configurations alternatives du dataset.
+- Si des paires exactes fuient entre `train` et validation/test, la baseline reste construite mais l'evaluation doit filtrer ces paires ou rester bloquee.
+- Prochaine decision apres execution Colab : relire les recommandations `primary_baseline` par `product_type_v0`, regarder `baseline_decision`, puis integrer seulement si l'evaluation est propre ou explicitement filtree.
 
 ## Promotion future
 - `models/outfit_v1/` reste experimental.
