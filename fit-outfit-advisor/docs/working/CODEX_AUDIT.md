@@ -228,3 +228,15 @@
 - Test synthetique mis a jour : il verifie qu'une paire validation fuitee est retiree et qu'une paire validation propre reste evaluee.
 - Validation locale avec `.venv311` : `python -m compileall app src tests` OK et `pytest --basetemp=.tmp_pytest -p no:cacheprovider` OK, 46 tests passes.
 - Prochaine etape : regenerer `reports/polyvore_v0_cooccurrence_baseline.json` dans Colab avec les raw HF pour obtenir les vraies metriques filtrees, puis decider de l'integration experimentale.
+- Rerun Colab recu apres mise a jour :
+  - `baseline_ready: true` ;
+  - `reason: cooccurrence_baseline_built_from_raw_metadata` ;
+  - TensorFlow non utilise ;
+  - config primaire : `disjoint` ;
+  - split primaire : `disjoint_train` ;
+  - paires dirigees split primaire : `92390` ;
+  - paires `product_type_v0` uniques split primaire : `26` ;
+  - fuite primaire train/eval : vraie ;
+  - decision : `train_only_baseline_ready_with_leakage_filtered_evaluation`.
+- Interpretation : la baseline devient candidate experimentale sous evaluation filtree, mais pas encore integree. Les metriques detaillees `leakage_filtered_evaluation` doivent etre relues depuis le JSON Drive complet ou depuis un nouveau rerun de la cellule 14.
+- Notebook mis a jour : la cellule `Baseline cooccurrence Polyvore V0` affiche maintenant un tableau des metriques filtrees par split (`precision_at_k`, `recall_at_k`, `ndcg_at_k`, `mrr`, comptes bruts/filtres/evaluables).

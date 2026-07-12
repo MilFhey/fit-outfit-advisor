@@ -193,7 +193,7 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - split d'entrainement primaire : `disjoint_train` ;
   - paires dirigees split primaire : `92390` ;
   - paires `product_type_v0` uniques split primaire : `26` ;
-  - `baseline_decision: train_only_baseline_built_evaluation_requires_leakage_filter`.
+  - `baseline_decision: train_only_baseline_ready_with_leakage_filtered_evaluation`.
 - Apercu des recommandations primaires :
   - `top` -> `casual_shoes`, `bag`, `outerwear`, `jeans`, `trousers` ;
   - `jeans` -> `top`, `casual_shoes`, `outerwear` ;
@@ -210,7 +210,9 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - les paires positives exactes deja vues dans `train` sont retirees de validation/test avant calcul des metriques ;
   - metriques produites par split : `precision_at_k`, `recall_at_k`, `ndcg_at_k`, `mrr`, compte brut, compte filtre et compte evaluable ;
   - `baseline_decision` passe a `train_only_baseline_ready_with_leakage_filtered_evaluation` si au moins un split d'evaluation reste evaluable apres filtrage.
-- Prochaine decision : regenerer le rapport complet dans Colab/Drive avec les raw HF, puis relire `leakage_filtered_evaluation` avant toute integration dans `outfit_service`.
+- Dernier rerun Colab confirme que l'evaluation filtree est disponible, mais la sortie collee ne contient pas encore les metriques detaillees `leakage_filtered_evaluation`.
+- Le notebook affiche maintenant explicitement un tableau `leakage_filtered_evaluation` dans la cellule 14.
+- Prochaine decision : relire les metriques filtrees depuis le JSON Drive complet ou relancer la cellule 14 avec le nouvel affichage, puis decider d'une integration experimentale dans `outfit_service`.
 
 ## Promotion future
 - `models/outfit_v1/` reste experimental.

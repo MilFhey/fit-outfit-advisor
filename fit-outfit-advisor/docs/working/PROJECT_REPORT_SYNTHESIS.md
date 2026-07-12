@@ -417,11 +417,11 @@ Non finalise :
 
 ### Priorite immediate
 
-Regenerer et relire l'evaluation propre de la baseline cooccurrence Polyvore :
+Relire l'evaluation propre de la baseline cooccurrence Polyvore :
 
-1. Executer `src.analysis.build_polyvore_v0_cooccurrence_baseline` dans Colab avec les raw HF.
-2. Conserver la baseline primaire construite sur `disjoint_train`.
-3. Relire `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
+1. Conserver la baseline primaire construite sur `disjoint_train`.
+2. Relire `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
+3. Recuperer les metriques detaillees depuis le JSON Drive complet ou depuis le nouvel affichage de la cellule 14.
 4. Documenter les erreurs principales par `product_type_v0`.
 5. Integrer dans `outfit_service` seulement si l'evaluation filtree est defendable.
 
@@ -439,19 +439,19 @@ La baseline reste interpretable et non TensorFlow. Elle produit une baseline pri
 Dernier resultat Colab transmis :
 
 - `baseline_ready: true` ;
-- `baseline_decision: train_only_baseline_built_evaluation_requires_leakage_filter` ;
+- `baseline_decision: train_only_baseline_ready_with_leakage_filtered_evaluation` ;
 - paires dirigees split primaire : `92390` ;
 - paires `product_type_v0` uniques split primaire : `26` ;
 - fuite train/eval primaire : vraie, avec `28` paires exactes communes entre `disjoint_train` et `disjoint_valid`.
 
-Decision : la baseline est construite mais l'evaluation brute reste bloquee. Le code sait maintenant produire une evaluation filtree ; il faut regenerer le rapport complet dans Colab avant toute integration MVP.
+Decision : la baseline est construite et l'evaluation filtree est disponible. L'evaluation brute reste bloquee, mais la decision de baseline est maintenant positive sous filtrage. Les metriques detaillees doivent encore etre relues avant toute integration MVP.
 
 ### Ensuite
 
 Evaluer puis integrer prudemment la baseline cooccurrence :
 
-1. Regenerer le rapport complet dans Colab/Drive.
-2. Verifier les metriques filtrees : Precision@K, Recall@K, MRR et NDCG@K.
+1. Verifier les metriques filtrees : Precision@K, Recall@K, MRR et NDCG@K.
+2. Relancer la cellule 14 si necessaire pour afficher le tableau `leakage_filtered_evaluation`.
 3. Relire les recommandations par role et par `product_type_v0`.
 4. Integrer en mode experimental/fallback seulement si les metriques filtrees et les exemples restent coherents.
 
