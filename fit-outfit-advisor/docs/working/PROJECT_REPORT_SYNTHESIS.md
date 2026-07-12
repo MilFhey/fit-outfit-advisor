@@ -427,6 +427,15 @@ Construire la baseline cooccurrence Polyvore :
 6. Calculer des scores de cooccurrence normalises.
 7. Verifier l'absence de fuite train/validation/test.
 
+Implementation amorcee :
+
+- script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
+- rapport : `reports/polyvore_v0_cooccurrence_baseline.json` ;
+- statut local : fail-closed, raw HF absents du workspace ;
+- execution attendue : Colab, cellule `Baseline cooccurrence Polyvore V0`.
+
+La baseline reste interpretable et non TensorFlow. Elle produit des recommandations par `product_type_v0` et un score brut de cooccurrence pour preparer l'integration experimentale future.
+
 ### Ensuite
 
 Construire la baseline cooccurrence :

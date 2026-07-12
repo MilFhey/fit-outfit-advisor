@@ -44,6 +44,9 @@ from src.analysis.analyze_polyvore_v0_schema_mapping import (
     build_schema_mapping_audit,
     detect_product_type,
 )
+from src.analysis.build_polyvore_v0_cooccurrence_baseline import (
+    build_cooccurrence_baseline,
+)
 from src.mappings.fashion_v1_mapping import (
     FashionClassConfigError,
     FASHION_CANONICAL_CATEGORIES,
@@ -481,6 +484,67 @@ def test_polyvore_schema_mapping_audit_links_raw_items(tmp_path):
         for row in report["mapping_proposal"]
     )
     assert any(row["polyvore_label"] == "lipstick" for row in report["excluded_labels"])
+
+
+def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path):
+    raw_root = tmp_path / "raw_hf_files"
+    (raw_root / "disjoint").mkdir(parents=True)
+    (raw_root / "nondisjoint").mkdir(parents=True)
+    (raw_root / "categories.csv").write_text(
+        "10,1,Tops\n20,1,Jeans\n30,1,Sneakers\n",
+        encoding="utf-8",
+    )
+    (raw_root / "polyvore_item_metadata.json").write_text(
+        json.dumps(
+            {
+                "top-1": {"semantic_category": "tops", "category_id": "10"},
+                "jeans-1": {"semantic_category": "jeans", "category_id": "20"},
+                "shoes-1": {"semantic_category": "sneakers", "category_id": "30"},
+                "top-2": {"semantic_category": "tops", "category_id": "10"},
+                "jeans-2": {"semantic_category": "jeans", "category_id": "20"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    split_payload = [
+        {
+            "set_id": "set-1",
+            "items": [
+                {"item_id": "top-1"},
+                {"item_id": "jeans-1"},
+                {"item_id": "shoes-1"},
+            ],
+        },
+        {
+            "set_id": "set-2",
+            "items": [
+                {"item_id": "top-2"},
+                {"item_id": "jeans-2"},
+            ],
+        },
+    ]
+    (raw_root / "disjoint" / "train.json").write_text(
+        json.dumps(split_payload),
+        encoding="utf-8",
+    )
+    for relative_path in [
+        "disjoint/valid.json",
+        "disjoint/test.json",
+        "nondisjoint/train.json",
+        "nondisjoint/valid.json",
+        "nondisjoint/test.json",
+    ]:
+        (raw_root / relative_path).write_text("[]", encoding="utf-8")
+
+    report = build_cooccurrence_baseline(raw_root=raw_root)
+
+    assert report["baseline_ready"] is True
+    assert report["training_executed"] is False
+    assert report["tensorflow_used"] is False
+    top_recommendations = report["aggregate"]["recommendations_by_product_type"]["top"]
+    assert top_recommendations[0]["product_type_v0"] == "jeans"
+    assert any(row["product_type_v0"] == "sports_shoes" for row in top_recommendations)
+    assert report["leakage"]["has_exact_positive_pair_leakage"] is False
 
 
 def test_image_service_simulated_output_keys():

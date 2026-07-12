@@ -1,0 +1,12 @@
+{
+  "version": "polyvore_v0_cooccurrence_baseline",
+  "training_executed": false,
+  "tensorflow_used": false,
+  "streamlit_integration_executed": false,
+  "raw_root": null,
+  "config_path": "C:\\Users\\bossk\\PC\\02-PROJETS\\ETUDES\\M2\\TensorFlow\\fit-outfit-advisor\\config\\outfit_v1_config.json",
+  "config_status": "validated_for_baseline_v0",
+  "model_status": "experimental_only",
+  "baseline_ready": false,
+  "reason": "raw_files_missing_requires_colab_or_drive_raw_root"
+}

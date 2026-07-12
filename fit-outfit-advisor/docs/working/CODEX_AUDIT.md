@@ -196,3 +196,11 @@
 - Promotion manuelle d'un noyau conservateur de 28 labels dans `config/outfit_v1_config.json`.
 - `validate_outfit_v1_config(..., require_ready=True)` passe maintenant sur la config officielle.
 - Prochaine etape : baseline cooccurrence Polyvore, toujours sans entrainement TensorFlow.
+
+## Baseline cooccurrence Polyvore V0
+- Ajout de `src/analysis/build_polyvore_v0_cooccurrence_baseline.py`.
+- Ajout de `reports/polyvore_v0_cooccurrence_baseline.json`.
+- Ajout d'une cellule Colab `Baseline cooccurrence Polyvore V0` dans `notebooks/03_polyvore_exploration_colab.ipynb`.
+- Le script applique le mapping valide, construit les paires positives compatibles, agrege les cooccurrences par `product_type_v0`, produit des recommandations et controle la fuite de paires positives exactes entre splits.
+- Rapport local : `baseline_ready: false`, raison `raw_files_missing_requires_colab_or_drive_raw_root`.
+- Aucun entrainement TensorFlow et aucune integration Streamlit.

@@ -169,6 +169,22 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - Recall@K ;
   - NDCG@K ou MRR.
 
+## Baseline cooccurrence V0
+- Nouveau script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py`.
+- Nouveau rapport : `reports/polyvore_v0_cooccurrence_baseline.json`.
+- Le script :
+  - charge les splits raw Polyvore ;
+  - relie les items a `polyvore_item_metadata.json` ;
+  - applique `config/outfit_v1_config.json` en `validated_for_baseline_v0` ;
+  - extrait les paires positives compatibles dans un meme outfit ;
+  - agrege les cooccurrences dirigees par `product_type_v0` ;
+  - calcule un `raw_compatibility_score` simple : count candidat / total cooccurrences de l'input ;
+  - verifie les recouvrements de paires positives exactes entre splits.
+- Aucun negatif, aucun modele TensorFlow et aucune integration Streamlit ne sont generes a cette etape.
+- Le rapport local est fail-closed (`raw_files_missing_requires_colab_or_drive_raw_root`) car les raw HF ne sont pas dans le workspace.
+- Le notebook `03_polyvore_exploration_colab.ipynb` genere maintenant le vrai rapport complet dans Drive via la cellule `Baseline cooccurrence Polyvore V0`.
+- Prochaine decision apres execution Colab : relire les recommandations par `product_type_v0`, verifier la fuite de paires positives exactes, puis decider si cette baseline peut alimenter le service outfit experimental.
+
 ## Promotion future
 - `models/outfit_v1/` reste experimental.
 - `models/outfit_active/` est le seul emplacement actif.
