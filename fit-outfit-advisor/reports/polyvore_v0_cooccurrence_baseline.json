@@ -1,12 +1,188 @@
 {
   "version": "polyvore_v0_cooccurrence_baseline",
+  "report_source": "colab_summary_transcribed_from_user_paste",
+  "report_completeness": "summary_only_full_colab_json_not_available_locally",
   "training_executed": false,
   "tensorflow_used": false,
   "streamlit_integration_executed": false,
-  "raw_root": null,
-  "config_path": "C:\\Users\\bossk\\PC\\02-PROJETS\\ETUDES\\M2\\TensorFlow\\fit-outfit-advisor\\config\\outfit_v1_config.json",
+  "raw_root": "/content/fit-outfit-runtime/polyvore/raw_hf_files",
+  "report_path_colab": "/content/fit-outfit-advisor-repo/fit-outfit-advisor/reports/polyvore_v0_cooccurrence_baseline.json",
+  "report_path_drive": "/content/drive/MyDrive/fit-outfit-advisor/reports/polyvore_v0_cooccurrence_baseline.json",
+  "config_path": "config/outfit_v1_config.json",
   "config_status": "validated_for_baseline_v0",
   "model_status": "experimental_only",
-  "baseline_ready": false,
-  "reason": "raw_files_missing_requires_colab_or_drive_raw_root"
+  "baseline_ready": true,
+  "reason": "cooccurrence_baseline_built_from_raw_metadata",
+  "primary_config": "disjoint",
+  "primary_training_split": "disjoint_train",
+  "primary_baseline": {
+    "directed_pair_count": 92390,
+    "unique_directed_product_pair_count": 26,
+    "recommendations_by_product_type": {
+      "top": [
+        {
+          "product_type_v0": "casual_shoes",
+          "cooccurrence_count": 9981,
+          "raw_compatibility_score": 0.380518
+        },
+        {
+          "product_type_v0": "bag",
+          "cooccurrence_count": 8777,
+          "raw_compatibility_score": 0.334617
+        },
+        {
+          "product_type_v0": "outerwear",
+          "cooccurrence_count": 2918,
+          "raw_compatibility_score": 0.111247
+        },
+        {
+          "product_type_v0": "jeans",
+          "cooccurrence_count": 1789,
+          "raw_compatibility_score": 0.068204
+        },
+        {
+          "product_type_v0": "trousers",
+          "cooccurrence_count": 1414,
+          "raw_compatibility_score": 0.053908
+        }
+      ],
+      "jeans": [
+        {
+          "product_type_v0": "top",
+          "cooccurrence_count": 1789,
+          "raw_compatibility_score": 0.422133
+        },
+        {
+          "product_type_v0": "casual_shoes",
+          "cooccurrence_count": 1717,
+          "raw_compatibility_score": 0.405144
+        },
+        {
+          "product_type_v0": "outerwear",
+          "cooccurrence_count": 732,
+          "raw_compatibility_score": 0.172723
+        }
+      ],
+      "trousers": [
+        {
+          "product_type_v0": "top",
+          "cooccurrence_count": 1414,
+          "raw_compatibility_score": 0.420583
+        },
+        {
+          "product_type_v0": "casual_shoes",
+          "cooccurrence_count": 1412,
+          "raw_compatibility_score": 0.419988
+        },
+        {
+          "product_type_v0": "outerwear",
+          "cooccurrence_count": 536,
+          "raw_compatibility_score": 0.159429
+        }
+      ],
+      "outerwear": [
+        {
+          "product_type_v0": "top",
+          "cooccurrence_count": 2918,
+          "raw_compatibility_score": 0.654407
+        },
+        {
+          "product_type_v0": "jeans",
+          "cooccurrence_count": 732,
+          "raw_compatibility_score": 0.164162
+        },
+        {
+          "product_type_v0": "trousers",
+          "cooccurrence_count": 536,
+          "raw_compatibility_score": 0.120206
+        },
+        {
+          "product_type_v0": "shorts",
+          "cooccurrence_count": 273,
+          "raw_compatibility_score": 0.061224
+        }
+      ],
+      "casual_shoes": [
+        {
+          "product_type_v0": "bag",
+          "cooccurrence_count": 13969,
+          "raw_compatibility_score": 0.49178
+        },
+        {
+          "product_type_v0": "top",
+          "cooccurrence_count": 9981,
+          "raw_compatibility_score": 0.351382
+        },
+        {
+          "product_type_v0": "jeans",
+          "cooccurrence_count": 1717,
+          "raw_compatibility_score": 0.060447
+        },
+        {
+          "product_type_v0": "trousers",
+          "cooccurrence_count": 1412,
+          "raw_compatibility_score": 0.04971
+        },
+        {
+          "product_type_v0": "shorts",
+          "cooccurrence_count": 1326,
+          "raw_compatibility_score": 0.046682
+        }
+      ],
+      "bag": [
+        {
+          "product_type_v0": "casual_shoes",
+          "cooccurrence_count": 13969,
+          "raw_compatibility_score": 0.61413
+        },
+        {
+          "product_type_v0": "top",
+          "cooccurrence_count": 8777,
+          "raw_compatibility_score": 0.38587
+        }
+      ]
+    }
+  },
+  "leakage": {
+    "by_config": {
+      "disjoint": {
+        "exact_positive_pair_overlap_counts": {
+          "train__valid": 28,
+          "train__test": 0,
+          "valid__test": 0
+        },
+        "has_exact_positive_pair_leakage": true
+      },
+      "nondisjoint": {
+        "exact_positive_pair_overlap_counts": {
+          "train__valid": 61,
+          "train__test": 160,
+          "valid__test": 15
+        },
+        "has_exact_positive_pair_leakage": true
+      }
+    },
+    "has_within_config_positive_pair_leakage": true,
+    "primary_train_eval": {
+      "exact_positive_pair_overlap_counts": {
+        "train__valid": 28,
+        "train__test": 0
+      },
+      "has_train_eval_positive_pair_leakage": true
+    },
+    "has_primary_train_eval_positive_pair_leakage": true
+  },
+  "evaluation_ready_without_leakage": false,
+  "leakage_filtered_evaluation_ready": false,
+  "leakage_filtered_evaluation": {},
+  "baseline_decision": "train_only_baseline_built_evaluation_requires_leakage_filter",
+  "implementation_status": "leakage_filtered_evaluation_implemented_requires_colab_regeneration",
+  "audit_notes": [
+    "Baseline built from raw Polyvore metadata with the validated Fashion V1 aligned mapping.",
+    "Primary scoring source is disjoint_train only.",
+    "Exact positive pair overlap between disjoint train and validation blocks raw evaluation; leakage-filtered evaluation must be used instead.",
+    "Leakage-filtered ranking evaluation is now implemented in src/analysis/build_polyvore_v0_cooccurrence_baseline.py, but the full raw-HF report must be regenerated in Colab to compute real validation/test metrics.",
+    "No TensorFlow model was trained and no Streamlit integration was performed."
+  ],
+  "next_decision": "Regenerate the full cooccurrence report in Colab with raw HF files, then review leakage_filtered_evaluation before any outfit service integration or model promotion."
 }

@@ -181,12 +181,36 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - calcule un `raw_compatibility_score` simple : count candidat / total cooccurrences de l'input ;
   - verifie les recouvrements de paires positives exactes entre splits au sein de chaque config (`disjoint` puis `nondisjoint`).
 - Aucun negatif, aucun modele TensorFlow et aucune integration Streamlit ne sont generes a cette etape.
-- Le rapport local est fail-closed (`raw_files_missing_requires_colab_or_drive_raw_root`) car les raw HF ne sont pas dans le workspace.
-- Le notebook `03_polyvore_exploration_colab.ipynb` genere maintenant le vrai rapport complet dans Drive via la cellule `Baseline cooccurrence Polyvore V0`.
+- Le rapport versionne `reports/polyvore_v0_cooccurrence_baseline.json` reprend le dernier resume Colab transmis. Le JSON complet Colab n'est pas present localement, donc le rapport indique `report_completeness: summary_only_full_colab_json_not_available_locally`.
+- Le notebook `03_polyvore_exploration_colab.ipynb` genere le vrai rapport complet dans Drive via la cellule `Baseline cooccurrence Polyvore V0`.
 - La baseline primaire est calculee uniquement depuis `disjoint_train`. Les aggregats complets par config restent des diagnostics, pas une source de scoring primaire.
 - Les recouvrements entre `disjoint` et `nondisjoint` sont conserves comme diagnostic seulement, car ce sont deux configurations alternatives du dataset.
 - Si des paires exactes fuient entre `train` et validation/test, la baseline reste construite mais l'evaluation doit filtrer ces paires ou rester bloquee.
-- Prochaine decision apres execution Colab : relire les recommandations `primary_baseline` par `product_type_v0`, regarder `baseline_decision`, puis integrer seulement si l'evaluation est propre ou explicitement filtree.
+- Dernier resultat Colab transmis :
+  - `baseline_ready: true` ;
+  - `tensorflow_used: false` ;
+  - config primaire : `disjoint` ;
+  - split d'entrainement primaire : `disjoint_train` ;
+  - paires dirigees split primaire : `92390` ;
+  - paires `product_type_v0` uniques split primaire : `26` ;
+  - `baseline_decision: train_only_baseline_built_evaluation_requires_leakage_filter`.
+- Apercu des recommandations primaires :
+  - `top` -> `casual_shoes`, `bag`, `outerwear`, `jeans`, `trousers` ;
+  - `jeans` -> `top`, `casual_shoes`, `outerwear` ;
+  - `outerwear` -> `top`, `jeans`, `trousers`, `shorts` ;
+  - `casual_shoes` -> `bag`, `top`, `jeans`, `trousers`, `shorts`.
+- Fuite positive exacte intra-config :
+  - `disjoint train__valid`: `28` ;
+  - `disjoint train__test`: `0` ;
+  - `nondisjoint train__valid`: `61` ;
+  - `nondisjoint train__test`: `160` ;
+  - `nondisjoint valid__test`: `15`.
+- Mise a jour implementation locale :
+  - `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` calcule maintenant `leakage_filtered_evaluation` ;
+  - les paires positives exactes deja vues dans `train` sont retirees de validation/test avant calcul des metriques ;
+  - metriques produites par split : `precision_at_k`, `recall_at_k`, `ndcg_at_k`, `mrr`, compte brut, compte filtre et compte evaluable ;
+  - `baseline_decision` passe a `train_only_baseline_ready_with_leakage_filtered_evaluation` si au moins un split d'evaluation reste evaluable apres filtrage.
+- Prochaine decision : regenerer le rapport complet dans Colab/Drive avec les raw HF, puis relire `leakage_filtered_evaluation` avant toute integration dans `outfit_service`.
 
 ## Promotion future
 - `models/outfit_v1/` reste experimental.

@@ -466,17 +466,7 @@ def test_polyvore_schema_mapping_audit_links_raw_items(tmp_path):
         encoding="utf-8",
     )
     (raw_root / "disjoint" / "valid.json").write_text(
-        json.dumps(
-            [
-                {
-                    "set_id": "set-validation-leak",
-                    "items": [
-                        {"item_id": "top-1"},
-                        {"item_id": "jeans-1"},
-                    ],
-                }
-            ]
-        ),
+        "[]",
         encoding="utf-8",
     )
     for relative_path in [
@@ -549,7 +539,14 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
                         {"item_id": "top-1"},
                         {"item_id": "jeans-1"},
                     ],
-                }
+                },
+                {
+                    "set_id": "set-validation-clean",
+                    "items": [
+                        {"item_id": "top-2"},
+                        {"item_id": "shoes-1"},
+                    ],
+                },
             ]
         ),
         encoding="utf-8",
@@ -576,7 +573,14 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
     assert report["leakage"]["has_within_config_positive_pair_leakage"] is True
     assert report["leakage"]["has_primary_train_eval_positive_pair_leakage"] is True
     assert report["evaluation_ready_without_leakage"] is False
-    assert report["baseline_decision"] == "train_only_baseline_built_evaluation_requires_leakage_filter"
+    assert report["leakage_filtered_evaluation_ready"] is True
+    validation_metrics = report["leakage_filtered_evaluation"]["valid"]
+    assert validation_metrics["raw_directed_pair_count"] == 4
+    assert validation_metrics["filtered_train_overlap_directed_pair_count"] == 2
+    assert validation_metrics["evaluable_directed_pair_count"] == 2
+    assert validation_metrics["recall_at_k"]["1"] == 0.0
+    assert validation_metrics["recall_at_k"]["3"] == 1.0
+    assert report["baseline_decision"] == "train_only_baseline_ready_with_leakage_filtered_evaluation"
 
 
 def test_image_service_simulated_output_keys():

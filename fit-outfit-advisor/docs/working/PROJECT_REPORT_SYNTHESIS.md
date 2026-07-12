@@ -417,35 +417,43 @@ Non finalise :
 
 ### Priorite immediate
 
-Construire la baseline cooccurrence Polyvore :
+Regenerer et relire l'evaluation propre de la baseline cooccurrence Polyvore :
 
-1. Charger les splits raw `disjoint`/`nondisjoint`.
-2. Relier les items a `polyvore_item_metadata.json`.
-3. Appliquer `config/outfit_v1_config.json`.
-4. Extraire les paires positives d'items d'un meme outfit.
-5. Agreger au niveau `product_type_v0` et `outfit_role`.
-6. Calculer des scores de cooccurrence normalises.
-7. Verifier l'absence de fuite train/validation/test au sein de chaque config.
+1. Executer `src.analysis.build_polyvore_v0_cooccurrence_baseline` dans Colab avec les raw HF.
+2. Conserver la baseline primaire construite sur `disjoint_train`.
+3. Relire `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
+4. Documenter les erreurs principales par `product_type_v0`.
+5. Integrer dans `outfit_service` seulement si l'evaluation filtree est defendable.
 
-Implementation amorcee :
+Implementation actuelle :
 
 - script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
 - rapport : `reports/polyvore_v0_cooccurrence_baseline.json` ;
-- statut local : fail-closed, raw HF absents du workspace ;
-- execution attendue : Colab, cellule `Baseline cooccurrence Polyvore V0`.
+- statut : baseline Colab construite, resumee localement depuis le dernier resultat transmis ;
+- evaluation filtree implementee localement dans `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
+- aucune utilisation TensorFlow ;
+- aucune integration Streamlit.
 
-La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint_train`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split. Si une paire exacte fuit entre train et evaluation, l'evaluation brute est bloquee ou doit filtrer explicitement les paires recouvertes.
+La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint_train`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split.
+
+Dernier resultat Colab transmis :
+
+- `baseline_ready: true` ;
+- `baseline_decision: train_only_baseline_built_evaluation_requires_leakage_filter` ;
+- paires dirigees split primaire : `92390` ;
+- paires `product_type_v0` uniques split primaire : `26` ;
+- fuite train/eval primaire : vraie, avec `28` paires exactes communes entre `disjoint_train` et `disjoint_valid`.
+
+Decision : la baseline est construite mais l'evaluation brute reste bloquee. Le code sait maintenant produire une evaluation filtree ; il faut regenerer le rapport complet dans Colab avant toute integration MVP.
 
 ### Ensuite
 
-Construire la baseline cooccurrence :
+Evaluer puis integrer prudemment la baseline cooccurrence :
 
-1. Extraire les paires positives d'items d'un meme outfit.
-2. Agreger au niveau `product_type_v0`.
-3. Calculer scores de cooccurrence normalises.
-4. Evaluer ranking : Precision@K, Recall@K, MRR ou NDCG@K.
-5. Verifier absence de fuite intra-config entre splits.
-6. Integrer en fallback/rule-based si robuste.
+1. Regenerer le rapport complet dans Colab/Drive.
+2. Verifier les metriques filtrees : Precision@K, Recall@K, MRR et NDCG@K.
+3. Relire les recommandations par role et par `product_type_v0`.
+4. Integrer en mode experimental/fallback seulement si les metriques filtrees et les exemples restent coherents.
 
 ### Plus tard seulement
 

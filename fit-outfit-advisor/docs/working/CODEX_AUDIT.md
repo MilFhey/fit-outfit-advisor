@@ -207,3 +207,24 @@
 - Resultat Colab recu : `baseline_ready: true`, 608 038 paires dirigees agregees et 32 paires `product_type_v0` uniques sur l'agregat initial.
 - Correction d'interpretation : le flag de fuite initial comparait aussi `disjoint` et `nondisjoint`, qui sont deux configurations alternatives. Le rapport distingue maintenant `primary_baseline` sur `disjoint`, `aggregate_by_config` et la fuite intra-config uniquement.
 - Resultat suivant : la fuite intra-config reste vraie. Correction de design : `primary_baseline` est maintenant calculee uniquement sur `disjoint_train`; l'audit expose `has_primary_train_eval_positive_pair_leakage` et bloque l'evaluation brute si des paires exactes train/eval se recouvrent.
+- Dernier resultat transmis et versionne en resume dans `reports/polyvore_v0_cooccurrence_baseline.json` :
+  - `baseline_ready: true` ;
+  - `reason: cooccurrence_baseline_built_from_raw_metadata` ;
+  - TensorFlow non utilise ;
+  - config primaire : `disjoint` ;
+  - split primaire : `disjoint_train` ;
+  - paires dirigees split primaire : `92390` ;
+  - paires `product_type_v0` uniques split primaire : `26` ;
+  - fuite primaire train/eval : vraie (`disjoint train__valid = 28`, `train__test = 0`) ;
+  - decision : `train_only_baseline_built_evaluation_requires_leakage_filter`.
+- Le rapport local indique explicitement que le JSON complet Colab n'est pas disponible dans le workspace et que le contenu versionne est un resume transcrit depuis le resultat fourni.
+- Etape suivante identifiee a ce moment : ajouter/regenerer une evaluation filtree qui retire des splits validation/test les paires positives exactes deja observees dans `train`, puis seulement ensuite envisager une integration experimentale dans `outfit_service`.
+- Suite realisee localement :
+  - ajout de `leakage_filtered_evaluation` dans `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
+  - filtrage des observations validation/test dont la paire positive exacte existe deja dans `train` ;
+  - calcul par split de `precision_at_k`, `recall_at_k`, `ndcg_at_k` et `mrr` sur les paires evaluables ;
+  - ajout d'un indicateur `leakage_filtered_evaluation_ready` ;
+  - `baseline_decision` peut maintenant passer a `train_only_baseline_ready_with_leakage_filtered_evaluation` si des paires restent evaluables apres filtrage.
+- Test synthetique mis a jour : il verifie qu'une paire validation fuitee est retiree et qu'une paire validation propre reste evaluee.
+- Validation locale avec `.venv311` : `python -m compileall app src tests` OK et `pytest --basetemp=.tmp_pytest -p no:cacheprovider` OK, 46 tests passes.
+- Prochaine etape : regenerer `reports/polyvore_v0_cooccurrence_baseline.json` dans Colab avec les raw HF pour obtenir les vraies metriques filtrees, puis decider de l'integration experimentale.

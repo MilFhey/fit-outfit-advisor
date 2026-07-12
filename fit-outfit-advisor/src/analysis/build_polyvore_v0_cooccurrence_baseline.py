@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 from collections import Counter, defaultdict
 from itertools import combinations
@@ -29,6 +30,7 @@ from src.mappings.polyvore_mapping import (
 
 
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "reports" / "polyvore_v0_cooccurrence_baseline.json"
+DEFAULT_RANKING_TOP_KS = (1, 3, 5, 10)
 
 
 def exact_item_pair_key(item_id_a: Any, item_id_b: Any) -> tuple[str, str]:
@@ -142,15 +144,48 @@ def build_split_cooccurrence(
     *,
     config: dict[str, Any],
 ) -> tuple[Counter[tuple[str, str]], Counter[str], Counter[tuple[str, str]], set[tuple[str, str]]]:
+    observations = build_positive_pair_observations(rows, config=config)
+    return build_cooccurrence_from_observations(observations)
+
+
+def build_cooccurrence_from_observations(
+    observations: list[dict[str, Any]],
+) -> tuple[Counter[tuple[str, str]], Counter[str], Counter[tuple[str, str]], set[tuple[str, str]]]:
+    directed_counts: Counter[tuple[str, str]] = Counter()
+    input_counts: Counter[str] = Counter()
+    role_pair_counts: Counter[tuple[str, str]] = Counter()
+    exact_positive_pair_keys: set[tuple[str, str]] = set()
+    counted_role_pair_occurrences: set[tuple[str, tuple[str, str], tuple[str, str]]] = set()
+
+    for observation in observations:
+        input_product = observation["input_product_type"]
+        candidate_product = observation["candidate_product_type"]
+        directed_counts[(input_product, candidate_product)] += 1
+        input_counts[input_product] += 1
+        role_pair_occurrence = (
+            observation["outfit_id"],
+            observation["pair_key"],
+            observation["role_pair_key"],
+        )
+        if role_pair_occurrence not in counted_role_pair_occurrences:
+            role_pair_counts[observation["role_pair_key"]] += 1
+            counted_role_pair_occurrences.add(role_pair_occurrence)
+        exact_positive_pair_keys.add(observation["pair_key"])
+
+    return directed_counts, input_counts, role_pair_counts, exact_positive_pair_keys
+
+
+def build_positive_pair_observations(
+    rows: list[dict[str, str]],
+    *,
+    config: dict[str, Any],
+) -> list[dict[str, Any]]:
     compatible_roles = build_compatible_role_pair_set(config)
     by_outfit: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in rows:
         by_outfit[row["outfit_id"]].append(row)
 
-    directed_counts: Counter[tuple[str, str]] = Counter()
-    input_counts: Counter[str] = Counter()
-    role_pair_counts: Counter[tuple[str, str]] = Counter()
-    exact_positive_pair_keys: set[tuple[str, str]] = set()
+    observations: list[dict[str, Any]] = []
 
     for outfit_rows in by_outfit.values():
         for left, right in combinations(outfit_rows, 2):
@@ -158,15 +193,18 @@ def build_split_cooccurrence(
             if role_key not in compatible_roles:
                 continue
             pair_key = exact_item_pair_key(left["item_id"], right["item_id"])
-            exact_positive_pair_keys.add(pair_key)
-            role_pair_counts[role_key] += 1
             for input_item, candidate_item in ((left, right), (right, left)):
-                input_product = input_item["product_type_v0"]
-                candidate_product = candidate_item["product_type_v0"]
-                directed_counts[(input_product, candidate_product)] += 1
-                input_counts[input_product] += 1
+                observations.append(
+                    {
+                        "pair_key": pair_key,
+                        "outfit_id": input_item["outfit_id"],
+                        "role_pair_key": role_key,
+                        "input_product_type": input_item["product_type_v0"],
+                        "candidate_product_type": candidate_item["product_type_v0"],
+                    }
+                )
 
-    return directed_counts, input_counts, role_pair_counts, exact_positive_pair_keys
+    return observations
 
 
 def recommendations_from_counts(
@@ -234,6 +272,88 @@ def aggregate_payload(
     }
 
 
+def _empty_ranking_metrics() -> dict[str, Any]:
+    return {
+        "raw_directed_pair_count": 0,
+        "filtered_train_overlap_directed_pair_count": 0,
+        "evaluable_directed_pair_count": 0,
+        "ranking_hit_count_by_k": {str(k): 0 for k in DEFAULT_RANKING_TOP_KS},
+        "precision_at_k": {str(k): None for k in DEFAULT_RANKING_TOP_KS},
+        "recall_at_k": {str(k): None for k in DEFAULT_RANKING_TOP_KS},
+        "ndcg_at_k": {str(k): None for k in DEFAULT_RANKING_TOP_KS},
+        "mrr": None,
+    }
+
+
+def evaluate_filtered_ranking(
+    observations: list[dict[str, Any]],
+    *,
+    train_pair_keys: set[tuple[str, str]],
+    recommendations_by_product_type: dict[str, list[dict[str, Any]]],
+    top_ks: tuple[int, ...] = DEFAULT_RANKING_TOP_KS,
+) -> dict[str, Any]:
+    rankings = {
+        input_product: {
+            row["product_type_v0"]: rank
+            for rank, row in enumerate(recommendations, start=1)
+        }
+        for input_product, recommendations in recommendations_by_product_type.items()
+    }
+    filtered = [
+        observation
+        for observation in observations
+        if observation["pair_key"] not in train_pair_keys
+    ]
+    if not observations:
+        return _empty_ranking_metrics()
+
+    hit_counts = {k: 0 for k in top_ks}
+    ndcg_sums = {k: 0.0 for k in top_ks}
+    reciprocal_rank_sum = 0.0
+    found_rank_count = 0
+
+    for observation in filtered:
+        candidate_rank = rankings.get(observation["input_product_type"], {}).get(
+            observation["candidate_product_type"]
+        )
+        if candidate_rank is None:
+            continue
+        found_rank_count += 1
+        reciprocal_rank_sum += 1 / candidate_rank
+        for k in top_ks:
+            if candidate_rank <= k:
+                hit_counts[k] += 1
+                ndcg_sums[k] += 1 / math.log2(candidate_rank + 1)
+
+    evaluable_count = len(filtered)
+    if evaluable_count == 0:
+        metrics = _empty_ranking_metrics()
+        metrics["raw_directed_pair_count"] = len(observations)
+        metrics["filtered_train_overlap_directed_pair_count"] = len(observations)
+        return metrics
+
+    return {
+        "raw_directed_pair_count": len(observations),
+        "filtered_train_overlap_directed_pair_count": len(observations) - evaluable_count,
+        "evaluable_directed_pair_count": evaluable_count,
+        "ranking_found_directed_pair_count": found_rank_count,
+        "ranking_hit_count_by_k": {str(k): hit_counts[k] for k in top_ks},
+        "precision_at_k": {
+            str(k): round(hit_counts[k] / (evaluable_count * k), 6)
+            for k in top_ks
+        },
+        "recall_at_k": {
+            str(k): round(hit_counts[k] / evaluable_count, 6)
+            for k in top_ks
+        },
+        "ndcg_at_k": {
+            str(k): round(ndcg_sums[k] / evaluable_count, 6)
+            for k in top_ks
+        },
+        "mrr": round(reciprocal_rank_sum / evaluable_count, 6),
+    }
+
+
 def train_eval_positive_pair_leakage(
     config_split_pair_keys: dict[str, set[tuple[str, str]]],
 ) -> dict[str, Any]:
@@ -297,6 +417,7 @@ def build_cooccurrence_baseline(
     split_baselines: dict[str, Any] = {}
     split_pair_keys: dict[str, set[tuple[str, str]]] = {}
     split_pair_keys_by_config: dict[str, dict[str, set[tuple[str, str]]]] = defaultdict(dict)
+    split_observations_by_config: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(dict)
     aggregate_directed_counts: Counter[tuple[str, str]] = Counter()
     aggregate_input_counts: Counter[str] = Counter()
     aggregate_role_pair_counts: Counter[tuple[str, str]] = Counter()
@@ -314,9 +435,9 @@ def build_cooccurrence_baseline(
             categories_lookup=categories_lookup,
             config=config,
         )
-        directed_counts, input_counts, role_pair_counts, pair_keys = build_split_cooccurrence(
-            rows,
-            config=config,
+        observations = build_positive_pair_observations(rows, config=config)
+        directed_counts, input_counts, role_pair_counts, pair_keys = build_cooccurrence_from_observations(
+            observations
         )
         split_diagnostics[split_name] = {
             **diagnostics,
@@ -338,6 +459,7 @@ def build_cooccurrence_baseline(
         )
         split_pair_keys[split_name] = pair_keys
         split_pair_keys_by_config[config_name][short_name] = pair_keys
+        split_observations_by_config[config_name][short_name] = observations
         aggregate_directed_counts.update(directed_counts)
         aggregate_input_counts.update(input_counts)
         aggregate_role_pair_counts.update(role_pair_counts)
@@ -367,6 +489,23 @@ def build_cooccurrence_baseline(
         primary_training_split = next(iter(split_baselines))
     primary_train_eval_leakage = train_eval_positive_pair_leakage(
         split_pair_keys_by_config.get(primary_config, {})
+    )
+    primary_train_pair_keys = split_pair_keys_by_config.get(primary_config, {}).get("train", set())
+    primary_recommendations = split_baselines[primary_training_split][
+        "recommendations_by_product_type"
+    ]
+    leakage_filtered_evaluation = {
+        split_name: evaluate_filtered_ranking(
+            observations,
+            train_pair_keys=primary_train_pair_keys,
+            recommendations_by_product_type=primary_recommendations,
+        )
+        for split_name, observations in split_observations_by_config.get(primary_config, {}).items()
+        if split_name != "train"
+    }
+    leakage_filtered_evaluation_ready = any(
+        payload["evaluable_directed_pair_count"] > 0
+        for payload in leakage_filtered_evaluation.values()
     )
     cross_config_diagnostic = positive_pair_leakage(split_pair_keys)
     leakage = {
@@ -398,10 +537,16 @@ def build_cooccurrence_baseline(
             "evaluation_ready_without_leakage": not primary_train_eval_leakage[
                 "has_train_eval_positive_pair_leakage"
             ],
+            "leakage_filtered_evaluation_ready": leakage_filtered_evaluation_ready,
+            "leakage_filtered_evaluation": leakage_filtered_evaluation,
             "baseline_decision": (
                 "train_only_baseline_ready_for_evaluation"
                 if not primary_train_eval_leakage["has_train_eval_positive_pair_leakage"]
-                else "train_only_baseline_built_evaluation_requires_leakage_filter"
+                else (
+                    "train_only_baseline_ready_with_leakage_filtered_evaluation"
+                    if leakage_filtered_evaluation_ready
+                    else "train_only_baseline_built_evaluation_requires_leakage_filter"
+                )
             ),
             "aggregate_by_config": aggregate_by_config,
             "aggregate": aggregate_payload(
