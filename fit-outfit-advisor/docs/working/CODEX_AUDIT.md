@@ -168,7 +168,7 @@
 ## Priorite Outfit Compatibility V0
 - Ajout du plan `docs/working/OUTFIT_COMPATIBILITY_V0_PLAN.md`.
 - Ajout de la synthese rapport `docs/working/PROJECT_REPORT_SYNTHESIS.md`.
-- Ajout de `config/outfit_v1_config.json` en statut `draft_requires_dataset_inspection`.
+- Ajout initial de `config/outfit_v1_config.json` en statut `draft_requires_dataset_inspection`, puis promotion en `validated_for_baseline_v0` apres audit schema/mapping Colab.
 - Ajout des helpers de mapping Polyvore -> Fashion V1 et preprocessing paires outfit.
 - `outfit_service` conserve son contrat historique et ajoute les champs V0 : `input_product_type`, `recommended_product_types`, `compatible_roles`, `raw_compatibility_score`, `model_status`.
 - Notebook Polyvore ajuste pour utiliser Hugging Face `mvasil/polyvore-outfits` avec le secret Colab `HUGGIN_KEY`, inspecter `disjoint`/`nondisjoint` si disponibles et sauvegarder le dataset dans Google Drive.
@@ -193,3 +193,6 @@
 - Interpretation : baseline cooccurrence possible apres revue du mapping ; le loader HF seul reste insuffisant.
 - Correction post-resultat : mapping explicite de `outerwear`/`hoodies`/`vests`, correction du faux positif `cap` sur `capri cropped pants`, ajout de `converse`/`chuck taylor` vers `sports_shoes`.
 - Ajout d'un sanity check dans le notebook avant generation du rapport schema/mapping pour detecter une version Colab stale du script.
+- Promotion manuelle d'un noyau conservateur de 28 labels dans `config/outfit_v1_config.json`.
+- `validate_outfit_v1_config(..., require_ready=True)` passe maintenant sur la config officielle.
+- Prochaine etape : baseline cooccurrence Polyvore, toujours sans entrainement TensorFlow.

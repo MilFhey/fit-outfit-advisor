@@ -353,6 +353,13 @@ Resultat Colab apres execution sur raw HF :
 
 Conclusion : Polyvore est exploitable pour une baseline cooccurrence, mais uniquement apres revue manuelle et promotion explicite du mapping. Les labels generiques ou hors taxonomie Fashion V1.1 restent exclus.
 
+Revue manuelle effectuee :
+
+- `config/outfit_v1_config.json` passe en `validated_for_baseline_v0` ;
+- 28 labels Polyvore fiables sont promus vers Fashion V1.1 ;
+- les labels generiques et hors taxonomie restent exclus ;
+- la prochaine etape devient la baseline cooccurrence, sans TensorFlow.
+
 ## 7. Decisions importantes
 
 | Sujet | Decision | Justification |
@@ -410,13 +417,15 @@ Non finalise :
 
 ### Priorite immediate
 
-Finaliser l'audit schema/mapping Polyvore depuis les raw HF :
+Construire la baseline cooccurrence Polyvore :
 
-1. Executer `src.analysis.analyze_polyvore_v0_schema_mapping` avec `--raw-root` vers le cache Drive raw.
-2. Relire les distributions de `semantic_category`, `category_id`, `catgeories`, `title` et `url_name`.
-3. Promouvoir manuellement les labels fiables dans `config/outfit_v1_config.json`.
-4. Conserver les exclusions justifiees.
-5. Ensuite seulement, construire la baseline cooccurrence.
+1. Charger les splits raw `disjoint`/`nondisjoint`.
+2. Relier les items a `polyvore_item_metadata.json`.
+3. Appliquer `config/outfit_v1_config.json`.
+4. Extraire les paires positives d'items d'un meme outfit.
+5. Agreger au niveau `product_type_v0` et `outfit_role`.
+6. Calculer des scores de cooccurrence normalises.
+7. Verifier l'absence de fuite train/validation/test.
 
 ### Ensuite
 

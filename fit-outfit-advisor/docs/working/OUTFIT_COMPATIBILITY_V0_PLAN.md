@@ -136,7 +136,14 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - `vests -> outerwear` ;
   - `capri cropped pants -> trousers` ;
   - `converse chuck taylor all star -> sports_shoes`.
-- Prochaine etape : relancer la cellule 13 du notebook avec ces regles, puis promouvoir seulement les labels verifies dans `config/outfit_v1_config.json`.
+- Decision apres revue manuelle : promotion d'un noyau conservateur dans `config/outfit_v1_config.json`.
+- Config Outfit V1 :
+  - `status`: `validated_for_baseline_v0` ;
+  - `source_label_column`: `semantic_category|category_id_name|catgeories` ;
+  - 28 labels Polyvore promus vers Fashion V1.1.
+- Labels promus principaux : `shoes`, `bags`, `jewellery`, `tops`, `outerwear`, `sunglasses`, `sandals`, `jeans`, `pumps`, `sneakers`, `pants`, `sweaters`, `blouses`, `shorts`, `t shirts`, `flats`, `sweatshirts hoodies`, `converse sneakers`, `capri cropped pants`, `hoodies`, `vests`.
+- Labels non promus volontairement : labels generiques (`women s fashion`, `clothing`, `all body`, `accessories`) et labels hors taxonomie Fashion V1.1 (`skirts`, `boots`, `hats`, `scarves`, swimwear, leggings, underwear).
+- Prochaine etape : construire la baseline cooccurrence sur les raw HF avec ce mapping valide.
 
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.

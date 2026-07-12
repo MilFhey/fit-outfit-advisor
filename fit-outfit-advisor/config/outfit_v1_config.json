@@ -1,8 +1,8 @@
 {
   "target": "outfit_compatibility_v0",
-  "status": "draft_requires_dataset_inspection",
+  "status": "validated_for_baseline_v0",
   "taxonomy_source": "fashion_v1",
-  "source_label_column": null,
+  "source_label_column": "semantic_category|category_id_name|catgeories",
   "seed": 42,
   "negative_sampling": {
     "positive_to_negative_ratio": 1.0,
@@ -30,7 +30,148 @@
     ["outerwear", "bottom"],
     ["shoes", "bag"]
   ],
-  "polyvore_label_mapping": {},
+  "polyvore_label_mapping": {
+    "bags": {
+      "product_type_v0": "bag",
+      "canonical_category": "bag",
+      "outfit_role": "bag"
+    },
+    "blouses": {
+      "product_type_v0": "shirt",
+      "canonical_category": "top",
+      "outfit_role": "top"
+    },
+    "boyfriend jeans": {
+      "product_type_v0": "jeans",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "capri cropped pants": {
+      "product_type_v0": "trousers",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "christian louboutin pumps": {
+      "product_type_v0": "heels",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "converse chuck taylor all star": {
+      "product_type_v0": "sports_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "converse sneakers": {
+      "product_type_v0": "sports_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "flats": {
+      "product_type_v0": "dress_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "hoodies": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "jackets": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "jeans": {
+      "product_type_v0": "jeans",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "jewellery": {
+      "product_type_v0": "jewellery",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory"
+    },
+    "outerwear": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "pants": {
+      "product_type_v0": "trousers",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "pumps": {
+      "product_type_v0": "heels",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "sandals": {
+      "product_type_v0": "sandals",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "shoes": {
+      "product_type_v0": "casual_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "shorts": {
+      "product_type_v0": "shorts",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "skinny jeans": {
+      "product_type_v0": "jeans",
+      "canonical_category": "bottom",
+      "outfit_role": "bottom"
+    },
+    "sneakers": {
+      "product_type_v0": "sports_shoes",
+      "canonical_category": "shoes",
+      "outfit_role": "shoes"
+    },
+    "sunglasses": {
+      "product_type_v0": "sunglasses",
+      "canonical_category": "accessory",
+      "outfit_role": "accessory"
+    },
+    "sweaters": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "sweatshirts": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "sweatshirts hoodies": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    },
+    "t shirts": {
+      "product_type_v0": "tshirt",
+      "canonical_category": "top",
+      "outfit_role": "top"
+    },
+    "tank tops": {
+      "product_type_v0": "top",
+      "canonical_category": "top",
+      "outfit_role": "top"
+    },
+    "tops": {
+      "product_type_v0": "top",
+      "canonical_category": "top",
+      "outfit_role": "top"
+    },
+    "vests": {
+      "product_type_v0": "outerwear",
+      "canonical_category": "outerwear",
+      "outfit_role": "outerwear"
+    }
+  },
   "feature_policy": {
     "forbidden_direct_features": ["item_id", "outfit_id"],
     "allowed_features": [

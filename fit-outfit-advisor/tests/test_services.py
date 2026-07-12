@@ -256,22 +256,27 @@ def test_category_mapping_preserves_fashion_v1_granular_roles():
     assert map_to_common_category("Sweatshirts") == "outerwear"
 
 
-def test_outfit_v1_config_is_draft_and_aligned_with_fashion_v1():
+def test_outfit_v1_config_is_validated_for_baseline_and_aligned_with_fashion_v1():
     config = load_outfit_v1_config()
 
     assert config["target"] == "outfit_compatibility_v0"
     assert config["taxonomy_source"] == "fashion_v1"
-    assert config["status"] == "draft_requires_dataset_inspection"
+    assert config["status"] == "validated_for_baseline_v0"
+    assert config["source_label_column"] == "semantic_category|category_id_name|catgeories"
     assert set(config["allowed_outfit_roles"]) <= set(FASHION_CANONICAL_CATEGORIES)
     assert {"item_id", "outfit_id"} <= set(
         config["feature_policy"]["forbidden_direct_features"]
     )
     assert "item_id" not in config["feature_policy"]["allowed_features"]
     assert "outfit_id" not in config["feature_policy"]["allowed_features"]
+    assert len(config["polyvore_label_mapping"]) >= 20
 
     validate_outfit_v1_config(config)
-    with pytest.raises(OutfitConfigError):
-        validate_outfit_v1_config(config, require_ready=True)
+    validate_outfit_v1_config(config, require_ready=True)
+    assert map_polyvore_label_to_fashion("outerwear", config)["product_type_v0"] == "outerwear"
+    assert map_polyvore_label_to_fashion("capri cropped pants", config)["product_type_v0"] == "trousers"
+    assert map_polyvore_label_to_fashion("converse chuck taylor all star", config)["product_type_v0"] == "sports_shoes"
+    assert map_polyvore_label_to_fashion("skirts", config) is None
 
 
 def test_polyvore_label_maps_to_fashion_v1_taxonomy():
