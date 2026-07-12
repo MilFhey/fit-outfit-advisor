@@ -189,3 +189,6 @@
 - Le mapping propose reste aligne avec Fashion V1.1 et ne produit que les roles `top`, `bottom`, `dress`, `shoes`, `outerwear`, `bag`, `accessory`.
 - Le rapport genere localement signale que les raw HF ne sont pas dans le workspace : `raw_files_missing_requires_colab_or_drive_raw_root`.
 - Decision : aucune mise a jour de `config/outfit_v1_config.json`, aucun entrainement TensorFlow et aucune integration Streamlit tant que le rapport n'a pas ete regenere avec les raw.
+- Resultat Colab transmis : `schema_mapping_ready_for_manual_review`, 540 539 items lies aux metadata, 50 mappings proposes, 50 labels exclus documentes.
+- Interpretation : baseline cooccurrence possible apres revue du mapping ; le loader HF seul reste insuffisant.
+- Correction post-resultat : mapping explicite de `outerwear`/`hoodies`/`vests`, correction du faux positif `cap` sur `capri cropped pants`, ajout de `converse`/`chuck taylor` vers `sports_shoes`.

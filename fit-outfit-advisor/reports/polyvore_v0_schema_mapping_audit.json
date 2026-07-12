@@ -307,7 +307,9 @@
         "running shoe",
         "training shoe",
         "athletic shoe",
-        "sneaker"
+        "sneaker",
+        "converse",
+        "chuck taylor"
       ],
       "product_type_v0": "sports_shoes",
       "canonical_category": "shoes",
@@ -368,12 +370,15 @@
     },
     {
       "keywords": [
+        "outerwear",
         "coat",
         "jacket",
         "blazer",
         "cardigan",
         "sweater",
-        "sweatshirt"
+        "sweatshirt",
+        "hoodie",
+        "vest"
       ],
       "product_type_v0": "outerwear",
       "canonical_category": "outerwear",
@@ -544,11 +549,19 @@
       "reason": "boots have no faithful Fashion V1 product_type_v0"
     },
     {
+      "keyword": "boots",
+      "reason": "boots have no faithful Fashion V1 product_type_v0"
+    },
+    {
       "keyword": "bra",
       "reason": "underwear outside Fashion V1 product_type_v0"
     },
     {
       "keyword": "cap",
+      "reason": "cap/headwear excluded from Fashion V1.1"
+    },
+    {
+      "keyword": "caps",
       "reason": "cap/headwear excluded from Fashion V1.1"
     },
     {
@@ -572,11 +585,19 @@
       "reason": "gloves have no faithful Fashion V1 product_type_v0"
     },
     {
+      "keyword": "gloves",
+      "reason": "gloves have no faithful Fashion V1 product_type_v0"
+    },
+    {
       "keyword": "hair",
       "reason": "hair products outside outfit roles"
     },
     {
       "keyword": "hat",
+      "reason": "headwear not retained in Fashion V1.1"
+    },
+    {
+      "keyword": "hats",
       "reason": "headwear not retained in Fashion V1.1"
     },
     {
@@ -589,6 +610,10 @@
     },
     {
       "keyword": "legging",
+      "reason": "leggings have no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "leggings",
       "reason": "leggings have no faithful Fashion V1 product_type_v0"
     },
     {
@@ -620,7 +645,15 @@
       "reason": "scarf has no faithful Fashion V1 product_type_v0"
     },
     {
+      "keyword": "scarves",
+      "reason": "scarf has no faithful Fashion V1 product_type_v0"
+    },
+    {
       "keyword": "skirt",
+      "reason": "skirt has no faithful Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "skirts",
       "reason": "skirt has no faithful Fashion V1 product_type_v0"
     },
     {
@@ -628,7 +661,15 @@
       "reason": "hosiery has no faithful Fashion V1 product_type_v0"
     },
     {
+      "keyword": "socks",
+      "reason": "hosiery has no faithful Fashion V1 product_type_v0"
+    },
+    {
       "keyword": "swim",
+      "reason": "swimwear outside Fashion V1 product_type_v0"
+    },
+    {
+      "keyword": "swimwear",
       "reason": "swimwear outside Fashion V1 product_type_v0"
     }
   ],

@@ -53,27 +53,36 @@ EXCLUSION_KEYWORDS = {
     "decor": "home/decor outside outfit roles",
     "furniture": "home/decor outside outfit roles",
     "hat": "headwear not retained in Fashion V1.1",
+    "hats": "headwear not retained in Fashion V1.1",
     "cap": "cap/headwear excluded from Fashion V1.1",
+    "caps": "cap/headwear excluded from Fashion V1.1",
     "scarf": "scarf has no faithful Fashion V1 product_type_v0",
+    "scarves": "scarf has no faithful Fashion V1 product_type_v0",
     "glove": "gloves have no faithful Fashion V1 product_type_v0",
+    "gloves": "gloves have no faithful Fashion V1 product_type_v0",
     "sock": "hosiery has no faithful Fashion V1 product_type_v0",
+    "socks": "hosiery has no faithful Fashion V1 product_type_v0",
     "hosiery": "hosiery has no faithful Fashion V1 product_type_v0",
     "legging": "leggings have no faithful Fashion V1 product_type_v0",
+    "leggings": "leggings have no faithful Fashion V1 product_type_v0",
     "skirt": "skirt has no faithful Fashion V1 product_type_v0",
+    "skirts": "skirt has no faithful Fashion V1 product_type_v0",
     "boot": "boots have no faithful Fashion V1 product_type_v0",
+    "boots": "boots have no faithful Fashion V1 product_type_v0",
     "bra": "underwear outside Fashion V1 product_type_v0",
     "lingerie": "underwear outside Fashion V1 product_type_v0",
     "swim": "swimwear outside Fashion V1 product_type_v0",
+    "swimwear": "swimwear outside Fashion V1 product_type_v0",
 }
 
 MAPPING_RULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("sports_shoes", "high", ("running shoe", "training shoe", "athletic shoe", "sneaker")),
+    ("sports_shoes", "high", ("running shoe", "training shoe", "athletic shoe", "sneaker", "converse", "chuck taylor")),
     ("heels", "high", ("heel", "pump", "stiletto")),
     ("sandals", "high", ("sandal",)),
     ("flip_flops", "high", ("flip flop", "thong sandal")),
     ("dress_shoes", "medium", ("flat", "loafer", "oxford", "formal shoe")),
     ("casual_shoes", "medium", ("shoe", "footwear")),
-    ("outerwear", "high", ("coat", "jacket", "blazer", "cardigan", "sweater", "sweatshirt")),
+    ("outerwear", "high", ("outerwear", "coat", "jacket", "blazer", "cardigan", "sweater", "sweatshirt", "hoodie", "vest")),
     ("jeans", "high", ("jean", "denim")),
     ("shorts", "high", ("short",)),
     ("trousers", "medium", ("trouser", "pant", "chino", "slack")),
@@ -219,7 +228,7 @@ def detect_product_type(label: str, fashion_config: dict[str, Any]) -> dict[str,
         }
 
     for keyword, reason in EXCLUSION_KEYWORDS.items():
-        if keyword in normalized.split() or keyword in normalized:
+        if re.search(rf"\b{re.escape(keyword)}\b", normalized):
             return {
                 "status": "excluded",
                 "reason": reason,

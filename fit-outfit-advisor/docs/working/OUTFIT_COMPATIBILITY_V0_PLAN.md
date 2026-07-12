@@ -115,6 +115,23 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
 
 - Decision : ne pas remplir `config/outfit_v1_config.json` ni lancer la baseline cooccurrence tant que les distributions reelles et les labels exclus n'ont pas ete calcules depuis les raw.
 
+## Resultat schema/mapping Colab - 2026-07-11
+- Le notebook a genere `reports/polyvore_v0_schema_mapping_audit.json` depuis `/content/fit-outfit-runtime/polyvore/raw_hf_files`.
+- Decision : `schema_mapping_ready_for_manual_review`.
+- Items relies aux metadata : 540 539.
+- Mappings proposes : 50.
+- Labels exclus documentes : 50.
+- Interpretation :
+  - la source raw est exploitable pour Outfit V0 ;
+  - les labels forts et coherents avec Fashion V1.1 sont nombreux : `shoes`, `bags`, `jewellery`, `tops`, `sunglasses`, `sandals`, `jeans`, `pumps`, `sneakers`, `pants`, `sweaters`, `blouses`, `shorts`, `t shirts`, `flats`, `jackets` ;
+  - les labels larges comme `women s fashion`, `clothing`, `all body`, `accessories` restent a exclure car ils ne correspondent pas a un `product_type_v0` precis ;
+  - les labels hors taxonomie Fashion V1.1 (`skirts`, `boots`, `hats`, `scarves`, swimwear, leggings, underwear) doivent rester exclus pour eviter une taxonomie outfit parallele.
+- Corrections appliquees aux regles d'audit apres lecture du resultat :
+  - `outerwear`, `hoodies` et `vests` sont maintenant mappes vers `outerwear` ;
+  - `capri cropped pants` n'est plus exclu par faux positif sur `cap` et peut etre mappe vers `trousers` ;
+  - `converse` / `chuck taylor` sont mappables vers `sports_shoes`.
+- Prochaine etape : relancer la cellule 13 du notebook avec ces regles, puis promouvoir seulement les labels verifies dans `config/outfit_v1_config.json`.
+
 ## Negatifs difficiles futurs
 - Generer des negatifs avec roles compatibles.
 - Remplacer un item par un autre item du meme role, et de meme famille quand possible.

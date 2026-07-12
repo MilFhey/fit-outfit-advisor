@@ -343,6 +343,16 @@ Etat local observe : les fichiers raw HF ne sont pas presents dans `data/raw/`, 
 
 Le fichier fourni `models/polyvore/polyvore_v0_dataset_audit (2).json` a ete compare au rapport `reports/polyvore_v0_dataset_audit.json` et ne presente aucune difference. Le rapport schema/mapping reprend donc ce rapport versionne comme entree officielle et y ajoute le resume loader/raw.
 
+Resultat Colab apres execution sur raw HF :
+
+- decision : `schema_mapping_ready_for_manual_review` ;
+- raw root : `/content/fit-outfit-runtime/polyvore/raw_hf_files` ;
+- items lies aux metadata : 540 539 ;
+- mappings proposes : 50 ;
+- labels exclus documentes : 50.
+
+Conclusion : Polyvore est exploitable pour une baseline cooccurrence, mais uniquement apres revue manuelle et promotion explicite du mapping. Les labels generiques ou hors taxonomie Fashion V1.1 restent exclus.
+
 ## 7. Decisions importantes
 
 | Sujet | Decision | Justification |

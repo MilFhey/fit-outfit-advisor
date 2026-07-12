@@ -409,6 +409,11 @@ def test_polyvore_schema_mapping_rules_stay_within_fashion_v1():
     assert lipstick["status"] == "excluded"
     assert "outside" in lipstick["reason"]
 
+    assert detect_product_type("outerwear", fashion_config)["product_type_v0"] == "outerwear"
+    assert detect_product_type("hoodies", fashion_config)["product_type_v0"] == "outerwear"
+    assert detect_product_type("vests", fashion_config)["product_type_v0"] == "outerwear"
+    assert detect_product_type("capri cropped pants", fashion_config)["product_type_v0"] == "trousers"
+
 
 def test_polyvore_schema_mapping_audit_links_raw_items(tmp_path):
     raw_root = tmp_path / "raw_hf_files"
