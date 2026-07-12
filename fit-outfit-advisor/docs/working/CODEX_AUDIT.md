@@ -192,3 +192,4 @@
 - Resultat Colab transmis : `schema_mapping_ready_for_manual_review`, 540 539 items lies aux metadata, 50 mappings proposes, 50 labels exclus documentes.
 - Interpretation : baseline cooccurrence possible apres revue du mapping ; le loader HF seul reste insuffisant.
 - Correction post-resultat : mapping explicite de `outerwear`/`hoodies`/`vests`, correction du faux positif `cap` sur `capri cropped pants`, ajout de `converse`/`chuck taylor` vers `sports_shoes`.
+- Ajout d'un sanity check dans le notebook avant generation du rapport schema/mapping pour detecter une version Colab stale du script.

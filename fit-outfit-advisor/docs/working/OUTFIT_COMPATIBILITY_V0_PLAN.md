@@ -130,6 +130,12 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - `outerwear`, `hoodies` et `vests` sont maintenant mappes vers `outerwear` ;
   - `capri cropped pants` n'est plus exclu par faux positif sur `cap` et peut etre mappe vers `trousers` ;
   - `converse` / `chuck taylor` sont mappables vers `sports_shoes`.
+- Le notebook contient maintenant un sanity check avant generation du rapport schema/mapping. Il doit afficher ces mappings comme `mapped` avant d'ecrire le rapport :
+  - `outerwear -> outerwear` ;
+  - `hoodies -> outerwear` ;
+  - `vests -> outerwear` ;
+  - `capri cropped pants -> trousers` ;
+  - `converse chuck taylor all star -> sports_shoes`.
 - Prochaine etape : relancer la cellule 13 du notebook avec ces regles, puis promouvoir seulement les labels verifies dans `config/outfit_v1_config.json`.
 
 ## Negatifs difficiles futurs
