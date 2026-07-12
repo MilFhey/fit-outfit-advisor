@@ -232,6 +232,8 @@ Le module outfit ne doit pas generer une tenue complete.
 
 Il doit recommander des `product_type_v0` complementaires ordonnes.
 
+Le but applicatif plus large reste d'evaluer une tenue et ses associations a partir d'images produit : le module image identifie un type produit, le module outfit estime les associations pertinentes, et des regles codees peuvent completer l'analyse, notamment pour les couleurs et les roles vestimentaires.
+
 Contrat V0 :
 
 ```python
@@ -360,6 +362,33 @@ Revue manuelle effectuee :
 - les labels generiques et hors taxonomie restent exclus ;
 - la prochaine etape devient la baseline cooccurrence, sans TensorFlow.
 
+### 6.6 Baseline cooccurrence et entrainement Outfit V1
+
+La baseline cooccurrence Polyvore V0 a ete construite en premier, comme garde-fou interpretable :
+
+- script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
+- rapport : `reports/polyvore_v0_cooccurrence_baseline.json` ;
+- split primaire : `disjoint_train` ;
+- paires dirigees primaires : `92390` ;
+- evaluation filtree disponible pour eviter les paires positives exactes vues en train.
+
+Dernier resultat Colab transmis :
+
+- valid : `mrr=0.711036`, `recall_at_k_3=0.917596`, `ndcg_at_k_3=0.751335` ;
+- test : `mrr=0.709846`, `recall_at_k_3=0.929375`, `ndcg_at_k_3=0.755142`.
+
+Un entrainement TensorFlow Outfit V1 experimental a ensuite ete ajoute pour l'objectif academique :
+
+- script : `src/training/train_outfit_model_v1.py` ;
+- tache : classification binaire de compatibilite entre paires de produits ;
+- modele : MLP Keras sur features categorielles encodees ;
+- negatives : negatifs difficiles du meme role candidat quand possible ;
+- seuil : selection validation-only ;
+- comparaison : TensorFlow MLP vs baseline cooccurrence ;
+- artefacts : `models/outfit_v1/`, non promus par defaut.
+
+Decision : le modele TensorFlow peut etre entraine et presente dans le rapport, mais l'application Streamlit garde la baseline cooccurrence fail-closed tant qu'aucune promotion manuelle vers `models/outfit_active/` n'est decidee.
+
 ## 7. Decisions importantes
 
 | Sujet | Decision | Justification |
@@ -368,8 +397,9 @@ Revue manuelle effectuee :
 | Fit service | Fallback/uncertain | Pas de seuil d'abstention acceptable |
 | Fashion V1.1 | Promu localement | Bonnes metriques + abstention stable |
 | Image service | Actif avec seuil 0.90 | `unknown` sous le seuil |
-| Polyvore | Pas d'entrainement encore | Schema/mapping a valider d'abord |
-| Outfit V0 | Baseline cooccurrence d'abord | Plus interpretable et adaptee au MVP |
+| Polyvore | Baseline construite, TensorFlow experimental ajoute | Schema/mapping valide puis baseline avant entrainement |
+| Outfit V0 | Baseline cooccurrence fail-closed | Plus interpretable et adaptee au MVP |
+| Outfit V1 | Non promu | Entrainement TensorFlow reserve au rapport et a la comparaison |
 | Artefacts | Fail-closed | Eviter toute recommandation non fiable |
 
 ## 8. Etat actuel du MVP
@@ -380,16 +410,16 @@ Fonctionnel :
 - fallback image ;
 - modele image Fashion actif localement si artefacts presents ;
 - fallback fit prudent ;
-- service outfit rule-based/fallback ;
+- service outfit rule-based/fallback ou baseline cooccurrence si rapport pret ;
 - conseil final structure ;
 - tests unitaires MVP.
 
 Non finalise :
 
 - vrai modele fit promu ;
-- baseline cooccurrence Polyvore ;
-- modele TensorFlow outfit ;
-- integration avancee de recommandations outfit dans Streamlit.
+- modele TensorFlow outfit promu ;
+- evaluation qualitative des erreurs Outfit V1 ;
+- integration avancee de recommandations outfit completes dans Streamlit.
 
 ## 9. Limites actuelles
 
@@ -417,21 +447,21 @@ Non finalise :
 
 ### Priorite immediate
 
-Stabiliser l'integration experimentale de la baseline cooccurrence Polyvore :
+Executer et documenter l'entrainement TensorFlow Outfit V1 dans Colab :
 
-1. Conserver la baseline primaire construite sur `disjoint_train`.
-2. Utiliser `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
-3. Garder l'integration `outfit_service` en mode experimental/fail-closed.
+1. Lancer `src/training/train_outfit_model_v1.py` sur les raw HF Polyvore.
+2. Copier `models/outfit_v1/metadata.json` et `models/outfit_v1/metrics.json` depuis Colab/Drive.
+3. Comparer TensorFlow MLP a la baseline cooccurrence sur validation/test.
 4. Documenter les erreurs principales par `product_type_v0`.
-5. Ne pas promouvoir de modele TensorFlow outfit.
+5. Garder `model_status: experimental_only` sauf decision de promotion separee.
 
 Implementation actuelle :
 
 - script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
+- script TensorFlow : `src/training/train_outfit_model_v1.py` ;
 - rapport : `reports/polyvore_v0_cooccurrence_baseline.json` ;
 - statut : baseline Colab construite, resumee localement depuis le dernier resultat transmis ;
 - evaluation filtree implementee localement dans `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
-- aucune utilisation TensorFlow ;
 - integration experimentale fail-closed dans `src/services/outfit_service.py`.
 
 La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint_train`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split.
@@ -458,14 +488,15 @@ Surveiller l'integration experimentale de la baseline cooccurrence :
 3. Documenter les erreurs principales par `product_type_v0`.
 4. Garder `model_status: experimental_only` et ne pas promouvoir de modele outfit.
 
-### Plus tard seulement
+### Promotion seulement apres coup
 
-Entrainer un modele TensorFlow outfit si :
+Promouvoir un modele TensorFlow outfit seulement si :
 
-- la baseline est propre ;
+- la baseline reste le point de comparaison officiel ;
 - le mapping est valide ;
 - les erreurs principales sont documentees ;
-- le modele bat clairement la baseline.
+- le modele bat clairement la baseline ;
+- `metadata.json` passe explicitement en `model_status: "promoted"` et `promotable_to_streamlit: true`.
 
 ## 11. Commandes de validation utilisees
 
@@ -499,6 +530,6 @@ Le projet a evolue d'un prototype simule vers un MVP structure :
 
 - ModCloth a ete analyse rigoureusement mais non promu, car la fiabilite utilisateur n'est pas suffisante.
 - Fashion V1.1 est le premier module vraiment promu, grace a de bonnes performances et une abstention explicite.
-- Polyvore devient exploitable en baseline cooccurrence experimentale fail-closed, sans TensorFlow et sans promotion modele.
+- Polyvore devient exploitable en baseline cooccurrence experimentale fail-closed, puis en entrainement TensorFlow Outfit V1 experimental pour comparer apprentissage et regles.
 
 La decision la plus importante du projet est de ne pas forcer les modeles faibles dans l'application. Le systeme privilegie les resultats fiables, documentes et abstention-aware.

@@ -99,6 +99,10 @@ from src.training.train_fashion_model_v1 import (
     prepare_fashion_v1_training_frame,
     select_experiment,
 )
+from src.training.train_outfit_model_v1 import (
+    build_outfit_training_splits,
+    select_threshold as select_outfit_threshold,
+)
 
 
 def test_category_mapping_known_and_unknown():
@@ -581,6 +585,112 @@ def test_polyvore_cooccurrence_baseline_builds_product_recommendations(tmp_path)
     assert validation_metrics["recall_at_k"]["1"] == 0.0
     assert validation_metrics["recall_at_k"]["3"] == 1.0
     assert report["baseline_decision"] == "train_only_baseline_ready_with_leakage_filtered_evaluation"
+
+
+def test_outfit_tensorflow_training_splits_filter_train_positive_overlap(tmp_path):
+    raw_root = tmp_path / "raw_hf_files"
+    (raw_root / "disjoint").mkdir(parents=True)
+    (raw_root / "nondisjoint").mkdir(parents=True)
+    (raw_root / "categories.csv").write_text(
+        "10,1,Tops\n20,1,Jeans\n30,1,Sneakers\n",
+        encoding="utf-8",
+    )
+
+    metadata = {}
+    for index in range(1, 7):
+        metadata[f"top-{index}"] = {"semantic_category": "tops", "category_id": "10"}
+        metadata[f"jeans-{index}"] = {"semantic_category": "jeans", "category_id": "20"}
+        metadata[f"shoes-{index}"] = {"semantic_category": "sneakers", "category_id": "30"}
+    (raw_root / "polyvore_item_metadata.json").write_text(
+        json.dumps(metadata),
+        encoding="utf-8",
+    )
+
+    (raw_root / "disjoint" / "train.json").write_text(
+        json.dumps(
+            [
+                {
+                    "set_id": "train-1",
+                    "items": [{"item_id": "top-1"}, {"item_id": "jeans-1"}, {"item_id": "shoes-1"}],
+                },
+                {
+                    "set_id": "train-2",
+                    "items": [{"item_id": "top-2"}, {"item_id": "jeans-2"}, {"item_id": "shoes-2"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (raw_root / "disjoint" / "valid.json").write_text(
+        json.dumps(
+            [
+                {
+                    "set_id": "valid-leak",
+                    "items": [{"item_id": "top-1"}, {"item_id": "jeans-1"}],
+                },
+                {
+                    "set_id": "valid-clean-1",
+                    "items": [{"item_id": "top-3"}, {"item_id": "shoes-3"}],
+                },
+                {
+                    "set_id": "valid-clean-2",
+                    "items": [{"item_id": "top-4"}, {"item_id": "jeans-4"}, {"item_id": "shoes-4"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (raw_root / "disjoint" / "test.json").write_text(
+        json.dumps(
+            [
+                {
+                    "set_id": "test-1",
+                    "items": [{"item_id": "top-5"}, {"item_id": "jeans-5"}, {"item_id": "shoes-5"}],
+                },
+                {
+                    "set_id": "test-2",
+                    "items": [{"item_id": "top-6"}, {"item_id": "jeans-6"}, {"item_id": "shoes-6"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    for relative_path in [
+        "nondisjoint/train.json",
+        "nondisjoint/valid.json",
+        "nondisjoint/test.json",
+    ]:
+        (raw_root / relative_path).write_text("[]", encoding="utf-8")
+
+    pair_splits, diagnostics = build_outfit_training_splits(raw_root=raw_root)
+
+    leaked_pair_key = exact_item_pair_key("top-1", "jeans-1")
+    valid_positive_keys = set(
+        pair_splits["valid"].loc[pair_splits["valid"]["label"] == 1, "pair_key"]
+    )
+    assert leaked_pair_key not in valid_positive_keys
+    assert diagnostics["pair_splits"]["filtered_positive_overlap_with_train"]["valid"] == 2
+    assert set(pair_splits["train"]["label"]) == {0, 1}
+    assert set(pair_splits["valid"]["label"]) == {0, 1}
+
+    features, target = build_outfit_feature_frame(pair_splits["train"])
+    assert list(features.columns) == OUTFIT_PAIR_FEATURE_COLUMNS
+    assert "item_id" not in " ".join(features.columns)
+    assert set(target) == {0, 1}
+
+
+def test_outfit_threshold_selection_uses_validation_probabilities():
+    import numpy as np
+
+    threshold, metrics = select_outfit_threshold(
+        np.array([0, 0, 1, 1]),
+        np.array([0.10, 0.40, 0.55, 0.90]),
+        thresholds=[0.50, 0.80],
+    )
+
+    assert threshold == 0.5
+    assert metrics["macro_f1"] == 1.0
+    assert metrics["balanced_accuracy"] == 1.0
 
 
 def test_image_service_simulated_output_keys():

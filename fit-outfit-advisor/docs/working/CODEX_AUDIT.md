@@ -246,3 +246,19 @@
 - Decision : metriques stables et defendables pour une integration experimentale fail-closed, sans TensorFlow et sans promotion modele.
 - Integration locale : `src/services/outfit_service.py` lit `reports/polyvore_v0_cooccurrence_baseline.json` uniquement si `baseline_decision=train_only_baseline_ready_with_leakage_filtered_evaluation`, `leakage_filtered_evaluation_ready=true`, TensorFlow non utilise, et seuils minimums filtres atteints. Sinon, fallback rule-based.
 - Validation locale : `python -m compileall app src tests` OK et `.venv311\Scripts\python.exe -m pytest --basetemp=.tmp_pytest -p no:cacheprovider` OK, 47 tests passes.
+
+## Outfit Compatibility V1 TensorFlow experimental
+- Clarification objectif utilisateur : l'application cible doit pouvoir evaluer une tenue et ses associations depuis des images produit, puis combiner apprentissage et regles codees, notamment pour les couleurs.
+- Ajout de `src/training/train_outfit_model_v1.py`.
+- Le script entraine un MLP TensorFlow binaire `compatible` / `not_compatible` sur les paires Polyvore mappees vers Fashion V1.1.
+- Il conserve les garde-fous :
+  - split primaire `disjoint` par outfit/set ;
+  - `item_id` et `outfit_id` interdits comme features directes ;
+  - paires positives exactes de train filtrees de validation/test ;
+  - negatifs difficiles du meme role candidat quand possible ;
+  - seuil choisi uniquement sur validation ;
+  - comparaison finale au baseline cooccurrence.
+- Artefacts cibles : `models/outfit_v1/outfit_model.keras`, `outfit_preprocessor.joblib`, `metadata.json`, `metrics.json`, courbes et matrices de confusion.
+- Statut par defaut : `model_status: experimental_only`, `promotable_to_streamlit: false`; aucune ecriture vers `models/outfit_active/`.
+- Ajout de tests unitaires pour la preparation des splits TensorFlow et la selection de seuil validation-only.
+- Validation locale cible : `python -m compileall src\training\train_outfit_model_v1.py tests\test_services.py` OK ; tests ciblés Outfit TensorFlow OK.

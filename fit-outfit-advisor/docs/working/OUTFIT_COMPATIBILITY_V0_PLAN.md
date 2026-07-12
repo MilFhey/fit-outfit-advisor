@@ -222,3 +222,36 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
 - `models/outfit_active/` est le seul emplacement actif.
 - Fail-closed obligatoire : metadata absente, invalide, non promue ou artefact absent -> fallback rule-based.
 - Promotion seulement si le modele bat clairement la baseline cooccurrence et si les erreurs principales sont documentees.
+
+## Outfit Compatibility V1 TensorFlow experimental - 2026-07-12
+- Objectif : ajouter une vraie modelisation TensorFlow pour l'enonce du cours, sans remplacer la baseline MVP tant qu'une revue de promotion n'a pas ete faite.
+- Nouveau script : `src/training/train_outfit_model_v1.py`.
+- Tache : classification binaire `compatible` / `not_compatible` sur des paires de types produits Polyvore.
+- Donnees :
+  - positives : paires dirigees d'items compatibles issues d'un meme outfit, apres mapping Polyvore -> Fashion V1.1 ;
+  - negatives : negatifs difficiles, en remplacant si possible le candidat par un item d'un autre outfit mais du meme role/famille ;
+  - split primaire : `disjoint`, conserve par outfit/set.
+- Garde-fous :
+  - `item_id` et `outfit_id` interdits comme features directes ;
+  - paires positives exactes vues en train filtrees de validation/test ;
+  - seuil de decision choisi uniquement sur validation ;
+  - comparaison systematique avec la baseline cooccurrence ;
+  - artefacts ecrits dans `models/outfit_v1/` avec `model_status: experimental_only` et `promotable_to_streamlit: false`.
+- Features autorisees : colonnes de `OUTFIT_PAIR_FEATURE_COLUMNS`, c'est-a-dire types produits, categories canoniques, roles outfit et indicateurs de relation entre roles/types.
+- Sorties attendues :
+  - `models/outfit_v1/outfit_model.keras` ;
+  - `models/outfit_v1/outfit_preprocessor.joblib` ;
+  - `models/outfit_v1/metadata.json` ;
+  - `models/outfit_v1/metrics.json` ;
+  - matrices de confusion et courbe d'entrainement.
+- Commande Colab recommandee :
+
+```bash
+python -m src.training.train_outfit_model_v1 \
+  --raw-root /content/fit-outfit-runtime/polyvore/raw_hf_files \
+  --output-dir models/outfit_v1 \
+  --epochs 25 \
+  --batch-size 256
+```
+
+- Decision MVP : meme si le modele TensorFlow est entraine, l'application continue a utiliser la baseline cooccurrence fail-closed tant que `models/outfit_active/` n'est pas explicitement promu.
