@@ -210,9 +210,12 @@ python -m src.analysis.analyze_polyvore_v0_schema_mapping \
   - les paires positives exactes deja vues dans `train` sont retirees de validation/test avant calcul des metriques ;
   - metriques produites par split : `precision_at_k`, `recall_at_k`, `ndcg_at_k`, `mrr`, compte brut, compte filtre et compte evaluable ;
   - `baseline_decision` passe a `train_only_baseline_ready_with_leakage_filtered_evaluation` si au moins un split d'evaluation reste evaluable apres filtrage.
-- Dernier rerun Colab confirme que l'evaluation filtree est disponible, mais la sortie collee ne contient pas encore les metriques detaillees `leakage_filtered_evaluation`.
-- Le notebook affiche maintenant explicitement un tableau `leakage_filtered_evaluation` dans la cellule 14.
-- Prochaine decision : relire les metriques filtrees depuis le JSON Drive complet ou relancer la cellule 14 avec le nouvel affichage, puis decider d'une integration experimentale dans `outfit_service`.
+- Dernier rerun Colab avec le nouvel affichage :
+  - `leakage_filtered_evaluation_ready: true` ;
+  - valid : `evaluable_directed_pair_count=16492`, `mrr=0.711036`, `recall_at_k_3=0.917596`, `ndcg_at_k_3=0.751335` ;
+  - test : `evaluable_directed_pair_count=80212`, `mrr=0.709846`, `recall_at_k_3=0.929375`, `ndcg_at_k_3=0.755142`.
+- Decision : les metriques filtrees sont defendables et stables entre valid/test pour une integration experimentale fail-closed.
+- Integration locale : `src/services/outfit_service.py` peut maintenant utiliser `reports/polyvore_v0_cooccurrence_baseline.json` en mode `cooccurrence_baseline` seulement si le rapport est explicitement pret, sans TensorFlow, avec fallback rule-based sinon.
 
 ## Promotion future
 - `models/outfit_v1/` reste experimental.

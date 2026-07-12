@@ -240,3 +240,9 @@
   - decision : `train_only_baseline_ready_with_leakage_filtered_evaluation`.
 - Interpretation : la baseline devient candidate experimentale sous evaluation filtree, mais pas encore integree. Les metriques detaillees `leakage_filtered_evaluation` doivent etre relues depuis le JSON Drive complet ou depuis un nouveau rerun de la cellule 14.
 - Notebook mis a jour : la cellule `Baseline cooccurrence Polyvore V0` affiche maintenant un tableau des metriques filtrees par split (`precision_at_k`, `recall_at_k`, `ndcg_at_k`, `mrr`, comptes bruts/filtres/evaluables).
+- Nouveau rerun Colab recu avec le tableau `leakage_filtered_evaluation` :
+  - valid : `evaluable_directed_pair_count=16492`, `mrr=0.711036`, `recall_at_k_3=0.917596`, `ndcg_at_k_3=0.751335` ;
+  - test : `evaluable_directed_pair_count=80212`, `mrr=0.709846`, `recall_at_k_3=0.929375`, `ndcg_at_k_3=0.755142`.
+- Decision : metriques stables et defendables pour une integration experimentale fail-closed, sans TensorFlow et sans promotion modele.
+- Integration locale : `src/services/outfit_service.py` lit `reports/polyvore_v0_cooccurrence_baseline.json` uniquement si `baseline_decision=train_only_baseline_ready_with_leakage_filtered_evaluation`, `leakage_filtered_evaluation_ready=true`, TensorFlow non utilise, et seuils minimums filtres atteints. Sinon, fallback rule-based.
+- Validation locale : `python -m compileall app src tests` OK et `.venv311\Scripts\python.exe -m pytest --basetemp=.tmp_pytest -p no:cacheprovider` OK, 47 tests passes.

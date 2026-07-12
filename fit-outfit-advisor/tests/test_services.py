@@ -1096,8 +1096,13 @@ def test_outfit_service_output_keys():
     assert outfit_result["recommended_product_types"]
     assert outfit_result["compatible_roles"]
     assert outfit_result["raw_compatibility_score"] == outfit_result["compatibility_score"]
-    assert outfit_result["mode"] == "rule_based"
-    assert outfit_result["model_status"] == "fallback"
+    assert outfit_result["mode"] == "cooccurrence_baseline"
+    assert outfit_result["model_status"] == "experimental_only"
+    assert outfit_result["recommended_product_types"][:2] == ["casual_shoes", "bag"]
+    assert {"shoes", "bag"} <= set(outfit_result["compatible_roles"])
+    assert outfit_result["baseline_decision"] == (
+        "train_only_baseline_ready_with_leakage_filtered_evaluation"
+    )
     assert {
         "input_product_type",
         "recommended_product_types",
@@ -1110,6 +1115,15 @@ def test_outfit_service_output_keys():
         "mode",
         "model_status",
     } <= set(outfit_result)
+
+
+def test_outfit_service_falls_back_for_uncovered_product_type():
+    outfit_result = recommend_outfit("unknown_product_type", "casual", "noir")
+
+    assert outfit_result["mode"] == "rule_based"
+    assert outfit_result["model_status"] == "fallback"
+    assert outfit_result["recommended_product_types"] == ["tshirt", "jeans", "casual_shoes"]
+    assert "Baseline cooccurrence" in outfit_result["reason"]
 
 
 def test_advice_service_output_keys():

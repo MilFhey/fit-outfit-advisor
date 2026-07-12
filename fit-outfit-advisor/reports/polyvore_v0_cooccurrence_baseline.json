@@ -1,10 +1,10 @@
 {
   "version": "polyvore_v0_cooccurrence_baseline",
-  "report_source": "colab_summary_transcribed_from_user_paste",
-  "report_completeness": "summary_only_full_colab_json_not_available_locally",
+  "report_source": "colab_summary_transcribed_from_user_paste_with_filtered_metrics",
+  "report_completeness": "summary_plus_leakage_filtered_metrics_full_colab_json_not_available_locally",
   "training_executed": false,
   "tensorflow_used": false,
-  "streamlit_integration_executed": false,
+  "streamlit_integration_executed": true,
   "raw_root": "/content/fit-outfit-runtime/polyvore/raw_hf_files",
   "report_path_colab": "/content/fit-outfit-advisor-repo/fit-outfit-advisor/reports/polyvore_v0_cooccurrence_baseline.json",
   "report_path_drive": "/content/drive/MyDrive/fit-outfit-advisor/reports/polyvore_v0_cooccurrence_baseline.json",
@@ -174,16 +174,69 @@
   },
   "evaluation_ready_without_leakage": false,
   "leakage_filtered_evaluation_ready": true,
-  "leakage_filtered_evaluation": {},
+  "leakage_filtered_evaluation": {
+    "valid": {
+      "raw_directed_pair_count": 16550,
+      "filtered_train_overlap_directed_pair_count": 58,
+      "evaluable_directed_pair_count": 16492,
+      "ranking_found_directed_pair_count": 16492,
+      "mrr": 0.711036,
+      "precision_at_k": {
+        "1": 0.49333,
+        "3": 0.305865,
+        "5": 0.197077,
+        "10": 0.1
+      },
+      "recall_at_k": {
+        "1": 0.49333,
+        "3": 0.917596,
+        "5": 0.985387,
+        "10": 1.0
+      },
+      "ndcg_at_k": {
+        "1": 0.49333,
+        "3": 0.751335,
+        "5": 0.779223,
+        "10": 0.784428
+      }
+    },
+    "test": {
+      "raw_directed_pair_count": 80212,
+      "filtered_train_overlap_directed_pair_count": 0,
+      "evaluable_directed_pair_count": 80212,
+      "ranking_found_directed_pair_count": 80212,
+      "mrr": 0.709846,
+      "precision_at_k": {
+        "1": 0.488929,
+        "3": 0.309792,
+        "5": 0.197828,
+        "10": 0.1
+      },
+      "recall_at_k": {
+        "1": 0.488929,
+        "3": 0.929375,
+        "5": 0.989141,
+        "10": 1.0
+      },
+      "ndcg_at_k": {
+        "1": 0.488929,
+        "3": 0.755142,
+        "5": 0.779837,
+        "10": 0.783705
+      }
+    }
+  },
   "baseline_decision": "train_only_baseline_ready_with_leakage_filtered_evaluation",
-  "implementation_status": "colab_regenerated_summary_confirms_leakage_filtered_evaluation_metrics_not_pasted",
+  "implementation_status": "experimental_service_integration_fail_closed_from_filtered_metrics",
   "audit_notes": [
     "Baseline built from raw Polyvore metadata with the validated Fashion V1 aligned mapping.",
     "Primary scoring source is disjoint_train only.",
     "Exact positive pair overlap between disjoint train and validation blocks raw evaluation; leakage-filtered evaluation must be used instead.",
     "The rerun Colab summary confirms baseline_decision=train_only_baseline_ready_with_leakage_filtered_evaluation.",
-    "The pasted Colab output did not include the detailed leakage_filtered_evaluation metrics table; the notebook now displays it explicitly for the next rerun or the full JSON must be copied from Drive.",
-    "No TensorFlow model was trained and no Streamlit integration was performed."
+    "The pasted Colab output includes detailed leakage_filtered_evaluation metrics for valid and test.",
+    "Filtered metrics are stable across valid/test: MRR about 0.71, Recall@3 above 0.91, NDCG@3 about 0.75.",
+    "The Streamlit-facing outfit service can use this report only in experimental fail-closed mode.",
+    "No TensorFlow model was trained and no model promotion was performed."
   ],
-  "next_decision": "Review the detailed leakage_filtered_evaluation metrics from the full Drive JSON or rerun notebook cell 14 with the new display before any outfit service integration or model promotion."
+  "next_decision": "Keep the cooccurrence baseline experimental/fail-closed, validate service behavior locally, and do not promote to a TensorFlow outfit model."
 }

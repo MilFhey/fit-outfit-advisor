@@ -417,13 +417,13 @@ Non finalise :
 
 ### Priorite immediate
 
-Relire l'evaluation propre de la baseline cooccurrence Polyvore :
+Stabiliser l'integration experimentale de la baseline cooccurrence Polyvore :
 
 1. Conserver la baseline primaire construite sur `disjoint_train`.
-2. Relire `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
-3. Recuperer les metriques detaillees depuis le JSON Drive complet ou depuis le nouvel affichage de la cellule 14.
+2. Utiliser `leakage_filtered_evaluation`, qui retire de validation/test les paires positives exactes deja vues dans `train`.
+3. Garder l'integration `outfit_service` en mode experimental/fail-closed.
 4. Documenter les erreurs principales par `product_type_v0`.
-5. Integrer dans `outfit_service` seulement si l'evaluation filtree est defendable.
+5. Ne pas promouvoir de modele TensorFlow outfit.
 
 Implementation actuelle :
 
@@ -432,7 +432,7 @@ Implementation actuelle :
 - statut : baseline Colab construite, resumee localement depuis le dernier resultat transmis ;
 - evaluation filtree implementee localement dans `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
 - aucune utilisation TensorFlow ;
-- aucune integration Streamlit.
+- integration experimentale fail-closed dans `src/services/outfit_service.py`.
 
 La baseline reste interpretable et non TensorFlow. Elle produit une baseline primaire sur `disjoint_train`, des aggregats separes par config et un score brut de cooccurrence pour preparer l'integration experimentale future. Les recouvrements entre `disjoint` et `nondisjoint` sont un diagnostic, pas une fuite de split.
 
@@ -443,17 +443,20 @@ Dernier resultat Colab transmis :
 - paires dirigees split primaire : `92390` ;
 - paires `product_type_v0` uniques split primaire : `26` ;
 - fuite train/eval primaire : vraie, avec `28` paires exactes communes entre `disjoint_train` et `disjoint_valid`.
+- metriques filtrees :
+  - valid : `mrr=0.711036`, `recall_at_k_3=0.917596`, `ndcg_at_k_3=0.751335` ;
+  - test : `mrr=0.709846`, `recall_at_k_3=0.929375`, `ndcg_at_k_3=0.755142`.
 
-Decision : la baseline est construite et l'evaluation filtree est disponible. L'evaluation brute reste bloquee, mais la decision de baseline est maintenant positive sous filtrage. Les metriques detaillees doivent encore etre relues avant toute integration MVP.
+Decision : la baseline est construite et l'evaluation filtree est disponible. L'evaluation brute reste bloquee, mais la decision de baseline est positive sous filtrage. Les metriques sont assez stables pour une integration experimentale fail-closed dans le service outfit.
 
 ### Ensuite
 
-Evaluer puis integrer prudemment la baseline cooccurrence :
+Surveiller l'integration experimentale de la baseline cooccurrence :
 
-1. Verifier les metriques filtrees : Precision@K, Recall@K, MRR et NDCG@K.
-2. Relancer la cellule 14 si necessaire pour afficher le tableau `leakage_filtered_evaluation`.
-3. Relire les recommandations par role et par `product_type_v0`.
-4. Integrer en mode experimental/fallback seulement si les metriques filtrees et les exemples restent coherents.
+1. Verifier localement que `outfit_service` reste en fallback si le rapport est absent, incomplet ou non pret.
+2. Relire les recommandations par role et par `product_type_v0`.
+3. Documenter les erreurs principales par `product_type_v0`.
+4. Garder `model_status: experimental_only` et ne pas promouvoir de modele outfit.
 
 ### Plus tard seulement
 
@@ -475,7 +478,7 @@ pytest --basetemp=.tmp_pytest -p no:cacheprovider
 
 Resultat courant observe :
 
-- 46 tests passent.
+- 47 tests passent.
 
 ## 12. Fichiers de reference pour le rapport
 
@@ -496,6 +499,6 @@ Le projet a evolue d'un prototype simule vers un MVP structure :
 
 - ModCloth a ete analyse rigoureusement mais non promu, car la fiabilite utilisateur n'est pas suffisante.
 - Fashion V1.1 est le premier module vraiment promu, grace a de bonnes performances et une abstention explicite.
-- Polyvore devient exploitable apres recuperation des fichiers raw metadata, mais reste au stade audit/mapping avant baseline.
+- Polyvore devient exploitable en baseline cooccurrence experimentale fail-closed, sans TensorFlow et sans promotion modele.
 
 La decision la plus importante du projet est de ne pas forcer les modeles faibles dans l'application. Le systeme privilegie les resultats fiables, documentes et abstention-aware.
