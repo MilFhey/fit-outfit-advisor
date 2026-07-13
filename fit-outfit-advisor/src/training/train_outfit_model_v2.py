@@ -20,9 +20,11 @@ from src.preprocessing.outfit_v2_features import (
     MOBILENET_V2_EMBEDDING_DIM,
     OUTFIT_V2_CATEGORICAL_FEATURES,
     OUTFIT_V2_NUMERIC_FEATURES,
+    as_rgb_image,
     build_pair_embedding_block,
     build_pair_numeric_features,
     classify_color_family,
+    encoded_image_bytes,
     extract_dominant_rgb,
     load_mobilenet_v2_embedding_model,
     preprocess_for_mobilenet_embedding,
@@ -44,6 +46,7 @@ from src.training.train_outfit_model_v1 import (
 
 DEFAULT_HF_DATASET = "mvasil/polyvore-outfits"
 OUTFIT_V2_DATASET_AUDIT_PATH = REPORTS_DIR / "outfit_v2_dataset_audit.json"
+BatchRow = tuple[str, bytes, Any, tuple[int, int, int], tuple[float, float, float], str]
 
 
 def _hf_split_name(split_name: str) -> str:
@@ -109,17 +112,59 @@ def collect_pair_item_ids(pairs: pd.DataFrame) -> set[str]:
     return set(pairs["input_item_id"].astype(str)).union(set(pairs["candidate_item_id"].astype(str)))
 
 
+def extract_training_dominant_rgb(image: Any, *, mode: str) -> tuple[int, int, int]:
+    if mode == "kmeans":
+        return extract_dominant_rgb(image)
+    rgb_image = as_rgb_image(image).resize((64, 64))
+    pixels = np.asarray(rgb_image, dtype="float32").reshape(-1, 3)
+    non_background = pixels[np.mean(pixels, axis=1) < 245]
+    if len(non_background) >= 32:
+        pixels = non_background
+    dominant = np.clip(np.rint(np.median(pixels, axis=0)), 0, 255).astype(int)
+    return tuple(int(value) for value in dominant)
+
+
 def extract_item_visual_features(
     item_ids: set[str],
     image_lookup: dict[str, Any],
     *,
     embedding_model: Any,
-    embedding_batch_size: int = 64,
+    embedding_batch_size: int = 128,
+    embedding_device: str | None = None,
+    color_extraction_mode: str = "fast",
+    embedding_backend: str = "tf_data",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     features: dict[str, Any] = {}
     missing = []
     failed = []
-    image_batches: list[tuple[str, np.ndarray, tuple[int, int, int], tuple[float, float, float], str]] = []
+    batch_rows: list[BatchRow] = []
+    embedding_output_devices: list[str] = []
+
+    def flush_embedding_batch() -> None:
+        if not batch_rows:
+            return
+
+        current_rows = list(batch_rows)
+        batch_rows.clear()
+        try:
+            embeddings, output_devices = embed_image_batch(
+                current_rows,
+                embedding_model=embedding_model,
+                embedding_batch_size=embedding_batch_size,
+                embedding_device=embedding_device,
+                embedding_backend=embedding_backend,
+            )
+            embedding_output_devices.extend(output_devices)
+        except Exception:
+            failed.extend(row[0] for row in current_rows)
+            return
+        for (item_id, _, _, dominant_rgb, hsv, color_family), embedding in zip(current_rows, embeddings):
+            features[item_id] = ImageVisualFeatures(
+                embedding=np.asarray(embedding, dtype="float32"),
+                dominant_rgb=dominant_rgb,
+                hsv=hsv,
+                color_family=color_family,
+            )
 
     for item_id in sorted(item_ids):
         image = image_lookup.get(str(item_id))
@@ -127,40 +172,24 @@ def extract_item_visual_features(
             missing.append(str(item_id))
             continue
         try:
-            dominant_rgb = extract_dominant_rgb(image)
+            dominant_rgb = extract_training_dominant_rgb(image, mode=color_extraction_mode)
             hsv = rgb_to_hsv01(dominant_rgb)
             color_family = classify_color_family(dominant_rgb)
-            image_batches.append(
+            batch_rows.append(
                 (
                     str(item_id),
-                    preprocess_for_mobilenet_embedding(image)[0],
+                    encoded_image_bytes(image),
+                    image,
                     dominant_rgb,
                     hsv,
                     color_family,
                 )
             )
+            if len(batch_rows) >= embedding_batch_size:
+                flush_embedding_batch()
         except Exception:
             failed.append(str(item_id))
-
-    for start in range(0, len(image_batches), embedding_batch_size):
-        batch_rows = image_batches[start : start + embedding_batch_size]
-        batch = np.asarray([row[1] for row in batch_rows], dtype="float32")
-        try:
-            embeddings = embedding_model.predict(
-                batch,
-                batch_size=embedding_batch_size,
-                verbose=0,
-            )
-        except Exception:
-            failed.extend(row[0] for row in batch_rows)
-            continue
-        for (item_id, _, dominant_rgb, hsv, color_family), embedding in zip(batch_rows, embeddings):
-            features[item_id] = ImageVisualFeatures(
-                embedding=np.asarray(embedding, dtype="float32"),
-                dominant_rgb=dominant_rgb,
-                hsv=hsv,
-                color_family=color_family,
-            )
+    flush_embedding_batch()
 
     diagnostics = {
         "requested_item_count": len(item_ids),
@@ -170,6 +199,205 @@ def extract_item_visual_features(
         "missing_image_examples": missing[:10],
         "failed_feature_examples": failed[:10],
         "embedding_batch_size": int(embedding_batch_size),
+        "embedding_device_requested": embedding_device,
+        "embedding_output_devices": sorted(set(embedding_output_devices))[:5],
+        "color_extraction_mode": color_extraction_mode,
+        "embedding_backend": embedding_backend,
+    }
+    return features, diagnostics
+
+
+def embed_image_batch(
+    rows: list[BatchRow],
+    *,
+    embedding_model: Any,
+    embedding_batch_size: int,
+    embedding_device: str | None,
+    embedding_backend: str,
+) -> tuple[np.ndarray, list[str]]:
+    import tensorflow as tf
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
+    output_devices: list[str] = []
+    if embedding_backend == "tf_data":
+        encoded_images = [row[1] for row in rows]
+
+        def decode_resize_preprocess(encoded: Any) -> Any:
+            image = tf.io.decode_image(encoded, channels=3, expand_animations=False)
+            image.set_shape([None, None, 3])
+            image = tf.image.resize(image, (224, 224), method="bilinear")
+            image = tf.cast(image, tf.float32)
+            return preprocess_input(image)
+
+        dataset = tf.data.Dataset.from_tensor_slices(encoded_images)
+        dataset = dataset.map(decode_resize_preprocess, num_parallel_calls=tf.data.AUTOTUNE)
+        dataset = dataset.batch(embedding_batch_size).prefetch(tf.data.AUTOTUNE)
+        embedding_parts = []
+        for tensor_batch in dataset:
+            if embedding_device:
+                with tf.device(embedding_device):
+                    embedding_tensor = embedding_model(tensor_batch, training=False)
+            else:
+                embedding_tensor = embedding_model(tensor_batch, training=False)
+            output_devices.append(str(getattr(embedding_tensor, "device", "unknown")))
+            embedding_parts.append(embedding_tensor.numpy())
+        if not embedding_parts:
+            return np.empty((0, MOBILENET_V2_EMBEDDING_DIM), dtype="float32"), output_devices
+        return np.vstack(embedding_parts).astype("float32", copy=False), output_devices
+
+    batch = np.asarray([preprocess_for_mobilenet_embedding(row[2])[0] for row in rows], dtype="float32")
+    if embedding_device:
+        with tf.device(embedding_device):
+            tensor_batch = tf.convert_to_tensor(batch)
+            embedding_tensor = embedding_model(tensor_batch, training=False)
+    else:
+        tensor_batch = tf.convert_to_tensor(batch)
+        embedding_tensor = embedding_model(tensor_batch, training=False)
+    output_devices.append(str(getattr(embedding_tensor, "device", "unknown")))
+    return embedding_tensor.numpy().astype("float32", copy=False), output_devices
+
+
+def extract_item_visual_features_from_hf(
+    item_ids: set[str],
+    *,
+    config_name: str,
+    split_name: str,
+    hf_dataset_root: Path | None,
+    dataset_id: str,
+    embedding_model: Any,
+    embedding_batch_size: int = 128,
+    embedding_device: str | None = None,
+    color_extraction_mode: str = "fast",
+    embedding_backend: str = "tf_data",
+    progress_label: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not item_ids:
+        return {}, {
+            "requested_item_count": 0,
+            "feature_item_count": 0,
+            "missing_image_count": 0,
+            "failed_feature_count": 0,
+            "scanned_hf_rows": 0,
+            "embedding_batch_size": int(embedding_batch_size),
+            "embedding_device_requested": embedding_device,
+            "embedding_output_devices": [],
+            "embedding_backend": embedding_backend,
+            "color_extraction_mode": color_extraction_mode,
+            "streaming_hf_image_loader": True,
+        }
+
+    dataset = load_hf_split(
+        config_name,
+        split_name,
+        hf_dataset_root=hf_dataset_root,
+        dataset_id=dataset_id,
+    )
+    requested = set(str(item_id) for item_id in item_ids)
+    remaining = set(requested)
+    features: dict[str, Any] = {}
+    failed = []
+    failure_messages = []
+    scanned_rows = 0
+    batch_rows: list[BatchRow] = []
+    embedding_output_devices: list[str] = []
+    embedding_batch_count = 0
+    label = progress_label or split_name
+    print(
+        f"Visual feature streaming {label}: requested={len(requested)}, "
+        f"batch_size={embedding_batch_size}, color_mode={color_extraction_mode}, "
+        f"embedding_backend={embedding_backend}",
+        flush=True,
+    )
+
+    def flush_embedding_batch() -> None:
+        nonlocal embedding_batch_count
+        if not batch_rows:
+            return
+
+        current_rows = list(batch_rows)
+        batch_rows.clear()
+        try:
+            embeddings, output_devices = embed_image_batch(
+                current_rows,
+                embedding_model=embedding_model,
+                embedding_batch_size=embedding_batch_size,
+                embedding_device=embedding_device,
+                embedding_backend=embedding_backend,
+            )
+            embedding_output_devices.extend(output_devices)
+            embedding_batch_count += 1
+            if embedding_batch_count == 1 or embedding_batch_count % 10 == 0:
+                print(
+                    f"Visual feature streaming {label}: "
+                    f"embedding_batch={embedding_batch_count}, "
+                    f"features={len(features) + len(current_rows)}/{len(requested)}, "
+                    f"scanned_hf_rows={scanned_rows}, "
+                    f"device={embedding_output_devices[-1] if embedding_output_devices else 'unknown'}",
+                    flush=True,
+                )
+        except Exception as exc:
+            failed.extend(row[0] for row in current_rows)
+            failure_messages.append(str(exc))
+            return
+        for (item_id, _, _, dominant_rgb, hsv, color_family), embedding in zip(current_rows, embeddings):
+            features[item_id] = ImageVisualFeatures(
+                embedding=np.asarray(embedding, dtype="float32"),
+                dominant_rgb=dominant_rgb,
+                hsv=hsv,
+                color_family=color_family,
+            )
+
+    for row in dataset:
+        scanned_rows += 1
+        item_id = str(row.get("item_id"))
+        if item_id not in remaining:
+            continue
+        image = row.get("image")
+        if image is None:
+            remaining.remove(item_id)
+            failed.append(item_id)
+            continue
+        try:
+            dominant_rgb = extract_training_dominant_rgb(image, mode=color_extraction_mode)
+            hsv = rgb_to_hsv01(dominant_rgb)
+            color_family = classify_color_family(dominant_rgb)
+            batch_rows.append(
+                (
+                    item_id,
+                    encoded_image_bytes(image),
+                    image,
+                    dominant_rgb,
+                    hsv,
+                    color_family,
+                )
+            )
+            remaining.remove(item_id)
+            if len(batch_rows) >= embedding_batch_size:
+                flush_embedding_batch()
+        except Exception as exc:
+            remaining.remove(item_id)
+            failed.append(item_id)
+            failure_messages.append(str(exc))
+        if not remaining:
+            break
+    flush_embedding_batch()
+
+    diagnostics = {
+        "requested_item_count": len(requested),
+        "feature_item_count": len(features),
+        "missing_image_count": len(remaining),
+        "failed_feature_count": len(failed),
+        "missing_image_examples": sorted(remaining)[:10],
+        "failed_feature_examples": failed[:10],
+        "failure_message_examples": failure_messages[:5],
+        "scanned_hf_rows": int(scanned_rows),
+        "embedding_batch_size": int(embedding_batch_size),
+        "embedding_device_requested": embedding_device,
+        "embedding_output_devices": sorted(set(embedding_output_devices))[:5],
+        "embedding_batch_count": int(embedding_batch_count),
+        "embedding_backend": embedding_backend,
+        "color_extraction_mode": color_extraction_mode,
+        "streaming_hf_image_loader": True,
     }
     return features, diagnostics
 
@@ -263,8 +491,8 @@ def build_v2_pair_matrices(
 
     validate_no_forbidden_v2_features(OUTFIT_V2_CATEGORICAL_FEATURES + OUTFIT_V2_NUMERIC_FEATURES)
     categorical = pd.DataFrame(categorical_rows, columns=OUTFIT_V2_CATEGORICAL_FEATURES)
-    numeric = np.asarray(numeric_rows, dtype="float32")
-    embeddings = np.asarray(embedding_rows, dtype="float32")
+    numeric = np.asarray(numeric_rows, dtype="float32").reshape(-1, len(OUTFIT_V2_NUMERIC_FEATURES))
+    embeddings = np.asarray(embedding_rows, dtype="float32").reshape(-1, MOBILENET_V2_EMBEDDING_DIM * 3)
     target = np.asarray(labels, dtype="float32")
     usable_pairs = pd.DataFrame(usable_rows)
     diagnostics = {
@@ -335,6 +563,31 @@ def build_outfit_v2_model(input_dim: int):
         metrics=["accuracy", tf.keras.metrics.AUC(name="auc")],
     )
     return model
+
+
+def warmup_embedding_model(
+    embedding_model: Any,
+    *,
+    batch_size: int,
+    embedding_device: str | None,
+) -> dict[str, Any]:
+    import tensorflow as tf
+
+    warmup_batch_size = max(1, min(int(batch_size), 256))
+    warmup_batch = tf.zeros((warmup_batch_size, 224, 224, 3), dtype=tf.float32)
+    if embedding_device:
+        with tf.device(embedding_device):
+            embedding_tensor = embedding_model(warmup_batch, training=False)
+    else:
+        embedding_tensor = embedding_model(warmup_batch, training=False)
+    summary = {
+        "warmup_batch_size": int(warmup_batch_size),
+        "embedding_output_device": str(getattr(embedding_tensor, "device", "unknown")),
+        "embedding_shape": [int(value) for value in embedding_tensor.shape],
+    }
+    print(f"Outfit V2 embedding warmup: {json.dumps(summary)}", flush=True)
+    _ = embedding_tensor.numpy()
+    return summary
 
 
 def save_pair_dataset(
@@ -476,6 +729,18 @@ def train(args: argparse.Namespace) -> None:
         raise FileNotFoundError("Raw Polyvore files missing. Provide --raw-root.")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    import tensorflow as tf
+
+    tensorflow_device_summary = configure_tensorflow_runtime(tf, require_gpu=args.require_gpu)
+    embedding_device = "/GPU:0" if tensorflow_device_summary.get("gpu_available") else None
+    print(f"Outfit V2 embedding device requested: {embedding_device or 'TensorFlow default device'}", flush=True)
+    embedding_model = load_mobilenet_v2_embedding_model()
+    embedding_warmup_summary = warmup_embedding_model(
+        embedding_model,
+        batch_size=args.embedding_batch_size,
+        embedding_device=embedding_device,
+    )
+
     config = load_outfit_v1_config(args.config)
     validate_outfit_v1_config(config, require_ready=True)
     item_splits, item_diagnostics = load_mapped_item_splits(
@@ -498,10 +763,6 @@ def train(args: argparse.Namespace) -> None:
             for split, frame in pair_splits.items()
         }
 
-    import tensorflow as tf
-
-    tensorflow_device_summary = configure_tensorflow_runtime(tf, require_gpu=args.require_gpu)
-    embedding_model = load_mobilenet_v2_embedding_model()
     cooccurrence_scores = build_cooccurrence_score_table(pair_splits["train"])
 
     split_features: dict[str, dict[str, Any]] = {}
@@ -510,7 +771,9 @@ def train(args: argparse.Namespace) -> None:
     for split_name, pairs in pair_splits.items():
         item_ids = collect_pair_item_ids(pairs)
         cache_path = args.output_dir / f"{split_name}_item_visual_features.npz"
-        cached_features = load_visual_feature_cache(cache_path, item_ids)
+        cached_features = None
+        if not args.recompute_visual_cache:
+            cached_features = load_visual_feature_cache(cache_path, item_ids)
         if cached_features is not None:
             item_features = cached_features
             feature_diag = {
@@ -522,22 +785,36 @@ def train(args: argparse.Namespace) -> None:
                 "cache_path": str(cache_path),
             }
         else:
-            image_lookup = load_image_lookup(
+            item_features, feature_diag = extract_item_visual_features_from_hf(
                 item_ids,
                 config_name=args.config_name,
                 split_name=split_name,
                 hf_dataset_root=args.hf_dataset_root,
                 dataset_id=args.hf_dataset_id,
-            )
-            item_features, feature_diag = extract_item_visual_features(
-                item_ids,
-                image_lookup,
                 embedding_model=embedding_model,
                 embedding_batch_size=args.embedding_batch_size,
+                embedding_device=embedding_device,
+                color_extraction_mode=args.color_extraction_mode,
+                embedding_backend=args.embedding_backend,
+                progress_label=split_name,
             )
             save_visual_feature_cache(cache_path, item_features)
             feature_diag["cache_hit"] = False
             feature_diag["cache_path"] = str(cache_path)
+        if not item_features:
+            raise RuntimeError(
+                "Outfit V2 visual feature extraction produced zero usable images for split "
+                f"{split_name}. Diagnostics: {json.dumps(feature_diag, ensure_ascii=False)}"
+            )
+        print(
+            "Visual feature extraction "
+            f"{split_name}: cache_hit={feature_diag.get('cache_hit')}, "
+            f"features={feature_diag.get('feature_item_count')}/{feature_diag.get('requested_item_count')}, "
+            f"embedding_devices={feature_diag.get('embedding_output_devices')}"
+            f", embedding_batches={feature_diag.get('embedding_batch_count')}"
+            f", scanned_hf_rows={feature_diag.get('scanned_hf_rows')}",
+            flush=True,
+        )
         if split_name == "train":
             all_train_visual_features.update(item_features)
         categorical, numeric, embeddings, target, usable_pairs, pair_diag = build_v2_pair_matrices(
@@ -689,6 +966,9 @@ def train(args: argparse.Namespace) -> None:
             "visual_features": visual_diagnostics,
             "max_pairs_per_split": args.max_pairs_per_split,
             "embedding_batch_size": args.embedding_batch_size,
+            "embedding_backend": args.embedding_backend,
+            "embedding_warmup": embedding_warmup_summary,
+            "color_extraction_mode": args.color_extraction_mode,
         },
         "artifact_names": [
             model_path.name,
@@ -738,7 +1018,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-pairs-per-split", type=int, default=60000)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--embedding-batch-size", type=int, default=64)
+    parser.add_argument("--embedding-batch-size", type=int, default=256)
+    parser.add_argument("--embedding-backend", choices=["tf_data", "numpy"], default="tf_data")
+    parser.add_argument("--recompute-visual-cache", action="store_true")
+    parser.add_argument("--color-extraction-mode", choices=["fast", "kmeans"], default="fast")
     parser.add_argument("--patience", type=int, default=3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--min-test-roc-auc", type=float, default=0.60)

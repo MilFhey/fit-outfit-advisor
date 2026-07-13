@@ -81,9 +81,12 @@ from src.preprocessing.outfit_preprocessing import (
     split_outfits_by_id,
 )
 from src.preprocessing.outfit_v2_features import (
+    as_rgb_image,
     classify_color_family,
     color_harmony_score,
+    encoded_image_bytes,
     extract_dominant_rgb,
+    preprocess_for_mobilenet_embedding,
     validate_no_forbidden_v2_features,
 )
 from src.preprocessing.tabular_preprocessing import (
@@ -1336,6 +1339,25 @@ def test_outfit_v2_color_features_on_synthetic_images():
     assert classify_color_family(extract_dominant_rgb(black)) == "black"
     assert classify_color_family(extract_dominant_rgb(white)) == "white"
     assert color_harmony_score("black", "red") > color_harmony_score("red", "green")
+
+
+def test_outfit_v2_accepts_huggingface_image_dict_bytes():
+    import io
+    from PIL import Image
+
+    image = Image.new("RGB", (32, 32), color=(220, 20, 30))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    hf_image = {"bytes": buffer.getvalue(), "path": None}
+
+    rgb_image = as_rgb_image(hf_image)
+    image_bytes = encoded_image_bytes(hf_image)
+    batch = preprocess_for_mobilenet_embedding(hf_image)
+
+    assert rgb_image.mode == "RGB"
+    assert image_bytes.startswith(b"\x89PNG")
+    assert classify_color_family(extract_dominant_rgb(hf_image)) == "red"
+    assert batch.shape == (1, 224, 224, 3)
 
 
 def test_outfit_v2_feature_policy_rejects_direct_ids():

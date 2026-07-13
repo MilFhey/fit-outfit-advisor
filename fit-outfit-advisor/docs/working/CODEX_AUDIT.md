@@ -286,11 +286,34 @@
   - selectionne le seuil sur validation ;
   - sauvegarde `metadata.json`, `metrics.json`, `product_type_prototypes.json`, courbe d'entrainement, matrice de confusion et exemples de ranking ;
   - cache les features visuelles par split dans `train|valid|test_item_visual_features.npz` ;
-  - extrait maintenant les embeddings MobileNetV2 par batches avec `--embedding-batch-size` au lieu d'un `predict` image par image, pour mieux occuper le GPU Colab ;
+  - extrait maintenant les embeddings MobileNetV2 par batches streaming avec `--embedding-batch-size` au lieu d'un `predict` image par image, pour mieux occuper le GPU Colab ;
+  - `--recompute-visual-cache` force le recalcul des embeddings et evite qu'un ancien cache masque l'utilisation GPU ;
+  - les logs affichent `embedding_devices` par split.
   - conserve `model_status: experimental_only` par defaut.
 - Diagnostic GPU renforce :
   - `configure_tensorflow_runtime` execute un petit `tf.matmul` sur `/GPU:0` quand un GPU est detecte ;
   - `metadata.json` expose `gpu_smoke_test_device` pour verifier que TensorFlow place bien une operation sur GPU.
+- Correction GPU Colab en profondeur :
+  - cause racine identifiee : TensorFlow etait initialise apres la construction des splits, puis les images HF etaient d'abord materialisees dans `load_image_lookup` avant le premier batch MobileNetV2 ;
+  - le warning Colab venait donc d'une longue phase CPU-only avant les operations GPU, pas d'un simple flag manquant ;
+  - `train_outfit_model_v2.py` initialise maintenant TensorFlow et le smoke test GPU des le debut de `train()` ;
+  - l'extraction visuelle utilise un streaming Hugging Face -> batch -> MobileNetV2 sur `/GPU:0`, sans dictionnaire d'images complet intermediaire ;
+  - `--color-extraction-mode fast` evite que MiniBatchKMeans couleur, CPU-only, masque l'utilisation GPU pendant l'extraction visuelle ;
+  - les diagnostics par split indiquent `streaming_hf_image_loader`, `scanned_hf_rows`, `embedding_device_requested` et `embedding_output_devices`.
+- Correction format image Hugging Face :
+  - cause identifiee apres run Colab : `image` arrive sous forme `{"bytes": ..., "path": ...}` ;
+  - le preprocessing Outfit V2 ouvrait seulement `PIL.Image` ou chemin/fichier, donc toutes les images echouaient et le split train sortait `features=0/37626` ;
+  - ajout de `as_rgb_image()` pour convertir `PIL.Image`, bytes, path et dict HF bytes/path ;
+  - ajout d'un arret explicite si un split produit zero feature visuelle afin d'eviter une erreur pandas indirecte plus tard.
+- Correction performance extraction image :
+  - cause identifiee apres suivi GPU Colab : la T4 etait detectee, mais sous-alimentee par une boucle Python/PIL de decodage, resize et preprocessing image par image ;
+  - ajout de `encoded_image_bytes()` et d'un backend `--embedding-backend tf_data` pour decoder, redimensionner et preprocesser les images par batch TensorFlow avant MobileNetV2 ;
+  - ajout d'un warmup MobileNetV2 explicite sur `/GPU:0` avec log `Outfit V2 embedding warmup` ;
+  - recommandation Colab mise a jour : `--embedding-batch-size 256 --embedding-backend tf_data`.
+- Correction ergonomie Colab :
+  - la cellule Outfit V2 est maintenant autonome apres refresh kernel : elle reinstalle ses imports, `PROJECT_DIR`, `DRIVE_ROOT`, `schema_raw_root`, `dataset_root` et `HF_DATASET_ID` si les cellules precedentes n'ont pas ete executees ;
+  - elle bascule automatiquement vers les caches Drive `datasets/mvasil_polyvore_outfits` et `datasets/mvasil_polyvore_outfits_raw_files` si les dossiers `/content/fit-outfit-runtime/...` ont disparu ;
+  - elle echoue explicitement avec la cellule minimale a relancer si le repo ou les donnees sont vraiment absents, au lieu d'une erreur de variable non definie.
 - Ajout de `src/models/load_outfit_model.py` :
   - charge uniquement `models/outfit_active/` ;
   - refuse tout modele non promu, non V2 ou sans features image/couleur.

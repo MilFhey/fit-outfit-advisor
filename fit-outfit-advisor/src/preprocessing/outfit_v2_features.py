@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import colorsys
+import io
 import math
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -61,12 +63,63 @@ class ImageVisualFeatures:
     color_family: str
 
 
-def _as_rgb_image(image: Image.Image | Any) -> Image.Image:
+def as_rgb_image(image: Image.Image | Any) -> Image.Image:
     if image is None:
         raise ValueError("Image absente pour l'extraction Outfit V2.")
     if isinstance(image, Image.Image):
         return image.convert("RGB")
+    if isinstance(image, dict):
+        image_bytes = image.get("bytes")
+        if image_bytes:
+            return Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image_path = image.get("path")
+        if image_path:
+            return Image.open(image_path).convert("RGB")
+        raise ValueError("Image Hugging Face sans bytes ni path exploitable.")
+    if isinstance(image, (bytes, bytearray)):
+        return Image.open(io.BytesIO(image)).convert("RGB")
+    if isinstance(image, (str, Path)):
+        return Image.open(image).convert("RGB")
     return Image.open(image).convert("RGB")
+
+
+def encoded_image_bytes(image: Image.Image | Any) -> bytes:
+    if image is None:
+        raise ValueError("Image absente pour l'extraction Outfit V2.")
+    if isinstance(image, dict):
+        image_bytes = image.get("bytes")
+        if image_bytes:
+            return bytes(image_bytes)
+        image_path = image.get("path")
+        if image_path:
+            return Path(image_path).read_bytes()
+        raise ValueError("Image Hugging Face sans bytes ni path exploitable.")
+    if isinstance(image, (bytes, bytearray)):
+        return bytes(image)
+    if isinstance(image, (str, Path)):
+        return Path(image).read_bytes()
+    if isinstance(image, Image.Image):
+        buffer = io.BytesIO()
+        image.convert("RGB").save(buffer, format="PNG")
+        return buffer.getvalue()
+    if hasattr(image, "read"):
+        position = None
+        try:
+            position = image.tell()
+        except Exception:
+            position = None
+        payload = image.read()
+        if position is not None:
+            try:
+                image.seek(position)
+            except Exception:
+                pass
+        return bytes(payload)
+    return encoded_image_bytes(as_rgb_image(image))
+
+
+def _as_rgb_image(image: Image.Image | Any) -> Image.Image:
+    return as_rgb_image(image)
 
 
 def extract_dominant_rgb(
