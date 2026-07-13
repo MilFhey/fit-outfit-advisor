@@ -309,11 +309,20 @@
   - cause identifiee apres suivi GPU Colab : la T4 etait detectee, mais sous-alimentee par une boucle Python/PIL de decodage, resize et preprocessing image par image ;
   - ajout de `encoded_image_bytes()` et d'un backend `--embedding-backend tf_data` pour decoder, redimensionner et preprocesser les images par batch TensorFlow avant MobileNetV2 ;
   - ajout d'un warmup MobileNetV2 explicite sur `/GPU:0` avec log `Outfit V2 embedding warmup` ;
-  - recommandation Colab mise a jour : `--embedding-batch-size 256 --embedding-backend tf_data`.
+  - recommandation Colab mise a jour : `--embedding-batch-size 128 --embedding-backend tf_data`.
+- Correction OOM GPU Outfit V2 :
+  - cause identifiee apres log Colab : le warmup MobileNetV2 utilisait le batch demande complet (`256`) et saturait la T4 avant le debut de l'extraction ;
+  - le warmup est limite a un batch de verification GPU reduit et documente le batch demande separement ;
+  - l'extraction MobileNetV2 reduit automatiquement les sous-batches en cas de `RESOURCE_EXHAUSTED` / OOM au lieu de marquer toutes les images du batch en echec ;
+  - `TF_GPU_ALLOCATOR=cuda_malloc_async` est active avant import TensorFlow pour reduire la fragmentation memoire.
 - Correction ergonomie Colab :
   - la cellule Outfit V2 est maintenant autonome apres refresh kernel : elle reinstalle ses imports, `PROJECT_DIR`, `DRIVE_ROOT`, `schema_raw_root`, `dataset_root` et `HF_DATASET_ID` si les cellules precedentes n'ont pas ete executees ;
   - elle bascule automatiquement vers les caches Drive `datasets/mvasil_polyvore_outfits` et `datasets/mvasil_polyvore_outfits_raw_files` si les dossiers `/content/fit-outfit-runtime/...` ont disparu ;
   - elle echoue explicitement avec la cellule minimale a relancer si le repo ou les donnees sont vraiment absents, au lieu d'une erreur de variable non definie.
+- Correction diagnostic subprocess Colab :
+  - la cellule Outfit V2 valide maintenant que `dataset_root` contient un vrai dataset Hugging Face sauvegarde (`dataset_dict.json` / `dataset_info.json`) au lieu d'accepter un dossier local incomplet ;
+  - `schema_raw_root` est valide sur les fichiers Polyvore minimaux attendus avant lancement ;
+  - l'entrainement ecrit `models/outfit_v2/outfit_v2_training.log`, streame stdout/stderr dans Colab et affiche les 80 dernieres lignes si le sous-process echoue.
 - Ajout de `src/models/load_outfit_model.py` :
   - charge uniquement `models/outfit_active/` ;
   - refuse tout modele non promu, non V2 ou sans features image/couleur.

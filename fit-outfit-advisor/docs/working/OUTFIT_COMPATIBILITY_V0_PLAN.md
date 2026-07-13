@@ -340,7 +340,7 @@ python -m src.training.train_outfit_model_v2 \
   --output-dir models/outfit_v2 \
   --epochs 10 \
   --batch-size 128 \
-  --embedding-batch-size 256 \
+  --embedding-batch-size 128 \
   --embedding-backend tf_data \
   --color-extraction-mode fast \
   --recompute-visual-cache \
@@ -354,7 +354,7 @@ python -m src.training.train_outfit_model_v2 \
   - TensorFlow est initialise des le debut de `train()` pour lancer un smoke test GPU avant les phases CPU ;
   - l'extraction visuelle lit Hugging Face en streaming et envoie les images a MobileNetV2 par batch sur `/GPU:0`, au lieu de charger toutes les images avant le premier calcul GPU ;
   - `--embedding-backend tf_data` decode/resize/preprocess les images via TensorFlow en batch au lieu d'une boucle PIL/Numpy image par image ;
-  - `--embedding-batch-size 256` est recommande sur T4 pour mieux amortir les couts CPU et rendre l'utilisation GPU plus visible ;
+  - `--embedding-batch-size 128` est recommande sur T4 ; le script reduit automatiquement les sous-batches MobileNetV2 si une erreur OOM GPU apparait ;
   - `--color-extraction-mode fast` est le mode recommande Colab pour eviter que le clustering couleur CPU masque l'utilisation GPU.
 
 - Decision MVP : tant que V2 n'est pas promu, l'application utilise la baseline cooccurrence/rules mais l'interface et le service sont prets pour le modele actif.

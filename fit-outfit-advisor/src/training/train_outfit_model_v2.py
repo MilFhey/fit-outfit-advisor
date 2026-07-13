@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -47,6 +49,8 @@ from src.training.train_outfit_model_v1 import (
 DEFAULT_HF_DATASET = "mvasil/polyvore-outfits"
 OUTFIT_V2_DATASET_AUDIT_PATH = REPORTS_DIR / "outfit_v2_dataset_audit.json"
 BatchRow = tuple[str, bytes, Any, tuple[int, int, int], tuple[float, float, float], str]
+DEFAULT_EMBEDDING_BATCH_SIZE = 128
+MAX_WARMUP_BATCH_SIZE = 16
 
 
 def _hf_split_name(split_name: str) -> str:
@@ -219,6 +223,42 @@ def embed_image_batch(
     from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
     output_devices: list[str] = []
+
+    def is_tensorflow_oom(exc: Exception) -> bool:
+        message = str(exc)
+        return (
+            isinstance(exc, tf.errors.ResourceExhaustedError)
+            or "RESOURCE_EXHAUSTED" in message
+            or "OOM" in message
+            or "out of memory" in message.lower()
+        )
+
+    def run_embedding_tensor_batch(tensor_batch: Any) -> tuple[np.ndarray, list[str]]:
+        try:
+            if embedding_device:
+                with tf.device(embedding_device):
+                    embedding_tensor = embedding_model(tensor_batch, training=False)
+            else:
+                embedding_tensor = embedding_model(tensor_batch, training=False)
+            return embedding_tensor.numpy().astype("float32", copy=False), [
+                str(getattr(embedding_tensor, "device", "unknown"))
+            ]
+        except Exception as exc:
+            static_batch_len = tensor_batch.shape[0]
+            batch_len = int(static_batch_len) if static_batch_len is not None else int(tf.shape(tensor_batch)[0].numpy())
+            if not is_tensorflow_oom(exc) or batch_len <= 1:
+                raise
+            reduced_batch_len = max(1, batch_len // 2)
+            print(
+                "Outfit V2 embedding batch OOM: "
+                f"batch_size={batch_len}, retrying as {reduced_batch_len}+{batch_len - reduced_batch_len}",
+                flush=True,
+            )
+            gc.collect()
+            left_embeddings, left_devices = run_embedding_tensor_batch(tensor_batch[:reduced_batch_len])
+            right_embeddings, right_devices = run_embedding_tensor_batch(tensor_batch[reduced_batch_len:])
+            return np.vstack([left_embeddings, right_embeddings]), left_devices + right_devices
+
     if embedding_backend == "tf_data":
         encoded_images = [row[1] for row in rows]
 
@@ -234,27 +274,16 @@ def embed_image_batch(
         dataset = dataset.batch(embedding_batch_size).prefetch(tf.data.AUTOTUNE)
         embedding_parts = []
         for tensor_batch in dataset:
-            if embedding_device:
-                with tf.device(embedding_device):
-                    embedding_tensor = embedding_model(tensor_batch, training=False)
-            else:
-                embedding_tensor = embedding_model(tensor_batch, training=False)
-            output_devices.append(str(getattr(embedding_tensor, "device", "unknown")))
-            embedding_parts.append(embedding_tensor.numpy())
+            embeddings, devices = run_embedding_tensor_batch(tensor_batch)
+            output_devices.extend(devices)
+            embedding_parts.append(embeddings)
         if not embedding_parts:
             return np.empty((0, MOBILENET_V2_EMBEDDING_DIM), dtype="float32"), output_devices
         return np.vstack(embedding_parts).astype("float32", copy=False), output_devices
 
     batch = np.asarray([preprocess_for_mobilenet_embedding(row[2])[0] for row in rows], dtype="float32")
-    if embedding_device:
-        with tf.device(embedding_device):
-            tensor_batch = tf.convert_to_tensor(batch)
-            embedding_tensor = embedding_model(tensor_batch, training=False)
-    else:
-        tensor_batch = tf.convert_to_tensor(batch)
-        embedding_tensor = embedding_model(tensor_batch, training=False)
-    output_devices.append(str(getattr(embedding_tensor, "device", "unknown")))
-    return embedding_tensor.numpy().astype("float32", copy=False), output_devices
+    tensor_batch = tf.convert_to_tensor(batch)
+    return run_embedding_tensor_batch(tensor_batch)
 
 
 def extract_item_visual_features_from_hf(
@@ -573,21 +602,58 @@ def warmup_embedding_model(
 ) -> dict[str, Any]:
     import tensorflow as tf
 
-    warmup_batch_size = max(1, min(int(batch_size), 256))
-    warmup_batch = tf.zeros((warmup_batch_size, 224, 224, 3), dtype=tf.float32)
-    if embedding_device:
-        with tf.device(embedding_device):
-            embedding_tensor = embedding_model(warmup_batch, training=False)
-    else:
-        embedding_tensor = embedding_model(warmup_batch, training=False)
-    summary = {
-        "warmup_batch_size": int(warmup_batch_size),
-        "embedding_output_device": str(getattr(embedding_tensor, "device", "unknown")),
-        "embedding_shape": [int(value) for value in embedding_tensor.shape],
-    }
-    print(f"Outfit V2 embedding warmup: {json.dumps(summary)}", flush=True)
-    _ = embedding_tensor.numpy()
-    return summary
+    requested_batch_size = max(1, int(batch_size))
+    candidate_batch_sizes = []
+    for candidate in [
+        min(requested_batch_size, MAX_WARMUP_BATCH_SIZE),
+        8,
+        4,
+        2,
+        1,
+    ]:
+        candidate = max(1, int(candidate))
+        if candidate not in candidate_batch_sizes:
+            candidate_batch_sizes.append(candidate)
+
+    failures = []
+    for warmup_batch_size in candidate_batch_sizes:
+        warmup_batch = tf.zeros((warmup_batch_size, 224, 224, 3), dtype=tf.float32)
+        try:
+            if embedding_device:
+                with tf.device(embedding_device):
+                    embedding_tensor = embedding_model(warmup_batch, training=False)
+            else:
+                embedding_tensor = embedding_model(warmup_batch, training=False)
+            summary = {
+                "requested_embedding_batch_size": int(requested_batch_size),
+                "warmup_batch_size": int(warmup_batch_size),
+                "max_warmup_batch_size": int(MAX_WARMUP_BATCH_SIZE),
+                "embedding_output_device": str(getattr(embedding_tensor, "device", "unknown")),
+                "embedding_shape": [int(value) for value in embedding_tensor.shape],
+                "fallback_attempts": failures,
+            }
+            print(f"Outfit V2 embedding warmup: {json.dumps(summary)}", flush=True)
+            _ = embedding_tensor.numpy()
+            return summary
+        except Exception as exc:
+            message = str(exc)
+            is_oom = (
+                isinstance(exc, tf.errors.ResourceExhaustedError)
+                or "RESOURCE_EXHAUSTED" in message
+                or "OOM" in message
+                or "out of memory" in message.lower()
+            )
+            failures.append({"batch_size": int(warmup_batch_size), "reason": type(exc).__name__})
+            gc.collect()
+            if not is_oom:
+                raise
+            print(
+                "Outfit V2 embedding warmup OOM: "
+                f"batch_size={warmup_batch_size}, retrying smaller batch.",
+                flush=True,
+            )
+
+    raise RuntimeError(f"Outfit V2 embedding warmup failed for all batch sizes: {failures}")
 
 
 def save_pair_dataset(
@@ -729,6 +795,7 @@ def train(args: argparse.Namespace) -> None:
         raise FileNotFoundError("Raw Polyvore files missing. Provide --raw-root.")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
     import tensorflow as tf
 
     tensorflow_device_summary = configure_tensorflow_runtime(tf, require_gpu=args.require_gpu)
@@ -1018,7 +1085,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-pairs-per-split", type=int, default=60000)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--embedding-batch-size", type=int, default=256)
+    parser.add_argument("--embedding-batch-size", type=int, default=DEFAULT_EMBEDDING_BATCH_SIZE)
     parser.add_argument("--embedding-backend", choices=["tf_data", "numpy"], default="tf_data")
     parser.add_argument("--recompute-visual-cache", action="store_true")
     parser.add_argument("--color-extraction-mode", choices=["fast", "kmeans"], default="fast")
