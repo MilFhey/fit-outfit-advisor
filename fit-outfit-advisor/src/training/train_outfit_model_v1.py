@@ -445,6 +445,32 @@ def plot_confusion_matrix(matrix: list[list[float]], output_path: Path, *, title
     plt.close(fig)
 
 
+def configure_tensorflow_runtime(tf: Any, *, require_gpu: bool = False) -> dict[str, Any]:
+    physical_gpus = tf.config.list_physical_devices("GPU")
+    for gpu in physical_gpus:
+        try:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError:
+            # TensorFlow may already be initialized by the notebook/runtime.
+            pass
+    logical_gpus = tf.config.list_logical_devices("GPU")
+    device_summary = {
+        "tensorflow_version": tf.__version__,
+        "physical_gpus": [device.name for device in physical_gpus],
+        "logical_gpus": [device.name for device in logical_gpus],
+        "gpu_available": bool(physical_gpus),
+        "device_policy": "gpu_required" if require_gpu else "gpu_if_available",
+    }
+    print("\n=== TensorFlow device summary ===")
+    print(json.dumps(device_summary, indent=2))
+    if require_gpu and not physical_gpus:
+        raise RuntimeError(
+            "No TensorFlow GPU detected. In Colab, set Runtime > Change runtime type > T4 GPU, "
+            "then restart and rerun the notebook."
+        )
+    return device_summary
+
+
 def train(args: argparse.Namespace) -> None:
     resolved_raw_root = resolve_raw_root(args.raw_root)
     if resolved_raw_root is None or not resolved_raw_root.exists():
@@ -481,19 +507,22 @@ def train(args: argparse.Namespace) -> None:
     x_test, y_test = build_outfit_feature_frame(pair_splits["test"])
 
     preprocessor = build_preprocessor()
-    x_train_ready = preprocessor.fit_transform(x_train)
-    x_valid_ready = preprocessor.transform(x_valid)
-    x_test_ready = preprocessor.transform(x_test)
+    x_train_ready = preprocessor.fit_transform(x_train).astype("float32", copy=False)
+    x_valid_ready = preprocessor.transform(x_valid).astype("float32", copy=False)
+    x_test_ready = preprocessor.transform(x_test).astype("float32", copy=False)
+    y_train_array = y_train.to_numpy(dtype="float32")
+    y_valid_array = y_valid.to_numpy(dtype="float32")
+    y_test_array = y_test.to_numpy(dtype="float32")
 
     cooccurrence_scores = build_cooccurrence_score_table(pair_splits["train"])
     cooccurrence_valid_proba = score_pairs_with_cooccurrence(pair_splits["valid"], cooccurrence_scores)
     cooccurrence_threshold, cooccurrence_validation_metrics = select_threshold(
-        y_valid.to_numpy(),
+        y_valid_array,
         cooccurrence_valid_proba,
     )
     cooccurrence_test_proba = score_pairs_with_cooccurrence(pair_splits["test"], cooccurrence_scores)
     cooccurrence_test_metrics = _classification_metrics(
-        y_test.to_numpy(),
+        y_test_array,
         cooccurrence_test_proba,
         threshold=cooccurrence_threshold,
     )
@@ -504,6 +533,7 @@ def train(args: argparse.Namespace) -> None:
 
     import tensorflow as tf
 
+    tensorflow_device_summary = configure_tensorflow_runtime(tf, require_gpu=args.require_gpu)
     tf.keras.utils.set_random_seed(args.seed)
     model = build_outfit_mlp(x_train_ready.shape[1])
     callbacks = [
@@ -515,8 +545,8 @@ def train(args: argparse.Namespace) -> None:
     ]
     history = model.fit(
         x_train_ready,
-        y_train.to_numpy(),
-        validation_data=(x_valid_ready, y_valid.to_numpy()),
+        y_train_array,
+        validation_data=(x_valid_ready, y_valid_array),
         epochs=args.epochs,
         batch_size=args.batch_size,
         callbacks=callbacks,
@@ -528,12 +558,12 @@ def train(args: argparse.Namespace) -> None:
     }
     model_valid_proba = model.predict(x_valid_ready, verbose=0).reshape(-1)
     selected_threshold, model_validation_metrics = select_threshold(
-        y_valid.to_numpy(),
+        y_valid_array,
         model_valid_proba,
     )
     model_test_proba = model.predict(x_test_ready, verbose=0).reshape(-1)
     model_test_metrics = _classification_metrics(
-        y_test.to_numpy(),
+        y_test_array,
         model_test_proba,
         threshold=selected_threshold,
     )
@@ -584,6 +614,7 @@ def train(args: argparse.Namespace) -> None:
             "source": "validation_only",
             "selected_threshold": selected_threshold,
         },
+        "tensorflow_device_summary": tensorflow_device_summary,
         "beats_cooccurrence_baseline_on_test": beats_cooccurrence_baseline,
         "dataset_diagnostics": diagnostics,
         "artifacts": {
@@ -611,6 +642,7 @@ def train(args: argparse.Namespace) -> None:
             "cooccurrence_baseline": cooccurrence_threshold,
             "tensorflow_mlp": selected_threshold,
         },
+        "tensorflow_device_summary": tensorflow_device_summary,
         "beats_cooccurrence_baseline_on_test": beats_cooccurrence_baseline,
         "training_history": history_payload,
         "dataset_diagnostics": diagnostics,
@@ -640,6 +672,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--patience", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--require-gpu", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 

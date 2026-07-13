@@ -32,9 +32,11 @@ FIT_LABEL_ENCODER_PATH = FIT_ACTIVE_DIR / "fit_label_encoder.joblib"
 FIT_METADATA_PATH = FIT_ACTIVE_DIR / "metadata.json"
 
 OUTFIT_V1_DIR = MODELS_DIR / "outfit_v1"
+OUTFIT_V2_DIR = MODELS_DIR / "outfit_v2"
 OUTFIT_ACTIVE_DIR = MODELS_DIR / "outfit_active"
 OUTFIT_MODEL_PATH = OUTFIT_ACTIVE_DIR / "outfit_model.keras"
 OUTFIT_PREPROCESSOR_PATH = OUTFIT_ACTIVE_DIR / "outfit_preprocessor.joblib"
 OUTFIT_METADATA_PATH = OUTFIT_ACTIVE_DIR / "metadata.json"
+OUTFIT_PROTOTYPES_PATH = OUTFIT_ACTIVE_DIR / "product_type_prototypes.json"
 
 DEFAULT_MODCLOTH_DATASET_PATH = RAW_DATA_DIR / "modcloth_final_data.json"

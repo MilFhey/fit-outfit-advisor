@@ -47,7 +47,7 @@ Dossiers experimentaux :
 
 - `models/fit_v2/`, `models/fit_v3/`, `models/fit_v3_all/`, `models/fit_v3_explicit/`.
 - `models/fashion_v1/`.
-- `models/outfit_v1/`.
+- `models/outfit_v1/`, `models/outfit_v2/`.
 
 ## 4. Module ModCloth - recommandation de taille / fit
 
@@ -387,7 +387,56 @@ Un entrainement TensorFlow Outfit V1 experimental a ensuite ete ajoute pour l'ob
 - comparaison : TensorFlow MLP vs baseline cooccurrence ;
 - artefacts : `models/outfit_v1/`, non promus par defaut.
 
-Decision : le modele TensorFlow peut etre entraine et presente dans le rapport, mais l'application Streamlit garde la baseline cooccurrence fail-closed tant qu'aucune promotion manuelle vers `models/outfit_active/` n'est decidee.
+Resultat apres entrainement Colab :
+
+- rapport d'analyse : `reports/outfit_v1_training_analysis.json` ;
+- test TensorFlow MLP : accuracy `0.5008`, balanced accuracy `0.5008`, macro F1 `0.3611`, ROC AUC `0.5016` ;
+- le modele predit presque tout en `compatible` : recall `compatible` `0.9684`, recall `not_compatible` `0.0332` ;
+- la loss reste proche de `0.693` et l'AUC proche de `0.50`, ce qui indique un signal quasi aleatoire ;
+- `beats_cooccurrence_baseline_on_test: false`.
+
+Interpretation : le MLP ne recoit que les features `product_type_v0`, `canonical_category` et `outfit_role`. Les negatifs sont construits au niveau item, mais le modele ne voit ni image, ni couleur, ni style, ni texte, ni identifiant. Plusieurs exemples negatifs deviennent donc indistinguables des positifs au niveau des features autorisees.
+
+Decision : le modele TensorFlow est conservé comme experience academique non concluante et presente dans le rapport, mais l'application Streamlit garde la baseline cooccurrence fail-closed tant qu'aucune promotion manuelle vers `models/outfit_active/` n'est decidee.
+
+### 6.7 Outfit V2 multimodal image + couleur
+
+Outfit V2 corrige la limite principale de V1 : le modele ne voit plus seulement des labels de type produit. Il exploite des signaux visuels et couleur.
+
+Pipeline ajoute :
+
+- script : `src/training/train_outfit_model_v2.py` ;
+- donnees : raw Polyvore pour la composition des outfits et Hugging Face `mvasil/polyvore-outfits` pour les images `item_id + image` ;
+- backbone image : MobileNetV2 `include_top=False`, `pooling="avg"` ;
+- features couleur : couleur dominante, famille couleur, HSV, harmonie couleur codee ;
+- features taxonomie : `product_type_v0`, `canonical_category`, `outfit_role` ;
+- feature interpretable : score cooccurrence V0 injecte comme variable numerique ;
+- modele : tete dense Keras sur embeddings input/candidat, difference absolue, features couleur, taxonomie et cooccurrence.
+
+Contrat de securite :
+
+- `item_id`, `outfit_id` et `set_id` restent interdits comme features directes ;
+- split primaire `disjoint` ;
+- seuil choisi sur validation ;
+- V2 reste `experimental_only` tant qu'il n'a pas passe les criteres de promotion.
+
+Integration MVP ajoutee :
+
+- `src/services/outfit_v2_service.py` ;
+- `recommend_associations_from_image` : une image de vetement -> associations recommandees ;
+- `evaluate_outfit_images` : plusieurs images -> score global de tenue, scores par paire, roles manquants et suggestions ;
+- `app/streamlit_app.py` expose deux onglets : `Associer une piece` et `Evaluer une tenue`.
+
+Fail-closed :
+
+- si `models/outfit_active/metadata.json` est absent ou non promu, le service revient a la baseline cooccurrence/rules ;
+- si un modele V2 est promu manuellement, le score principal vient du modele TensorFlow.
+
+Analyse post-run prevue :
+
+- script : `src/analysis/analyze_outfit_v2_results.py` ;
+- rapport : `reports/outfit_v2_results_analysis.json` ;
+- comparaison : V0 cooccurrence, V1 MLP, V2 multimodal.
 
 ## 7. Decisions importantes
 
@@ -399,7 +448,8 @@ Decision : le modele TensorFlow peut etre entraine et presente dans le rapport, 
 | Image service | Actif avec seuil 0.90 | `unknown` sous le seuil |
 | Polyvore | Baseline construite, TensorFlow experimental ajoute | Schema/mapping valide puis baseline avant entrainement |
 | Outfit V0 | Baseline cooccurrence fail-closed | Plus interpretable et adaptee au MVP |
-| Outfit V1 | Non promu | Entrainement TensorFlow reserve au rapport et a la comparaison |
+| Outfit V1 | Non promu | Signal quasi aleatoire avec features actuelles |
+| Outfit V2 | Pipeline multimodal implemente, promotion apres metriques | ML image+couleur au coeur du module outfit |
 | Artefacts | Fail-closed | Eviter toute recommandation non fiable |
 
 ## 8. Etat actuel du MVP
@@ -411,14 +461,16 @@ Fonctionnel :
 - modele image Fashion actif localement si artefacts presents ;
 - fallback fit prudent ;
 - service outfit rule-based/fallback ou baseline cooccurrence si rapport pret ;
+- service Outfit V2 pret pour mono-image et multi-image, avec fallback fail-closed ;
+- interface Streamlit en deux onglets : association d'une piece et evaluation d'une tenue ;
 - conseil final structure ;
 - tests unitaires MVP.
 
 Non finalise :
 
 - vrai modele fit promu ;
-- modele TensorFlow outfit promu ;
-- evaluation qualitative des erreurs Outfit V1 ;
+- modele TensorFlow outfit V2 entraine et promu ;
+- evaluation qualitative des erreurs Outfit V2 ;
 - integration avancee de recommandations outfit completes dans Streamlit.
 
 ## 9. Limites actuelles
@@ -447,19 +499,22 @@ Non finalise :
 
 ### Priorite immediate
 
-Executer et documenter l'entrainement TensorFlow Outfit V1 dans Colab :
+Executer et analyser Outfit V2 dans Colab :
 
-1. Lancer `src/training/train_outfit_model_v1.py` sur les raw HF Polyvore.
-2. Copier `models/outfit_v1/metadata.json` et `models/outfit_v1/metrics.json` depuis Colab/Drive.
-3. Comparer TensorFlow MLP a la baseline cooccurrence sur validation/test.
-4. Documenter les erreurs principales par `product_type_v0`.
-5. Garder `model_status: experimental_only` sauf decision de promotion separee.
+1. Lancer `src.training.train_outfit_model_v2` sur GPU T4 avec les raw Polyvore et le loader Hugging Face.
+2. Verifier que `tensorflow_device_summary.gpu_available=true`.
+3. Generer `models/outfit_v2/metrics.json` et `reports/outfit_v2_results_analysis.json`.
+4. Comparer V2 a V0/V1 : ROC AUC, macro F1, MRR, Recall@3.
+5. Promouvoir manuellement vers `models/outfit_active/` seulement si les criteres sont passes.
 
 Implementation actuelle :
 
 - script : `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
 - script TensorFlow : `src/training/train_outfit_model_v1.py` ;
+- script TensorFlow multimodal : `src/training/train_outfit_model_v2.py` ;
+- script analyse V2 : `src/analysis/analyze_outfit_v2_results.py` ;
 - rapport : `reports/polyvore_v0_cooccurrence_baseline.json` ;
+- rapport Outfit V1 : `reports/outfit_v1_training_analysis.json` ;
 - statut : baseline Colab construite, resumee localement depuis le dernier resultat transmis ;
 - evaluation filtree implementee localement dans `src/analysis/build_polyvore_v0_cooccurrence_baseline.py` ;
 - integration experimentale fail-closed dans `src/services/outfit_service.py`.
@@ -509,7 +564,7 @@ pytest --basetemp=.tmp_pytest -p no:cacheprovider
 
 Resultat courant observe :
 
-- 47 tests passent.
+- 54 tests passent.
 
 ## 12. Fichiers de reference pour le rapport
 

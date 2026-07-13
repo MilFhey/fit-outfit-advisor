@@ -26,6 +26,7 @@ from src.models.load_image_model import (
     load_image_model,
     read_image_metadata,
 )
+from src.models.load_outfit_model import is_outfit_metadata_promoted
 from src.analysis.analyze_fit_v3_abstention import (
     UNCERTAIN_LABEL,
     apply_abstention,
@@ -79,6 +80,12 @@ from src.preprocessing.outfit_preprocessing import (
     generate_hard_negative_pairs,
     split_outfits_by_id,
 )
+from src.preprocessing.outfit_v2_features import (
+    classify_color_family,
+    color_harmony_score,
+    extract_dominant_rgb,
+    validate_no_forbidden_v2_features,
+)
 from src.preprocessing.tabular_preprocessing import (
     AMBIGUOUS_COMMERCIAL_CATEGORIES,
     DEFAULT_FEATURE_COLUMNS,
@@ -94,6 +101,11 @@ from src.services.image_service import predict_image
 import src.services.image_service as image_service_module
 from src.services.fit_service import _predict_with_artifacts, predict_fit
 from src.services.outfit_service import recommend_outfit
+import src.services.outfit_v2_service as outfit_v2_service_module
+from src.services.outfit_v2_service import (
+    evaluate_outfit_images,
+    recommend_associations_from_image,
+)
 from src.services.advice_service import generate_advice
 from src.training.train_fashion_model_v1 import (
     prepare_fashion_v1_training_frame,
@@ -1310,3 +1322,126 @@ class FakeImageLabelEncoder:
 
     def inverse_transform(self, indexes):
         return [self.labels[index] for index in indexes]
+
+
+def test_outfit_v2_color_features_on_synthetic_images():
+    from PIL import Image
+
+    red = Image.new("RGB", (32, 32), color=(220, 20, 30))
+    black = Image.new("RGB", (32, 32), color=(5, 5, 5))
+    white = Image.new("RGB", (32, 32), color=(250, 250, 250))
+
+    assert classify_color_family(extract_dominant_rgb(red)) == "red"
+    assert classify_color_family(extract_dominant_rgb(black)) == "black"
+    assert classify_color_family(extract_dominant_rgb(white)) == "white"
+    assert color_harmony_score("black", "red") > color_harmony_score("red", "green")
+
+
+def test_outfit_v2_feature_policy_rejects_direct_ids():
+    with pytest.raises(ValueError):
+        validate_no_forbidden_v2_features(["item_id", "input_product_type"])
+
+    validate_no_forbidden_v2_features(["input_product_type", "color_harmony_score"])
+
+
+def test_outfit_v2_metadata_promotion_requires_multimodal_v2():
+    assert is_outfit_metadata_promoted(
+        {
+            "version": "outfit_v1",
+            "model_status": "promoted",
+            "promotable_to_streamlit": True,
+            "uses_image_embeddings": True,
+            "uses_color_features": True,
+        }
+    ) is False
+    assert is_outfit_metadata_promoted(
+        {
+            "version": "outfit_v2",
+            "model_status": "experimental_only",
+            "promotable_to_streamlit": True,
+            "uses_image_embeddings": True,
+            "uses_color_features": True,
+        }
+    ) is False
+    assert is_outfit_metadata_promoted(
+        {
+            "version": "outfit_v2",
+            "model_status": "promoted",
+            "promotable_to_streamlit": True,
+            "uses_image_embeddings": True,
+            "uses_color_features": True,
+        }
+    ) is True
+
+
+def test_outfit_v2_single_image_falls_back_without_promoted_model(monkeypatch):
+    monkeypatch.setattr(outfit_v2_service_module, "load_outfit_artifacts", lambda: None)
+    monkeypatch.setattr(
+        outfit_v2_service_module,
+        "predict_image",
+        lambda image, use_real_model=True: {
+            "product_type": "tshirt",
+            "raw_product_type": "tshirt",
+            "canonical_category": "top",
+            "common_category": "top",
+            "confidence": 0.95,
+            "mode": "real_model",
+        },
+    )
+
+    result = recommend_associations_from_image(None, "casual")
+
+    assert result["mode"] == "cooccurrence_baseline"
+    assert result["model_status"] == "experimental_only"
+    assert result["input_product_type"] == "top"
+    assert result["ml_score"] is None
+    assert result["cooccurrence_score"] == result["raw_compatibility_score"]
+    assert result["detected_item"]["product_type"] == "tshirt"
+
+
+def test_outfit_v2_multi_image_returns_fallback_shape_without_promoted_model(monkeypatch):
+    from PIL import Image
+
+    monkeypatch.setattr(outfit_v2_service_module, "load_outfit_artifacts", lambda: None)
+    predictions = iter(
+        [
+            {
+                "product_type": "shirt",
+                "canonical_category": "top",
+                "common_category": "top",
+                "confidence": 0.93,
+            },
+            {
+                "product_type": "jeans",
+                "canonical_category": "bottom",
+                "common_category": "bottom",
+                "confidence": 0.91,
+            },
+        ]
+    )
+    monkeypatch.setattr(
+        outfit_v2_service_module,
+        "predict_image",
+        lambda image, use_real_model=True: next(predictions),
+    )
+
+    images = [
+        Image.new("RGB", (32, 32), color=(15, 15, 15)),
+        Image.new("RGB", (32, 32), color=(50, 90, 180)),
+    ]
+    result = evaluate_outfit_images(images, "casual")
+
+    assert set(result) >= {
+        "outfit_score",
+        "pair_scores",
+        "detected_items",
+        "missing_roles",
+        "suggested_associations",
+        "warnings",
+        "mode",
+        "model_status",
+    }
+    assert result["mode"] == "cooccurrence_baseline"
+    assert result["model_status"] == "experimental_only"
+    assert len(result["detected_items"]) == 2
+    assert "shoes" in result["missing_roles"]

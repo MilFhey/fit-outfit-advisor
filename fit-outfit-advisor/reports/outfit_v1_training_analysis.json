@@ -1,0 +1,93 @@
+{
+  "version": "outfit_v1",
+  "analysis_date": "2026-07-12",
+  "model_status": "experimental_only",
+  "promotable_to_streamlit": false,
+  "source_artifacts": {
+    "metadata": "models/outfit_v1/metadata.json",
+    "metrics": "models/outfit_v1/metrics.json",
+    "pretraining_diagnostics": "models/outfit_v1/pretraining_diagnostics.json",
+    "training_history": "models/outfit_v1/training_history (1).png",
+    "confusion_matrix_raw": "models/outfit_v1/confusion_matrix_raw.png",
+    "confusion_matrix_normalized": "models/outfit_v1/confusion_matrix_normalized.png"
+  },
+  "dataset_summary": {
+    "config_name": "disjoint",
+    "train_mapped_items": 69141,
+    "valid_mapped_items": 12287,
+    "test_mapped_items": 59025,
+    "train_labeled_pairs": 184780,
+    "valid_labeled_pairs": 33042,
+    "test_labeled_pairs": 160424,
+    "label_distribution": {
+      "train": {
+        "not_compatible": 92390,
+        "compatible": 92390
+      },
+      "valid": {
+        "not_compatible": 16550,
+        "compatible": 16492
+      },
+      "test": {
+        "not_compatible": 80212,
+        "compatible": 80212
+      }
+    },
+    "filtered_positive_overlap_with_train": {
+      "valid": 58,
+      "test": 0
+    }
+  },
+  "test_metrics": {
+    "cooccurrence_baseline_pair_classification": {
+      "accuracy": 0.5,
+      "balanced_accuracy": 0.5,
+      "macro_f1": 0.496788,
+      "roc_auc": 0.500151,
+      "mrr": 0.269336,
+      "recall_at_3": 0.269231
+    },
+    "tensorflow_mlp": {
+      "accuracy": 0.500804,
+      "balanced_accuracy": 0.500804,
+      "macro_f1": 0.361146,
+      "roc_auc": 0.501561,
+      "precision_compatible": 0.500416,
+      "recall_compatible": 0.968359,
+      "mrr": 0.363217,
+      "recall_at_3": 0.384615
+    }
+  },
+  "training_diagnosis": {
+    "learned_signal": "none_or_negligible",
+    "loss_level": "near_binary_random_loss_0_693",
+    "train_auc_range": "0.4990_to_0.5026",
+    "validation_auc_range": "0.5022_to_0.5032",
+    "confusion_matrix_pattern": "model_predicts_almost_everything_as_compatible",
+    "test_not_compatible_recall": 0.033249,
+    "test_compatible_recall": 0.968359,
+    "beats_cooccurrence_baseline_on_test": false
+  },
+  "interpretation": [
+    "The TensorFlow MLP does not learn a useful compatibility classifier from the current feature set.",
+    "The current features are only product type, canonical category and outfit role for input/candidate items.",
+    "Hard negatives are generated at item level, but the model cannot see item identity, image, color, style, title or embedding information.",
+    "Many negative examples can therefore share exactly the same product_type/role pattern as positive examples, making the supervised binary task weak or contradictory at feature level.",
+    "The earlier cooccurrence baseline remains the defendable MVP path because it is directly aligned with product_type recommendation instead of item-level binary classification.",
+    "The ranking metrics in this experimental training report are not directly comparable to the earlier leakage-filtered cooccurrence baseline report, whose valid/test recall_at_3 values were computed on product-type recommendation from real positive pairs."
+  ],
+  "decision": {
+    "promote_to_streamlit": false,
+    "keep_artifacts": true,
+    "use_in_report": true,
+    "report_positioning": "negative_but_useful_tensorflow_experiment",
+    "mvp_recommendation_engine": "cooccurrence_baseline_fail_closed"
+  },
+  "recommended_next_steps": [
+    "Do not copy models/outfit_v1 to models/outfit_active.",
+    "Present Outfit V1 as an experimental TensorFlow attempt that demonstrates evaluation discipline and non-promotion when metrics are weak.",
+    "If a stronger Outfit V2 is required, add more informative features: color harmony, image embeddings from Fashion V1/MobileNet, title/category text embeddings, style attributes or learned product embeddings.",
+    "Evaluate future models as ranking/recommendation systems against the cooccurrence baseline, not only as binary classifiers on synthetic negatives.",
+    "Keep the MVP service on the leakage-filtered cooccurrence baseline plus coded color/outfit rules."
+  ]
+}

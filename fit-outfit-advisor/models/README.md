@@ -16,8 +16,9 @@ Ce dossier accueillera les modèles générés après entraînement :
 - `fashion_active/fashion_model.keras` : seul modèle image actif ; Fashion V1.1 promu localement avec seuil `0.90` ;
 - `fashion_active/label_encoder.joblib` : encodeur des `product_type_v0` image actifs ;
 - `fashion_active/metadata.json` : doit contenir `model_status: "promoted"` et `promotable_to_streamlit: true` ;
-- `outfit_v1/` : artefacts experimentaux futurs du module Outfit Compatibility V0 ;
-- `outfit_active/` : seul emplacement actif futur pour un modele outfit promu ;
+- `outfit_v1/` : artefacts experimentaux du MLP TensorFlow Outfit V1, non promu ;
+- `outfit_v2/` : artefacts experimentaux du pipeline multimodal image + couleur + taxonomie ;
+- `outfit_active/` : seul emplacement actif pour un modele outfit promu ;
 - `encoders/` : dossier conservé pour compatibilité avec les premiers essais.
 
 Règle de promotion fail-closed :
@@ -28,7 +29,8 @@ Règle de promotion fail-closed :
 - `fashion_v1/` n'est jamais l'emplacement actif par défaut ;
 - un modèle image actif doit être copié volontairement dans `fashion_active/` avec des metadata explicitement promues ;
 - un modèle image promu doit inclure `abstention_strategy.minimum_confidence` dans `fashion_active/metadata.json` pour retourner `unknown` sous seuil de confiance ;
-- un modele outfit actif devra etre copie volontairement dans `outfit_active/` avec des metadata explicitement promues ;
+- un modele outfit actif doit etre copie volontairement dans `outfit_active/` avec des metadata explicitement promues ;
+- un modele outfit actif doit indiquer `version: "outfit_v2"`, `uses_image_embeddings: true` et `uses_color_features: true` ;
 - tout metadata absent, illisible ou incomplet doit refuser l'usage du modèle.
 
 Les fichiers lourds de modèles ne sont pas versionnés par défaut.

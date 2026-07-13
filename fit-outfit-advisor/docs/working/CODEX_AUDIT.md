@@ -262,3 +262,53 @@
 - Statut par defaut : `model_status: experimental_only`, `promotable_to_streamlit: false`; aucune ecriture vers `models/outfit_active/`.
 - Ajout de tests unitaires pour la preparation des splits TensorFlow et la selection de seuil validation-only.
 - Validation locale cible : `python -m compileall src\training\train_outfit_model_v1.py tests\test_services.py` OK ; tests ciblés Outfit TensorFlow OK.
+- Resultats Colab analyses depuis `models/outfit_v1/` :
+  - `beats_cooccurrence_baseline_on_test: false` ;
+  - test TensorFlow MLP : accuracy `0.5008`, balanced accuracy `0.5008`, macro F1 `0.3611`, ROC AUC `0.5016` ;
+  - le modele predit presque tout en `compatible` : recall `compatible` `0.9684`, recall `not_compatible` `0.0332` ;
+  - loss proche de `0.693` et AUC proche de `0.50`.
+- Ajout de `reports/outfit_v1_training_analysis.json`.
+- Decision : `models/outfit_v1/` reste experimental_only et non promu. La baseline cooccurrence reste la voie MVP. L'experience TensorFlow est utile pour le rapport car elle demontre une tentative controlee et une decision de non-promotion justifiee.
+
+## Outfit Compatibility V2 multimodal
+- Demande utilisateur : passer a un vrai module outfit capable de recommander depuis une image, d'evaluer une tenue multi-images et de mettre le machine learning au centre.
+- Ajout de `src/preprocessing/outfit_v2_features.py` :
+  - extraction MobileNetV2 embeddings ;
+  - extraction couleur dominante ;
+  - famille couleur et harmonie couleur ;
+  - features numeriques/categorielles V2 ;
+  - validation explicite contre `item_id`, `outfit_id`, `set_id` comme features directes.
+- Ajout de `src/training/train_outfit_model_v2.py` :
+  - charge raw Polyvore + images Hugging Face ;
+  - construit les paires positives/negatives depuis le pipeline V1 ;
+  - ajoute image, couleur, taxonomie et cooccurrence V0 comme features ;
+  - entraine un modele TensorFlow Keras binaire pairwise ;
+  - selectionne le seuil sur validation ;
+  - sauvegarde `metadata.json`, `metrics.json`, `product_type_prototypes.json`, courbe d'entrainement, matrice de confusion et exemples de ranking ;
+  - cache les features visuelles par split dans `train|valid|test_item_visual_features.npz` ;
+  - conserve `model_status: experimental_only` par defaut.
+- Ajout de `src/models/load_outfit_model.py` :
+  - charge uniquement `models/outfit_active/` ;
+  - refuse tout modele non promu, non V2 ou sans features image/couleur.
+- Ajout de `src/services/outfit_v2_service.py` :
+  - `recommend_associations_from_image` pour une image ;
+  - `evaluate_outfit_images` pour plusieurs images ;
+  - fallback cooccurrence/rules si V2 absent ou non promu.
+- Mise a jour de `app/streamlit_app.py` :
+  - onglet `Associer une piece` ;
+  - onglet `Evaluer une tenue` ;
+  - affichage scores ML/couleur/cooccurrence quand disponibles.
+- Ajout de `src/analysis/analyze_outfit_v2_results.py` pour comparer V0, V1 et V2.
+- Ajout de dependances Colab dans `requirements.txt` : `datasets`, `pyarrow`.
+- Tests ajoutes :
+  - features couleur V2 ;
+  - interdiction des features ID ;
+  - promotion metadata V2 ;
+  - fallback mono-image sans modele promu ;
+  - fallback multi-image sans modele promu.
+- Validation intermediaire :
+  - `python -m py_compile app\streamlit_app.py src\services\outfit_v2_service.py src\training\train_outfit_model_v2.py tests\test_services.py` OK ;
+  - `.venv311\Scripts\python.exe -m pytest tests\test_services.py -k outfit_v2 --basetemp=.tmp_pytest -p no:cacheprovider` OK, 5 tests passes.
+- Validation finale locale :
+  - `python -m compileall app src tests` OK ;
+  - `.venv311\Scripts\python.exe -m pytest --basetemp=.tmp_pytest -p no:cacheprovider` OK, 54 tests passes.

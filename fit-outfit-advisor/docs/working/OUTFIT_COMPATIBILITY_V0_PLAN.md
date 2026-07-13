@@ -251,7 +251,95 @@ python -m src.training.train_outfit_model_v1 \
   --raw-root /content/fit-outfit-runtime/polyvore/raw_hf_files \
   --output-dir models/outfit_v1 \
   --epochs 25 \
-  --batch-size 256
+  --batch-size 256 \
+  --require-gpu
 ```
 
 - Decision MVP : meme si le modele TensorFlow est entraine, l'application continue a utiliser la baseline cooccurrence fail-closed tant que `models/outfit_active/` n'est pas explicitement promu.
+- Diagnostic GPU : le script ecrit `tensorflow_device_summary` dans `metadata.json` et `metrics.json`. Si `--require-gpu` est passe et que TensorFlow ne voit pas le T4, l'entrainement s'arrete avec une erreur explicite.
+
+## Resultat Outfit V1 TensorFlow - 2026-07-12
+- Artefacts analyses : `models/outfit_v1/`.
+- Rapport d'analyse : `reports/outfit_v1_training_analysis.json`.
+- Donnees :
+  - train : 184 780 paires labellisees, equilibrees 92 390 / 92 390 ;
+  - valid : 33 042 paires labellisees ;
+  - test : 160 424 paires labellisees, equilibrees 80 212 / 80 212.
+- Resultat test TensorFlow MLP :
+  - accuracy : `0.5008` ;
+  - balanced accuracy : `0.5008` ;
+  - macro F1 : `0.3611` ;
+  - ROC AUC : `0.5016` ;
+  - recall `compatible` : `0.9684` ;
+  - recall `not_compatible` : `0.0332` ;
+  - MRR produit experimental : `0.3632` ;
+  - recall@3 produit experimental : `0.3846`.
+- Diagnostic :
+  - loss proche de `0.693`, donc signal quasi aleatoire ;
+  - AUC train/validation autour de `0.50` ;
+  - le modele predit presque tout en `compatible` ;
+  - le modele ne bat pas la baseline cooccurrence sur le critere de promotion.
+- Cause probable :
+  - les features visibles par le MLP sont seulement `product_type_v0`, `canonical_category` et `outfit_role` ;
+  - les negatifs sont construits au niveau item, mais le modele ne voit ni `item_id`, ni image, ni couleur, ni texte, ni attribut de style ;
+  - beaucoup de paires negatives peuvent donc etre indistinguables de paires positives au niveau feature.
+- Decision :
+  - ne pas promouvoir `models/outfit_v1/` ;
+  - conserver l'experience dans le rapport comme tentative TensorFlow rigoureuse mais non concluante ;
+  - garder le MVP sur baseline cooccurrence fail-closed + futures regles couleur/outfit.
+
+## Outfit Compatibility V2 multimodal - sprint implementation 2026-07-12
+- Objectif : mettre le machine learning au centre du module outfit en apprenant une compatibilite pairwise depuis image + couleur + taxonomie + score cooccurrence.
+- Nouveau preprocessing : `src/preprocessing/outfit_v2_features.py`.
+  - extrait une couleur dominante via `MiniBatchKMeans` ;
+  - classe la famille couleur (`black`, `white`, `blue`, `red`, etc.) ;
+  - calcule un score d'harmonie couleur code ;
+  - extrait un embedding MobileNetV2 ImageNet 1280 dimensions ;
+  - construit les features pairwise : embeddings input/candidat, difference absolue, similarite cosinus, distance L2, couleurs, harmonie et cooccurrence.
+- Nouveau script TensorFlow : `src/training/train_outfit_model_v2.py`.
+  - utilise les raw Polyvore pour les outfits et le loader Hugging Face pour `item_id + image` ;
+  - conserve `disjoint` comme config primaire ;
+  - construit des paires positives depuis les outfits et des negatifs difficiles via le builder V1 ;
+  - interdit `item_id`, `outfit_id` et `set_id` comme features directes ;
+  - choisit le seuil uniquement sur validation ;
+  - compare V2 a la baseline cooccurrence ;
+  - cache les embeddings/couleurs par split dans `*_item_visual_features.npz` pour eviter de recalculer MobileNetV2 a chaque run ;
+  - ecrit les artefacts dans `models/outfit_v2/`.
+- Artefacts attendus :
+  - `outfit_model.keras` ;
+  - `outfit_preprocessor.joblib` ;
+  - `product_type_prototypes.json` ;
+  - `metadata.json` ;
+  - `metrics.json` ;
+  - `training_history.png` ;
+  - `confusion_matrix_raw.png` ;
+  - `ranking_examples.png`.
+- Nouveau script d'analyse : `src/analysis/analyze_outfit_v2_results.py`.
+  - compare `cooccurrence_v0`, `outfit_v1_tensorflow_mlp` et `outfit_v2_multimodal` ;
+  - genere `reports/outfit_v2_results_analysis.json` ;
+  - recommande explicitement promotion ou maintien experimental.
+- Nouveau service applicatif : `src/services/outfit_v2_service.py`.
+  - mode `recommend_associations_from_image` : une image -> detection Fashion V1 -> couleur -> recommandations ;
+  - mode `evaluate_outfit_images` : plusieurs images -> score global de tenue, scores par paire, roles manquants, suggestions ;
+  - charge `models/outfit_active/` seulement si les metadata indiquent `version=outfit_v2`, `model_status=promoted`, `promotable_to_streamlit=true`, `uses_image_embeddings=true`, `uses_color_features=true`.
+- Streamlit expose maintenant deux onglets :
+  - `Associer une piece` ;
+  - `Evaluer une tenue`.
+- Critere de promotion V2 :
+  - ROC AUC test >= `0.60` ;
+  - Recall@3 test >= baseline cooccurrence ou gain clair sur MRR ;
+  - pas de collapse de classe ;
+  - erreurs principales documentees ;
+  - promotion manuelle vers `models/outfit_active/` uniquement.
+- Commande Colab recommandee :
+
+```bash
+python -m src.training.train_outfit_model_v2 \
+  --raw-root /content/fit-outfit-runtime/polyvore/raw_hf_files \
+  --output-dir models/outfit_v2 \
+  --epochs 10 \
+  --batch-size 128 \
+  --require-gpu
+```
+
+- Decision MVP : tant que V2 n'est pas promu, l'application utilise la baseline cooccurrence/rules mais l'interface et le service sont prets pour le modele actif.
