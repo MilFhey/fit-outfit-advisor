@@ -315,6 +315,12 @@
   - le warmup est limite a un batch de verification GPU reduit et documente le batch demande separement ;
   - l'extraction MobileNetV2 reduit automatiquement les sous-batches en cas de `RESOURCE_EXHAUSTED` / OOM au lieu de marquer toutes les images du batch en echec ;
   - `TF_GPU_ALLOCATOR=cuda_malloc_async` est active avant import TensorFlow pour reduire la fragmentation memoire.
+- Correction lenteur Hugging Face image :
+  - nouveau log Colab : le GPU est bien utilise, mais le premier batch d'extraction arrivait tres tard apres `Visual feature streaming train` ;
+  - le loader force maintenant la colonne Hugging Face `image` en `decode=False` pour eviter de decoder les images non retenues pendant le scan ;
+  - l'extraction construit un index `item_id -> row_index` depuis la colonne Arrow puis selectionne uniquement les lignes demandees, au lieu d'iterer tout le dataset Python ligne par ligne ;
+  - le pipeline `tf.data` utilise `prefetch(1)` plutot que `AUTOTUNE` pour eviter les preallocations de batches image trop volumineuses observees dans les logs ;
+  - les images sont decodees uniquement pour les `item_id` demandes, puis envoyees a MobileNetV2 via le backend `tf_data`.
 - Correction ergonomie Colab :
   - la cellule Outfit V2 est maintenant autonome apres refresh kernel : elle reinstalle ses imports, `PROJECT_DIR`, `DRIVE_ROOT`, `schema_raw_root`, `dataset_root` et `HF_DATASET_ID` si les cellules precedentes n'ont pas ete executees ;
   - elle bascule automatiquement vers les caches Drive `datasets/mvasil_polyvore_outfits` et `datasets/mvasil_polyvore_outfits_raw_files` si les dossiers `/content/fit-outfit-runtime/...` ont disparu ;

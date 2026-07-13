@@ -4,6 +4,7 @@ import argparse
 import gc
 import json
 import os
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -51,10 +52,28 @@ OUTFIT_V2_DATASET_AUDIT_PATH = REPORTS_DIR / "outfit_v2_dataset_audit.json"
 BatchRow = tuple[str, bytes, Any, tuple[int, int, int], tuple[float, float, float], str]
 DEFAULT_EMBEDDING_BATCH_SIZE = 128
 MAX_WARMUP_BATCH_SIZE = 16
+HF_IMAGE_DECODE_MODE = "decode_false"
+HF_ROW_ACCESS_MODE = "item_id_index_select"
 
 
 def _hf_split_name(split_name: str) -> str:
     return "validation" if split_name == "valid" else split_name
+
+
+def use_encoded_hf_image_column(dataset: Any) -> Any:
+    try:
+        from datasets import Image as HuggingFaceImage
+
+        column_names = getattr(dataset, "column_names", [])
+        if "image" in column_names:
+            return dataset.cast_column("image", HuggingFaceImage(decode=False))
+    except Exception as exc:
+        print(
+            "Outfit V2 warning: could not force Hugging Face image decode=False: "
+            f"{type(exc).__name__}: {exc}",
+            flush=True,
+        )
+    return dataset
 
 
 def load_hf_split(config_name: str, split_name: str, *, hf_dataset_root: Path | None, dataset_id: str):
@@ -71,14 +90,14 @@ def load_hf_split(config_name: str, split_name: str, *, hf_dataset_root: Path | 
             try:
                 loaded = load_from_disk(str(candidate))
                 if hasattr(loaded, "keys") and hf_split in loaded:
-                    return loaded[hf_split]
+                    return use_encoded_hf_image_column(loaded[hf_split])
                 if hasattr(loaded, "keys") and split_name in loaded:
-                    return loaded[split_name]
+                    return use_encoded_hf_image_column(loaded[split_name])
                 if not hasattr(loaded, "keys"):
-                    return loaded
+                    return use_encoded_hf_image_column(loaded)
             except Exception:
                 continue
-    return load_dataset(dataset_id, config_name, split=hf_split)
+    return use_encoded_hf_image_column(load_dataset(dataset_id, config_name, split=hf_split))
 
 
 def load_image_lookup(
@@ -108,6 +127,40 @@ def load_image_lookup(
         if not remaining:
             break
     return lookup
+
+
+def build_hf_item_index(dataset: Any, requested_item_ids: set[str]) -> tuple[list[tuple[str, int]], dict[str, Any]]:
+    started_at = time.perf_counter()
+    try:
+        item_id_column = dataset["item_id"]
+    except Exception as exc:
+        return [], {
+            "hf_row_access_mode": "sequential_scan",
+            "hf_index_available": False,
+            "hf_index_error": f"{type(exc).__name__}: {exc}",
+            "hf_index_seconds": 0.0,
+        }
+
+    requested = set(str(item_id) for item_id in requested_item_ids)
+    matched: dict[str, int] = {}
+    for row_index, item_id in enumerate(item_id_column):
+        item_id = str(item_id)
+        if item_id in requested and item_id not in matched:
+            matched[item_id] = int(row_index)
+            if len(matched) == len(requested):
+                break
+
+    ordered_matches = sorted(matched.items(), key=lambda item: item[1])
+    elapsed = time.perf_counter() - started_at
+    diagnostics = {
+        "hf_row_access_mode": HF_ROW_ACCESS_MODE,
+        "hf_index_available": True,
+        "hf_index_seconds": float(round(elapsed, 3)),
+        "hf_dataset_row_count": int(len(item_id_column)),
+        "hf_index_matched_item_count": int(len(ordered_matches)),
+        "hf_index_missing_item_count": int(len(requested) - len(ordered_matches)),
+    }
+    return ordered_matches, diagnostics
 
 
 def collect_pair_item_ids(pairs: pd.DataFrame) -> set[str]:
@@ -271,7 +324,7 @@ def embed_image_batch(
 
         dataset = tf.data.Dataset.from_tensor_slices(encoded_images)
         dataset = dataset.map(decode_resize_preprocess, num_parallel_calls=tf.data.AUTOTUNE)
-        dataset = dataset.batch(embedding_batch_size).prefetch(tf.data.AUTOTUNE)
+        dataset = dataset.batch(embedding_batch_size).prefetch(1)
         embedding_parts = []
         for tensor_batch in dataset:
             embeddings, devices = run_embedding_tensor_batch(tensor_batch)
@@ -323,6 +376,7 @@ def extract_item_visual_features_from_hf(
     )
     requested = set(str(item_id) for item_id in item_ids)
     remaining = set(requested)
+    indexed_rows, index_diagnostics = build_hf_item_index(dataset, requested)
     features: dict[str, Any] = {}
     failed = []
     failure_messages = []
@@ -334,9 +388,17 @@ def extract_item_visual_features_from_hf(
     print(
         f"Visual feature streaming {label}: requested={len(requested)}, "
         f"batch_size={embedding_batch_size}, color_mode={color_extraction_mode}, "
-        f"embedding_backend={embedding_backend}",
+        f"embedding_backend={embedding_backend}, "
+        f"row_access={index_diagnostics.get('hf_row_access_mode')}",
         flush=True,
     )
+    if index_diagnostics.get("hf_index_available"):
+        print(
+            f"Visual feature streaming {label}: hf_index_matched="
+            f"{index_diagnostics.get('hf_index_matched_item_count')}/{len(requested)}, "
+            f"index_seconds={index_diagnostics.get('hf_index_seconds')}",
+            flush=True,
+        )
 
     def flush_embedding_batch() -> None:
         nonlocal embedding_batch_count
@@ -376,9 +438,13 @@ def extract_item_visual_features_from_hf(
                 color_family=color_family,
             )
 
-    for row in dataset:
-        scanned_rows += 1
-        item_id = str(row.get("item_id"))
+    if indexed_rows:
+        row_iterator = ((item_id, dataset[row_index], row_index + 1) for item_id, row_index in indexed_rows)
+    else:
+        row_iterator = ((str(row.get("item_id")), row, row_index) for row_index, row in enumerate(dataset, start=1))
+
+    for item_id, row, row_number in row_iterator:
+        scanned_rows = max(scanned_rows, int(row_number))
         if item_id not in remaining:
             continue
         image = row.get("image")
@@ -427,6 +493,7 @@ def extract_item_visual_features_from_hf(
         "embedding_backend": embedding_backend,
         "color_extraction_mode": color_extraction_mode,
         "streaming_hf_image_loader": True,
+        **index_diagnostics,
     }
     return features, diagnostics
 

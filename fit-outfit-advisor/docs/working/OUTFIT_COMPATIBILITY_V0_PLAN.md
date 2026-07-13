@@ -353,6 +353,8 @@ python -m src.training.train_outfit_model_v2 \
   - les logs affichent `Outfit V2 embedding device requested` et `embedding_devices` par split ;
   - TensorFlow est initialise des le debut de `train()` pour lancer un smoke test GPU avant les phases CPU ;
   - l'extraction visuelle lit Hugging Face en streaming et envoie les images a MobileNetV2 par batch sur `/GPU:0`, au lieu de charger toutes les images avant le premier calcul GPU ;
+  - la colonne Hugging Face `image` est forcee en `decode=False` pour eviter le decodage CPU des lignes ignorees pendant le scan ;
+  - les lignes Hugging Face sont selectionnees par index `item_id -> row_index` pour eviter une iteration Python complete du split ;
   - `--embedding-backend tf_data` decode/resize/preprocess les images via TensorFlow en batch au lieu d'une boucle PIL/Numpy image par image ;
   - `--embedding-batch-size 128` est recommande sur T4 ; le script reduit automatiquement les sous-batches MobileNetV2 si une erreur OOM GPU apparait ;
   - `--color-extraction-mode fast` est le mode recommande Colab pour eviter que le clustering couleur CPU masque l'utilisation GPU.
