@@ -286,7 +286,11 @@
   - selectionne le seuil sur validation ;
   - sauvegarde `metadata.json`, `metrics.json`, `product_type_prototypes.json`, courbe d'entrainement, matrice de confusion et exemples de ranking ;
   - cache les features visuelles par split dans `train|valid|test_item_visual_features.npz` ;
+  - extrait maintenant les embeddings MobileNetV2 par batches avec `--embedding-batch-size` au lieu d'un `predict` image par image, pour mieux occuper le GPU Colab ;
   - conserve `model_status: experimental_only` par defaut.
+- Diagnostic GPU renforce :
+  - `configure_tensorflow_runtime` execute un petit `tf.matmul` sur `/GPU:0` quand un GPU est detecte ;
+  - `metadata.json` expose `gpu_smoke_test_device` pour verifier que TensorFlow place bien une operation sur GPU.
 - Ajout de `src/models/load_outfit_model.py` :
   - charge uniquement `models/outfit_active/` ;
   - refuse tout modele non promu, non V2 ou sans features image/couleur.

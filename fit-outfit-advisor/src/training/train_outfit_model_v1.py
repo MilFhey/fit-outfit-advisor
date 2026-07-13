@@ -460,7 +460,15 @@ def configure_tensorflow_runtime(tf: Any, *, require_gpu: bool = False) -> dict[
         "logical_gpus": [device.name for device in logical_gpus],
         "gpu_available": bool(physical_gpus),
         "device_policy": "gpu_required" if require_gpu else "gpu_if_available",
+        "gpu_smoke_test_device": None,
     }
+    if physical_gpus:
+        try:
+            with tf.device("/GPU:0"):
+                smoke_result = tf.matmul(tf.ones((128, 128)), tf.ones((128, 128)))
+            device_summary["gpu_smoke_test_device"] = getattr(smoke_result, "device", None)
+        except Exception as exc:
+            device_summary["gpu_smoke_test_error"] = str(exc)
     print("\n=== TensorFlow device summary ===")
     print(json.dumps(device_summary, indent=2))
     if require_gpu and not physical_gpus:

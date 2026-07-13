@@ -16,15 +16,17 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from src.config.paths import OUTFIT_V1_CONFIG_PATH, OUTFIT_V2_DIR, REPORTS_DIR
 from src.mappings.polyvore_mapping import load_outfit_v1_config, validate_outfit_v1_config
 from src.preprocessing.outfit_v2_features import (
+    ImageVisualFeatures,
     MOBILENET_V2_EMBEDDING_DIM,
     OUTFIT_V2_CATEGORICAL_FEATURES,
     OUTFIT_V2_NUMERIC_FEATURES,
     build_pair_embedding_block,
     build_pair_numeric_features,
-    color_harmony_score,
-    empty_visual_features,
-    extract_visual_features,
+    classify_color_family,
+    extract_dominant_rgb,
     load_mobilenet_v2_embedding_model,
+    preprocess_for_mobilenet_embedding,
+    rgb_to_hsv01,
     validate_no_forbidden_v2_features,
 )
 from src.training.train_outfit_model_v1 import (
@@ -112,19 +114,54 @@ def extract_item_visual_features(
     image_lookup: dict[str, Any],
     *,
     embedding_model: Any,
+    embedding_batch_size: int = 64,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     features: dict[str, Any] = {}
     missing = []
     failed = []
+    image_batches: list[tuple[str, np.ndarray, tuple[int, int, int], tuple[float, float, float], str]] = []
+
     for item_id in sorted(item_ids):
         image = image_lookup.get(str(item_id))
         if image is None:
             missing.append(str(item_id))
             continue
         try:
-            features[str(item_id)] = extract_visual_features(image, embedding_model=embedding_model)
+            dominant_rgb = extract_dominant_rgb(image)
+            hsv = rgb_to_hsv01(dominant_rgb)
+            color_family = classify_color_family(dominant_rgb)
+            image_batches.append(
+                (
+                    str(item_id),
+                    preprocess_for_mobilenet_embedding(image)[0],
+                    dominant_rgb,
+                    hsv,
+                    color_family,
+                )
+            )
         except Exception:
             failed.append(str(item_id))
+
+    for start in range(0, len(image_batches), embedding_batch_size):
+        batch_rows = image_batches[start : start + embedding_batch_size]
+        batch = np.asarray([row[1] for row in batch_rows], dtype="float32")
+        try:
+            embeddings = embedding_model.predict(
+                batch,
+                batch_size=embedding_batch_size,
+                verbose=0,
+            )
+        except Exception:
+            failed.extend(row[0] for row in batch_rows)
+            continue
+        for (item_id, _, dominant_rgb, hsv, color_family), embedding in zip(batch_rows, embeddings):
+            features[item_id] = ImageVisualFeatures(
+                embedding=np.asarray(embedding, dtype="float32"),
+                dominant_rgb=dominant_rgb,
+                hsv=hsv,
+                color_family=color_family,
+            )
+
     diagnostics = {
         "requested_item_count": len(item_ids),
         "feature_item_count": len(features),
@@ -132,6 +169,7 @@ def extract_item_visual_features(
         "failed_feature_count": len(failed),
         "missing_image_examples": missing[:10],
         "failed_feature_examples": failed[:10],
+        "embedding_batch_size": int(embedding_batch_size),
     }
     return features, diagnostics
 
@@ -495,6 +533,7 @@ def train(args: argparse.Namespace) -> None:
                 item_ids,
                 image_lookup,
                 embedding_model=embedding_model,
+                embedding_batch_size=args.embedding_batch_size,
             )
             save_visual_feature_cache(cache_path, item_features)
             feature_diag["cache_hit"] = False
@@ -649,6 +688,7 @@ def train(args: argparse.Namespace) -> None:
             "pair_splits": pair_diagnostics,
             "visual_features": visual_diagnostics,
             "max_pairs_per_split": args.max_pairs_per_split,
+            "embedding_batch_size": args.embedding_batch_size,
         },
         "artifact_names": [
             model_path.name,
@@ -698,6 +738,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-pairs-per-split", type=int, default=60000)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--embedding-batch-size", type=int, default=64)
     parser.add_argument("--patience", type=int, default=3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--min-test-roc-auc", type=float, default=0.60)

@@ -304,6 +304,7 @@ python -m src.training.train_outfit_model_v1 \
   - choisit le seuil uniquement sur validation ;
   - compare V2 a la baseline cooccurrence ;
   - cache les embeddings/couleurs par split dans `*_item_visual_features.npz` pour eviter de recalculer MobileNetV2 a chaque run ;
+  - extrait les embeddings MobileNetV2 en batch via `--embedding-batch-size` pour utiliser le GPU T4 pendant la phase image ;
   - ecrit les artefacts dans `models/outfit_v2/`.
 - Artefacts attendus :
   - `outfit_model.keras` ;
@@ -339,7 +340,13 @@ python -m src.training.train_outfit_model_v2 \
   --output-dir models/outfit_v2 \
   --epochs 10 \
   --batch-size 128 \
+  --embedding-batch-size 64 \
   --require-gpu
 ```
+
+- Diagnostic GPU :
+  - `--require-gpu` arrete le script si TensorFlow ne voit aucun GPU ;
+  - `metadata.json` contient `tensorflow_device_summary.gpu_available` et `gpu_smoke_test_device` ;
+  - pendant le debut du run, il reste normal de voir peu de GPU si le script charge les JSON raw ou calcule les couleurs ; l'utilisation GPU doit surtout apparaitre pendant les batches MobileNetV2 et l'entrainement Keras.
 
 - Decision MVP : tant que V2 n'est pas promu, l'application utilise la baseline cooccurrence/rules mais l'interface et le service sont prets pour le modele actif.

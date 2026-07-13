@@ -115,6 +115,7 @@ from src.training.train_outfit_model_v1 import (
     build_outfit_training_splits,
     select_threshold as select_outfit_threshold,
 )
+from src.training.train_outfit_model_v2 import parse_args as parse_outfit_v2_args
 
 
 def test_category_mapping_known_and_unknown():
@@ -1342,6 +1343,19 @@ def test_outfit_v2_feature_policy_rejects_direct_ids():
         validate_no_forbidden_v2_features(["item_id", "input_product_type"])
 
     validate_no_forbidden_v2_features(["input_product_type", "color_harmony_score"])
+
+
+def test_outfit_v2_cli_exposes_embedding_batch_size(monkeypatch):
+    import sys
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["train_outfit_model_v2", "--embedding-batch-size", "96"],
+    )
+    args = parse_outfit_v2_args()
+
+    assert args.embedding_batch_size == 96
 
 
 def test_outfit_v2_metadata_promotion_requires_multimodal_v2():
